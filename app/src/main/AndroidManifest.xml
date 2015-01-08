@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".Application"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -27,6 +28,14 @@
             android:label="@string/title_activity_sign_in"
             android:parentActivityName=".Splash"
             android:windowSoftInputMode="adjustResize|stateVisible" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="br.leg.camara.labhacker.edemocracia.Splash" />
+        </activity>
+        <activity
+            android:name=".GroupListActivity"
+            android:label="@string/title_activity_group_list"
+            android:parentActivityName=".Splash" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="br.leg.camara.labhacker.edemocracia.Splash" />

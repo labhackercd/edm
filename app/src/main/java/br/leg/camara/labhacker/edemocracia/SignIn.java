@@ -5,8 +5,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
-import android.content.ContentResolver;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
@@ -27,19 +27,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.liferay.mobile.android.auth.basic.BasicAuthentication;
-import com.liferay.mobile.android.service.Session;
-import com.liferay.mobile.android.service.SessionImpl;
-import com.liferay.mobile.android.v62.group.GroupService;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.liferay.AuthHelper;
+import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
 
 
 /**
@@ -58,6 +50,9 @@ public class SignIn extends Activity implements LoaderCallbacks<Cursor> {
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserLoginTask mAuthTask = null;
+
+    // Token and cookies needed for authenticating the user
+    private AuthHelper.TokenAndCookies mTokenAndCookies = null;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -284,8 +279,8 @@ public class SignIn extends Activity implements LoaderCallbacks<Cursor> {
         @Override
         protected Boolean doInBackground(Void... params) {
             try {
-                AuthHelper.TokenAndCookies creds = AuthHelper.authenticate(mEmail, mPassword);
-                return creds != null;
+                mTokenAndCookies = AuthHelper.authenticate(mEmail, mPassword);
+                return mTokenAndCookies != null;
             } catch (Exception e) {
                 // NOOP
                 // TODO FIXME WOW. How can notify the user of connectivity issues if we can't tell
@@ -301,8 +296,17 @@ public class SignIn extends Activity implements LoaderCallbacks<Cursor> {
             showProgress(false);
 
             if (success) {
-                Log.v("SigninActivity", "It all went well. :)");
-                finish();
+                if (mTokenAndCookies != null) {
+                    // TODO FIXME We should probably just the the "tokenAndCookies" on the
+                    // application. The application itsel should create the liferayClient then.
+                    // But since tokenAndCookies is not the final interface name, let's wait for
+                    // it to be fixed first so the code on Application doesnt get to look ugly.
+                    ((Application) getApplication()).setLiferayClient(new LiferayClient(mTokenAndCookies));
+                    startActivity(new Intent(getApplicationContext(), GroupListActivity.class));
+                    finish();
+                } else {
+                    // TODO Throw something? What could possibly go wrong here?
+                }
             } else {
                 // FIXME Should not be displayed in the Password Field
                 mPasswordView.setError("Invalid credentials");
