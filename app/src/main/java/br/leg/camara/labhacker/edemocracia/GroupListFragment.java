@@ -3,6 +3,7 @@ package br.leg.camara.labhacker.edemocracia;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +14,14 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 
-import br.leg.camara.labhacker.edemocracia.dummy.DummyContent;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
 
 /**
  * A fragment representing a list of Items.
@@ -26,14 +34,9 @@ import br.leg.camara.labhacker.edemocracia.dummy.DummyContent;
  */
 public class GroupListFragment extends Fragment implements AbsListView.OnItemClickListener {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String ARG_GROUPS = "groups";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private List<String> groups;
 
     private OnFragmentInteractionListener mListener;
 
@@ -48,12 +51,10 @@ public class GroupListFragment extends Fragment implements AbsListView.OnItemCli
      */
     private ListAdapter mAdapter;
 
-    // TODO: Rename and change types of parameters
-    public static GroupListFragment newInstance(String param1, String param2) {
+    public static GroupListFragment newInstance(List<String> groups) {
         GroupListFragment fragment = new GroupListFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putCharSequenceArray(ARG_GROUPS, groups.toArray(new CharSequence[groups.size()]));
         fragment.setArguments(args);
         return fragment;
     }
@@ -70,13 +71,15 @@ public class GroupListFragment extends Fragment implements AbsListView.OnItemCli
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            CharSequence[] groupsCs = getArguments().getCharSequenceArray(ARG_GROUPS);
+            groups = new ArrayList<String>();
+            for (CharSequence cs : groupsCs) {
+                groups.add(cs.toString());
+            }
         }
 
-        // TODO: Change Adapter to display your content
-        mAdapter = new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, DummyContent.ITEMS);
+        mAdapter = new ArrayAdapter<String>(getActivity(),
+                android.R.layout.simple_list_item_1, android.R.id.text1, groups);
     }
 
     @Override
@@ -115,9 +118,8 @@ public class GroupListFragment extends Fragment implements AbsListView.OnItemCli
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (null != mListener) {
-            // Notify the active callbacks interface (the activity, if the
-            // fragment is attached to one) that an item has been selected.
-            mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
+            // TODO
+            Log.v(this.getClass().toString(), "Item clicked: " + id);
         }
     }
 
