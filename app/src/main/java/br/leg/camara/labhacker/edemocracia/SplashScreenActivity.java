@@ -2,30 +2,24 @@ package br.leg.camara.labhacker.edemocracia;
 
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.os.Build;
 
 
-public class Splash extends ActionBarActivity {
+public class SplashScreenActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_splash);
+        setContentView(R.layout.activity_splash_screen);
         if (savedInstanceState == null) {
 
         }
 
         // TODO "If signed in"
         if (true) {
-            startActivity(new Intent(getApplicationContext(), SignIn.class));
+            startActivity(new Intent(getApplicationContext(), SignInActivity.class));
             finish();
         }
     }
