@@ -30,9 +30,6 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import br.leg.camara.labhacker.edemocracia.liferay.AuthHelper;
-import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
-
 
 /**
  * A login screen that offers login via email/password.

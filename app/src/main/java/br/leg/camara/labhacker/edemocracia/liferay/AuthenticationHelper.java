@@ -1,7 +1,5 @@
 package br.leg.camara.labhacker.edemocracia.liferay;
 
-import android.util.Log;
-
 import com.liferay.mobile.android.util.Validator;
 
 import org.apache.http.NameValuePair;
@@ -20,7 +18,6 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.CookieStore;
-import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -30,7 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public class AuthHelper {
+public class AuthenticationHelper {
 
     public static boolean authenticate(String username, String password) throws IOException {
         CookieStore cookieStore = (new CookieManager()).getCookieStore();
@@ -62,11 +59,11 @@ public class AuthHelper {
     }
 
     public static boolean authenticate(String username, String password, CookieStore cookieStore) throws IOException {
-        String token = authenticateAndGetToken(username, password, cookieStore);
-        return Validator.isNotNull(token);
+        AuthenticationToken token = authenticateAndGetToken(username, password, cookieStore);
+        return token != null && Validator.isNotNull(token.getToken());
     }
 
-    public static String authenticateAndGetToken(String username, String password, CookieStore cookieStore) throws IOException {
+    public static AuthenticationToken authenticateAndGetToken(String username, String password, CookieStore cookieStore) throws IOException {
         CookieManager cookieManager = new CookieManager(cookieStore, CookiePolicy.ACCEPT_ALL);
         CookieHandler.setDefault(cookieManager);
 
@@ -153,9 +150,6 @@ public class AuthHelper {
             loginConnection.disconnect();
         }
 
-        Log.d(AuthHelper.class.getSimpleName(), cookieManager.getCookieStore().getCookies().toString());
-        Log.d(AuthHelper.class.getSimpleName(), extractAuthToken(loginContent));
-
         if (checkIsAuthenticated(loginContent)) {
             return extractAuthToken(loginContent);
         }
@@ -168,12 +162,12 @@ public class AuthHelper {
         return content.contains("/c/portal/logout");
     }
 
-    public static String extractAuthToken(String content) {
+    public static AuthenticationToken extractAuthToken(String content) {
         Pattern pattern = Pattern.compile("authToken\\s*=\\s*\"([^\"]+)\"");
         Matcher matcher = pattern.matcher(content);
 
         matcher.find();
 
-        return matcher.group(1).toString();
+        return new AuthenticationToken(matcher.group(1).toString());
     }
 }
