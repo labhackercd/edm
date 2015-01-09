@@ -39,20 +39,16 @@ import java.util.regex.Pattern;
 import br.leg.camara.labhacker.edemocracia.liferay.AuthHelper;
 import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
 
-
-/**
- * <a href="http://d.android.com/tools/testing/testing_android.html">Testing Fundamentals</a>
- */
 public class ApplicationTest extends ApplicationTestCase<Application> {
     public ApplicationTest() {
         super(Application.class);
     }
 
     public void testTheShitOutOfIt() throws Exception {
-        AuthHelper.TokenAndCookies credentials = AuthHelper.authenticate("dirleyrls@gmail.com", "12345");
-        assertNotNull(credentials);
+        LiferayClient client = new LiferayClient();
 
-        LiferayClient client = new LiferayClient(credentials);
+        assertTrue(client.authenticate("dirleyrls@gmail.com", "12345"));
+
         JSONArray result = client.listGroups(1);
 
         Log.v("----->", result.toString());

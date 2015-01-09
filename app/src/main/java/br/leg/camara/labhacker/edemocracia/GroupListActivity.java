@@ -115,7 +115,6 @@ public class GroupListActivity extends ActionBarActivity implements GroupListFra
         protected Boolean doInBackground(Void... params) {
             LiferayClient client = ((Application) getApplication()).getLiferayClient();
 
-
             JSONArray result;
             try {
                 result = client.listGroups(1);
@@ -146,12 +145,13 @@ public class GroupListActivity extends ActionBarActivity implements GroupListFra
             loadGroupsTask = null;
             showProgress(false);
 
-            if (success) {
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.container, (Fragment) GroupListFragment.newInstance(groups))
-                        .commit();
-            } else {
+            if (!success) {
+                groups = new ArrayList<String>();
             }
+
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, (Fragment) GroupListFragment.newInstance(groups))
+                    .commit();
         }
 
         @Override

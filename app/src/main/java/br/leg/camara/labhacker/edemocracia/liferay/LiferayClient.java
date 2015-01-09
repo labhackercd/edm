@@ -16,6 +16,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
+import java.net.CookieStore;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -28,19 +31,40 @@ public class LiferayClient {
 
     private static final int wsPort = 8080;
     private static final String wsProtocol = "http";
-    private static final String wsHost = "192.168.25.9";
+    private static final String wsHost = "192.168.1.11";
     private static final String wsPath = "/api/jsonws";
 
-    private AuthHelper.TokenAndCookies tokenAndCookies;
+    private String token;
+    private CookieStore cookies;
 
-    public LiferayClient(AuthHelper.TokenAndCookies tokenAndCookies) {
-        this.tokenAndCookies = tokenAndCookies;
+    public LiferayClient() {
+        this.token = null;
+        this.cookies = (new CookieManager()).getCookieStore();
+    }
+
+    public LiferayClient(CookieStore cookies) {
+        this.token = null;
+        this.cookies = cookies;
+    }
+
+    public LiferayClient(CookieStore cookies, String token) {
+        this.token = token;
+        this.cookies = cookies;
+    }
+
+    public boolean authenticate(String username, String password) throws IOException {
+        token = AuthHelper.authenticateAndGetToken(username, password, cookies);
+        return Validator.isNotNull(token);
+    }
+
+    public boolean isAuthenticated() throws IOException {
+        return AuthHelper.isAuthenticated(cookies);
     }
 
     public JSONArray listGroups(int companyId) throws ServerException, IOException, URISyntaxException {
         List<NameValuePair> args = new ArrayList<NameValuePair>();
 
-        args.add(new BasicNameValuePair("p_auth", this.tokenAndCookies.getToken()));
+        args.add(new BasicNameValuePair("p_auth", this.token));
         args.add(new BasicNameValuePair("companyId", Integer.toString(companyId)));
         args.add(new BasicNameValuePair("start", Integer.toString(-1)));
         args.add(new BasicNameValuePair("end", Integer.toString(-1)));
@@ -77,9 +101,18 @@ public class LiferayClient {
 
     protected JSONArray call(String method, List<NameValuePair> args) throws ServerException, IOException, URISyntaxException {
 
-        // Set the default CookieManager for each request. I don't know if this is
-        // really necessary, but w/e.
-        CookieHandler.setDefault(this.tokenAndCookies.getCookieManager());
+        // XXX Always set the default cookie handler to make sure cookies are correctly
+        // stored in our internal cookie store.
+        CookieHandler.setDefault(new CookieManager(this.cookies, CookiePolicy.ACCEPT_ALL));
+
+        if (Validator.isNull(token)) {
+            token = fetchToken();
+            Log.v(getClass().getName(), token);
+            if (Validator.isNull(token)) {
+                // TODO Specialized exceptions
+                throw new ServerException("Failed to fetch authToken");
+            }
+        }
 
         URL url = this.buildURL(method, args);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -98,7 +131,7 @@ public class LiferayClient {
         }
 
         if (status != HttpURLConnection.HTTP_OK) {
-            throw new ServerException("Request failed with code " + status + ".");
+            throw new ServerException("Request failed with code " + status);
         }
 
         // Read the response content
@@ -120,12 +153,12 @@ public class LiferayClient {
         JSONArray result = null;
 
         try {
-
             if (isJSONObject(content)) {
                 // Check if its an exception
                 JSONObject o = new JSONObject(content);
 
                 if (o.has("exception")) {
+                    Log.d(getClass().getSimpleName(), this.cookies.getCookies().toString());
                     throw new ServerException(o.getString("exception"));
                 } else {
                     // XXX FIXME Is this `else` branch really necessary? I mean, can it happen?
@@ -142,7 +175,46 @@ public class LiferayClient {
         return result;
     }
 
+    private String fetchToken() throws IOException, URISyntaxException {
+        CookieHandler.setDefault(new CookieManager(cookies, CookiePolicy.ACCEPT_ALL));
+
+        URI uri = URIUtils.createURI(this.wsProtocol, this.wsHost, this.wsPort, "/", null, null);
+        HttpURLConnection urlConnection = (HttpURLConnection) uri.toURL().openConnection();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+
+        // Where the content of the request will be saved
+        String content = "";
+
+        try {
+            String line;
+            while (null != (line = reader.readLine())) {
+                content += line;
+            }
+        } finally {
+            reader.close();
+            urlConnection.disconnect();
+        }
+
+        return AuthHelper.extractAuthToken(content);
+    }
+
     private static Boolean isJSONObject(String s) {
         return Validator.isNotNull(s) && s.startsWith("{");
+    }
+
+    public CookieStore getCookies() {
+        return cookies;
+    }
+
+    public void setCookies(CookieStore cookies) {
+        this.cookies = cookies;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

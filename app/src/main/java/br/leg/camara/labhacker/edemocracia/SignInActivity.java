@@ -40,19 +40,9 @@ import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
 public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> {
 
     /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
-    /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserLoginTask mAuthTask = null;
-
-    // Token and cookies needed for authenticating the user
-    private AuthHelper.TokenAndCookies mTokenAndCookies = null;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -279,8 +269,7 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
         @Override
         protected Boolean doInBackground(Void... params) {
             try {
-                mTokenAndCookies = AuthHelper.authenticate(mEmail, mPassword);
-                return mTokenAndCookies != null;
+                return ((Application) getApplication()).getLiferayClient().authenticate(mEmail, mPassword);
             } catch (Exception e) {
                 // NOOP
                 // TODO FIXME WOW. How can notify the user of connectivity issues if we can't tell
@@ -296,17 +285,8 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
             showProgress(false);
 
             if (success) {
-                if (mTokenAndCookies != null) {
-                    // TODO FIXME We should probably just the the "tokenAndCookies" on the
-                    // application. The application itsel should create the liferayClient then.
-                    // But since tokenAndCookies is not the final interface name, let's wait for
-                    // it to be fixed first so the code on Application doesnt get to look ugly.
-                    ((Application) getApplication()).setLiferayClient(new LiferayClient(mTokenAndCookies));
-                    startActivity(new Intent(getApplicationContext(), GroupListActivity.class));
-                    finish();
-                } else {
-                    // TODO Throw something? What could possibly go wrong here?
-                }
+                startActivity(new Intent(getApplicationContext(), GroupListActivity.class));
+                finish();
             } else {
                 // FIXME Should not be displayed in the Password Field
                 mPasswordView.setError("Invalid credentials");

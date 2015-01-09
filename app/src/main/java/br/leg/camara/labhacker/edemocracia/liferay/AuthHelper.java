@@ -1,5 +1,9 @@
 package br.leg.camara.labhacker.edemocracia.liferay;
 
+import android.util.Log;
+
+import com.liferay.mobile.android.util.Validator;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.message.BasicNameValuePair;
@@ -15,6 +19,7 @@ import java.io.InputStreamReader;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
+import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -27,34 +32,45 @@ import java.util.regex.Pattern;
 
 public class AuthHelper {
 
-    public static class TokenAndCookies {
-        public TokenAndCookies(String token, CookieManager cookieManager) {
-            this.token = token;
-            this.cookieManager = cookieManager;
-        }
-
-        public String getToken() {
-            return token;
-        }
-
-        /**
-         * Please don't modify this. This should really be Immutable,
-         * but I don't know how to do that.
-         */
-        public CookieManager getCookieManager() {
-            return this.cookieManager;
-        }
-
-        private String token;
-        private CookieManager cookieManager;
+    public static boolean authenticate(String username, String password) throws IOException {
+        CookieStore cookieStore = (new CookieManager()).getCookieStore();
+        return authenticate(username, password, cookieStore);
     }
 
-    public static TokenAndCookies authenticate(String username, String password) throws IOException {
-        CookieManager cookieManager = new CookieManager();
-        cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+    public static boolean isAuthenticated(CookieStore cookieStore) throws IOException {
+        CookieManager cookieManager = new CookieManager(cookieStore, CookiePolicy.ACCEPT_ALL);
         CookieHandler.setDefault(cookieManager);
 
-        URL url = new URL("http://192.168.25.9:8080/");
+        URL url = new URL("http://192.168.1.11:8080/");
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+
+        // Where the content of the request will be saved
+        String content = "";
+
+        try {
+            String line;
+            while (null != (line = reader.readLine())) {
+                content += line;
+            }
+        } finally {
+            reader.close();
+            urlConnection.disconnect();
+        }
+
+        return checkIsAuthenticated(content);
+    }
+
+    public static boolean authenticate(String username, String password, CookieStore cookieStore) throws IOException {
+        String token = authenticateAndGetToken(username, password, cookieStore);
+        return Validator.isNotNull(token);
+    }
+
+    public static String authenticateAndGetToken(String username, String password, CookieStore cookieStore) throws IOException {
+        CookieManager cookieManager = new CookieManager(cookieStore, CookiePolicy.ACCEPT_ALL);
+        CookieHandler.setDefault(cookieManager);
+
+        URL url = new URL("http://192.168.1.11:8080/");
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
 
@@ -137,20 +153,27 @@ public class AuthHelper {
             loginConnection.disconnect();
         }
 
-        // TODO FIXME Stupid check logic.
-        if (!loginContent.contains("/c/portal/logout")) {
-            // TODO Auth Error. Probably invalid credentials. Should we throw?
-            return null;
+        Log.d(AuthHelper.class.getSimpleName(), cookieManager.getCookieStore().getCookies().toString());
+        Log.d(AuthHelper.class.getSimpleName(), extractAuthToken(loginContent));
+
+        if (checkIsAuthenticated(loginContent)) {
+            return extractAuthToken(loginContent);
         }
 
-        // Extract the token
+        return null;
+    }
+
+    public static boolean checkIsAuthenticated(String content) {
+        // TODO FIXME Stupid check logic.
+        return content.contains("/c/portal/logout");
+    }
+
+    public static String extractAuthToken(String content) {
         Pattern pattern = Pattern.compile("authToken\\s*=\\s*\"([^\"]+)\"");
-        Matcher matcher = pattern.matcher(loginContent);
+        Matcher matcher = pattern.matcher(content);
 
         matcher.find();
 
-        String token = matcher.group(1).toString();
-
-        return new TokenAndCookies(token, cookieManager);
+        return matcher.group(1).toString();
     }
 }
