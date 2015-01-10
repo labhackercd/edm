@@ -1,5 +1,7 @@
 package br.leg.camara.labhacker.edemocracia.liferay;
 
+import android.util.Log;
+
 import com.liferay.mobile.android.util.Validator;
 
 import org.apache.http.NameValuePair;
@@ -114,9 +116,17 @@ class AuthenticationHelper {
         URL loginUrl = new URL(form.attr("action"));
         HttpURLConnection connection = (HttpURLConnection) loginUrl.openConnection();
 
+        connection.setInstanceFollowRedirects(true);
+
         RequestsHelper.writeFormData(connection, loginFormData);
 
         String loginBody = RequestsHelper.readBody(connection);
+
+        String location = null;
+        while (null != (location = connection.getHeaderField("Location"))) {
+            connection = (HttpURLConnection) (new URL(location)).openConnection();
+            loginBody = RequestsHelper.readBody(connection);
+        }
 
         boolean success = checkIsAuthenticated(loginBody);
 
@@ -168,14 +178,14 @@ class AuthenticationHelper {
     }
 
     private static FormElement getLoginForm(LiferayClient client) throws IOException {
-        URL url = client.createURL("/");
+        URL url = client.createURL("/cadastro");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
         String body = RequestsHelper.readBody(connection);
 
         Document document = Jsoup.parse(body, "UTF-8");
 
-        return (FormElement) document.getElementsByTag("form").first();
+        return (FormElement) document.select("#p_p_id_58_").first().select("form").first();
     }
 
     private static List<NameValuePair> getLoginFormData(FormElement form) {
@@ -190,10 +200,9 @@ class AuthenticationHelper {
 }
 
 public class LiferayClient {
-
-    private static final int wsPort = 8080;
+    private static final int wsPort = 80;
     private static final String wsProtocol = "http";
-    private static final String wsHost = "192.168.25.9";
+    private static final String wsHost = "edemocracia.camara.leg.br";
     private static final String wsPath = "/api/jsonws";
 
     private AuthenticationToken token;
