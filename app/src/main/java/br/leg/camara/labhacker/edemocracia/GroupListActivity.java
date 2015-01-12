@@ -5,8 +5,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
+import android.app.Fragment;
+import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -22,7 +22,7 @@ import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
 
-public class GroupListActivity extends ActionBarActivity implements GroupListFragment.OnFragmentInteractionListener {
+public class GroupListActivity extends Activity implements GroupListFragment.OnFragmentInteractionListener {
 
     private List<String> groups = null;
     private LoadGroupsTask loadGroupsTask = null;
@@ -58,11 +58,6 @@ public class GroupListActivity extends ActionBarActivity implements GroupListFra
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -152,7 +147,7 @@ public class GroupListActivity extends ActionBarActivity implements GroupListFra
                 groups = new ArrayList<String>();
             }
 
-            getSupportFragmentManager().beginTransaction()
+            getFragmentManager().beginTransaction()
                     .add(R.id.container, (Fragment) GroupListFragment.newInstance(groups))
                     .commit();
         }
