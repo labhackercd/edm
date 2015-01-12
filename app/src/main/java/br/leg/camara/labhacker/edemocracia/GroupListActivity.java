@@ -128,6 +128,13 @@ public class GroupListActivity extends Activity implements GroupListFragment.OnF
             for (int i = 0; i < result.length(); i++) {
                 try {
                     JSONObject o = result.getJSONObject(i);
+
+                    // Ignore non public (type != 1) or inactive (active != true) groups
+                    // FIXME We should probably place this filter at some other layer.
+                    if (!(o.getBoolean("active") && o.getInt("type") == 1)) {
+                        continue;
+                    }
+
                     groups.add(o.getString("name"));
                 } catch (JSONException e) {
                     // FIXME XXX Silently ignore problem
