@@ -117,7 +117,10 @@ public class GroupListActivity extends ActionBarActivity implements GroupListFra
 
             JSONArray result;
             try {
-                result = client.listGroups(1);
+                // 10131 is the default companyId for edemocracia
+                // FIXME this should be parametrized or global or w/e
+                int companyId = 10131;
+                result = client.listGroups(companyId);
             } catch (Exception e) {
                 // TODO FIXME Notify error
                 result = new JSONArray();

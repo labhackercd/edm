@@ -1,7 +1,5 @@
 package br.leg.camara.labhacker.edemocracia.liferay;
 
-import android.util.Log;
-
 import com.liferay.mobile.android.util.Validator;
 
 import org.apache.http.NameValuePair;
@@ -21,14 +19,12 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.CookieStore;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -200,9 +196,9 @@ class AuthenticationHelper {
 }
 
 public class LiferayClient {
-    private static final int wsPort = 80;
+    private static final int wsPort = -1;
     private static final String wsProtocol = "http";
-    private static final String wsHost = "edemocracia.camara.leg.br";
+    private static final String wsHost = "edemocracia.camara.gov.br";
     private static final String wsPath = "/api/jsonws";
 
     private AuthenticationToken token;
@@ -324,11 +320,11 @@ public class LiferayClient {
     }
 
     public static URL createMethodURL(String method, List<NameValuePair> args) throws URISyntaxException, MalformedURLException {
-        String queryString = URLEncodedUtils.format(args, "UTF-8");
+        String path = StringUtils.strip(wsPath, "/") + "/" + StringUtils.strip(method, "/") + "/";
 
-        String path = StringUtils.strip(wsPath, "/") + "/" + StringUtils.strip(method) + "/";
+        String query = URLEncodedUtils.format(args, "UTF-8");
 
-        return createURL(path, queryString);
+        return createURL(path, query);
     }
 
     public static URL createURL(String path) throws MalformedURLException {

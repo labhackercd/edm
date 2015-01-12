@@ -43,27 +43,37 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         super(Application.class);
     }
 
-    public void testMethodInvocationWorks() throws Exception {
-        String username = Helper.getProperty("username");
-        String password = Helper.getProperty("password");
+    private String getUsername() throws IOException {
+        return Helper.getProperty("username");
+    }
+
+    private String getPassword() throws IOException {
+        return Helper.getProperty("password");
+    }
+
+    private int getCompanyId() throws IOException {
+        return Integer.parseInt(Helper.getProperty("test.companyId"));
+    }
+
+    public void testListGroups() throws Exception {
+        String username = getUsername();
+        String password = getPassword();
 
         assertNotNull(username);
         assertNotNull(password);
 
         LiferayClient client = new LiferayClient();
 
-        Log.v(getClass().getSimpleName(), username + ":" + password);
-
         assertTrue(client.authenticate(username, password));
 
-        JSONArray result = client.listGroups(1);
+        assertTrue(client.authenticate(getUsername(), getPassword()));
+
+        JSONArray result = client.listGroups(getCompanyId());
 
         assertNotNull(result);
 
-        client.setToken(new AuthenticationToken());
-
-        result = client.listGroups(1);
-
-        assertNotNull(result);
+        if (!(result.length() > 0)) {
+            throw new AssertionError("result length should be greater than 0");
+        }
     }
 }
