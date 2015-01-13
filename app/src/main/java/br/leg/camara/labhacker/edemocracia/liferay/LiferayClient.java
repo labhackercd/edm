@@ -1,5 +1,6 @@
 package br.leg.camara.labhacker.edemocracia.liferay;
 
+import com.google.common.base.CharMatcher;
 import com.liferay.mobile.android.util.Validator;
 
 import org.apache.http.NameValuePair;
@@ -31,8 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import br.leg.camara.labhacker.edemocracia.StringUtils;
 
 
 /**
@@ -166,7 +165,7 @@ class AuthenticationHelper {
         Matcher matcher = pattern.matcher(content);
 
         if (matcher.find()) {
-            String token = StringUtils.strip(matcher.group(1), "'\"");
+            String token = CharMatcher.anyOf("\"'").trimFrom(matcher.group(1));
             return new AuthenticationToken(token);
         } else {
             return null;
@@ -320,7 +319,9 @@ public class LiferayClient {
     }
 
     public static URL createMethodURL(String method, List<NameValuePair> args) throws URISyntaxException, MalformedURLException {
-        String path = StringUtils.strip(wsPath, "/") + "/" + StringUtils.strip(method, "/") + "/";
+        CharMatcher slashMatcher = CharMatcher.anyOf("/");
+
+        String path = slashMatcher.trimFrom(wsPath) + "/" + slashMatcher.trimFrom(method);
 
         String query = URLEncodedUtils.format(args, "UTF-8");
 
