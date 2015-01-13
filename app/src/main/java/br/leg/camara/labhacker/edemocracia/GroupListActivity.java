@@ -3,7 +3,6 @@ package br.leg.camara.labhacker.edemocracia;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -17,12 +16,13 @@ import android.view.View;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import br.leg.camara.labhacker.edemocracia.content.Group;
 import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
+
 
 public class GroupListActivity extends Activity implements GroupListFragment.OnGroupSelectedListener {
 
@@ -60,7 +60,6 @@ public class GroupListActivity extends Activity implements GroupListFragment.OnG
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -74,17 +73,6 @@ public class GroupListActivity extends Activity implements GroupListFragment.OnG
         // the progress spinner.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-            /*
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
-            */
 
             progressView.setVisibility(show ? View.VISIBLE : View.GONE);
             progressView.animate().setDuration(shortAnimTime).alpha(
@@ -120,7 +108,6 @@ public class GroupListActivity extends Activity implements GroupListFragment.OnG
                 result = client.listGroups(companyId);
             } catch (Exception e) {
                 // TODO FIXME Notify error
-                result = new JSONArray();
                 Log.e(this.getClass().getName(), "Failed to retrieve group list: " + e.toString());
                 return false;
             }
@@ -129,18 +116,18 @@ public class GroupListActivity extends Activity implements GroupListFragment.OnG
 
             for (int i = 0; i < result.length(); i++) {
                 try {
-                    JSONObject o = result.getJSONObject(i);
+                    Group group = Group.fromJSONObject(result.getJSONObject(i));
 
                     // Ignore non public (type != 1) or inactive (active != true) groups
                     // FIXME We should probably place this filter at some other layer.
-                    if (!(o.getBoolean("active") && o.getInt("type") == 1)) {
+                    if (!group.isActive() || group.getType() != 1) {
                         continue;
                     }
 
-                    groups.add(o.getString("name"));
+                    groups.add(group.getName());
                 } catch (JSONException e) {
                     // FIXME XXX Silently ignore problem
-                    Log.w(this.getClass().getSimpleName(), "Failed to get Group object from JSONArray: " + e.toString());
+                    Log.w(this.getClass().getSimpleName(), "Failed to load Group from JSONArray: " + e.toString());
                 }
             }
 

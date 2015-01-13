@@ -5,5 +5,6 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_group_list">Groups</string>
+    <string name="title_activity_message_board_list">MessageBoardList</string>
 
 </resources>

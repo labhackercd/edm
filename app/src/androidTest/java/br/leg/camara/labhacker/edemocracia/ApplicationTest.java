@@ -1,8 +1,6 @@
 package br.leg.camara.labhacker.edemocracia;
 
-import android.app.Application;
 import android.test.ApplicationTestCase;
-import android.util.Log;
 
 import org.json.JSONArray;
 
@@ -10,7 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import br.leg.camara.labhacker.edemocracia.liferay.AuthenticationToken;
+import br.leg.camara.labhacker.edemocracia.liferay.AuthenticationHelper;
+import br.leg.camara.labhacker.edemocracia.liferay.CookieCredentials;
 import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
 
 class Helper {
@@ -55,25 +54,27 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         return Integer.parseInt(Helper.getProperty("test.companyId"));
     }
 
-    public void testListGroups() throws Exception {
+    public void testItAll() throws Exception {
         String username = getUsername();
         String password = getPassword();
 
         assertNotNull(username);
         assertNotNull(password);
 
-        LiferayClient client = new LiferayClient();
+        AuthenticationHelper authenticator = new AuthenticationHelper(Application.SERVICE_LOGIN_URL);
 
-        assertTrue(client.authenticate(username, password));
+        CookieCredentials credentials = authenticator.authenticate(username, password);
 
-        assertTrue(client.authenticate(getUsername(), getPassword()));
+        assertNotNull(credentials);
 
-        JSONArray result = client.listGroups(getCompanyId());
+        LiferayClient client = new LiferayClient(Application.SERVICE_URL, credentials);
 
-        assertNotNull(result);
+        JSONArray groups = client.listGroups(getCompanyId());
 
-        if (!(result.length() > 0)) {
-            throw new AssertionError("result length should be greater than 0");
+        assertNotNull(groups);
+
+        if (groups.length() < 1) {
+            throw new AssertionError("We expected to receive at least one group");
         }
     }
 }

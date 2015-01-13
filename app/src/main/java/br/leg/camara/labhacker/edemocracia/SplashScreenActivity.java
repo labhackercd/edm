@@ -4,11 +4,12 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import java.io.IOException;
+
+import br.leg.camara.labhacker.edemocracia.liferay.AuthenticationHelper;
 
 
 public class SplashScreenActivity extends Activity {
@@ -57,11 +58,15 @@ public class SplashScreenActivity extends Activity {
         protected Boolean doInBackground(Void... params) {
             boolean authenticated = false;
 
-            Application application = (Application) getApplication();
             try {
-                authenticated = application.getLiferayClient().isAuthenticated();
+                // Check if the stored credentials are still authenticated
+                AuthenticationHelper helper = new AuthenticationHelper(Application.SERVICE_LOGIN_URL);
+
+                Application application = (Application) getApplication();
+
+                authenticated = helper.credentialsAreStillValid(application.getCredentials());
             } catch (IOException e) {
-                Log.w(this.getClass().getName(), "Failed to check if the user is authenticated. " + e.toString());
+                // TODO FIXME Deal with errors
             }
 
             return authenticated;

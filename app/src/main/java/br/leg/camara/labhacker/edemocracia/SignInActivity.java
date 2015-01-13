@@ -16,7 +16,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -29,6 +28,9 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import br.leg.camara.labhacker.edemocracia.liferay.AuthenticationHelper;
+import br.leg.camara.labhacker.edemocracia.liferay.CookieCredentials;
 
 
 /**
@@ -254,13 +256,20 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
         @Override
         protected Boolean doInBackground(Void... params) {
             try {
-                return ((Application) getApplication()).getLiferayClient().authenticate(mEmail, mPassword);
+                AuthenticationHelper helper = new AuthenticationHelper(Application.SERVICE_LOGIN_URL);
+
+                CookieCredentials credentials = helper.authenticate(mEmail, mPassword);
+
+                if (credentials != null) {
+                    Application application = (Application) getApplication();
+                    application.setCredentials(credentials);
+                }
+
+                return true;
             } catch (Exception e) {
-                // NOOP
-                // TODO FIXME WOW. How can notify the user of connectivity issues if we can't tell
-                // it to the UI thread?
-                Log.e("SigninActivity", "Authentication error: " + e.toString());
+                // TODO FIXME Notify errors
             }
+
             return false;
         }
 
@@ -286,6 +295,3 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
         }
     }
 }
-
-
-

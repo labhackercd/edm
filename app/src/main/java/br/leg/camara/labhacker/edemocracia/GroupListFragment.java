@@ -2,6 +2,7 @@ package br.leg.camara.labhacker.edemocracia;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.ContentUris;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,6 +17,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.leg.camara.labhacker.edemocracia.content.Group;
+
 public class GroupListFragment extends Fragment implements AbsListView.OnItemClickListener {
 
     private static final String ARG_GROUPS = "groups";
@@ -24,15 +27,8 @@ public class GroupListFragment extends Fragment implements AbsListView.OnItemCli
 
     private OnGroupSelectedListener listener;
 
-    /**
-     * The fragment's ListView/GridView.
-     */
     private AbsListView listView;
 
-    /**
-     * The Adapter which will be used to populate the ListView/GridView with
-     * Views.
-     */
     private ListAdapter adapter;
 
     public static GroupListFragment newInstance(List<String> groups) {
@@ -43,10 +39,6 @@ public class GroupListFragment extends Fragment implements AbsListView.OnItemCli
         return fragment;
     }
 
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
     public GroupListFragment() {
     }
 
@@ -101,7 +93,9 @@ public class GroupListFragment extends Fragment implements AbsListView.OnItemCli
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (null != listener) {
+        if (listener != null) {
+            Uri groupUri = ContentUris.withAppendedId(Group.CONTENT_URI, id);
+            listener.onGroupSelected(groupUri);
         }
     }
 
