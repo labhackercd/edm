@@ -1,7 +1,6 @@
 package br.leg.camara.labhacker.edemocracia.liferay;
 
 import com.google.common.base.CharMatcher;
-import com.liferay.mobile.android.util.Validator;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -258,6 +257,21 @@ public class LiferayClient {
         return this.call("/group/search", args);
     }
 
+    public JSONArray listGroupThreads(int groupId) throws IOException, ServerException, URISyntaxException {
+        List<NameValuePair> args = new ArrayList<>();
+
+        args.add(new BasicNameValuePair("groupId", Integer.toString(groupId)));
+        args.add(new BasicNameValuePair("userId", Integer.toString(-1)));
+        args.add(new BasicNameValuePair("status", Integer.toString(0)));
+        args.add(new BasicNameValuePair("start", Integer.toString(-1)));
+        args.add(new BasicNameValuePair("end", Integer.toString(-1)));
+
+        // Always add token last, and make sure it exists.
+        args.add(new BasicNameValuePair("p_auth", getValidAuthenticationToken().getToken()));
+
+        return this.call("/mbthread/get-group-threads", args);
+    }
+
     /**
      * Must be called before doing any requests to URLs from this client. This grants that the
      * cookies will be updated on the client's cookie store.
@@ -345,11 +359,11 @@ public class LiferayClient {
     }
 
     private static boolean isTokenUsable(AuthenticationToken token) {
-        return token != null && Validator.isNotNull(token.getToken()) && !token.isExpired();
+        return token != null && token.getToken() != null && !token.getToken().isEmpty() && !token.isExpired();
     }
 
     private static boolean isJSONObject(String s) {
-        return Validator.isNotNull(s) && s.startsWith("{");
+        return s != null && !s.isEmpty() && s.startsWith("{");
     }
 
     private AuthenticationToken getValidAuthenticationToken() throws IOException, URISyntaxException {
