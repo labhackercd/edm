@@ -2,8 +2,8 @@ package br.leg.camara.labhacker.edemocracia;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,37 +13,27 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A fragment representing a list of Items.
- * <p/>
- * Large screen devices (such as tablets) are supported by replacing the ListView
- * with a GridView.
- * <p/>
- * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
- * interface.
- */
 public class GroupListFragment extends Fragment implements AbsListView.OnItemClickListener {
 
     private static final String ARG_GROUPS = "groups";
 
     private List<String> groups;
 
-    private OnFragmentInteractionListener mListener;
+    private OnGroupSelectedListener listener;
 
     /**
      * The fragment's ListView/GridView.
      */
-    private AbsListView mListView;
+    private AbsListView listView;
 
     /**
      * The Adapter which will be used to populate the ListView/GridView with
      * Views.
      */
-    private ListAdapter mAdapter;
+    private ListAdapter adapter;
 
     public static GroupListFragment newInstance(List<String> groups) {
         GroupListFragment fragment = new GroupListFragment();
@@ -72,7 +62,7 @@ public class GroupListFragment extends Fragment implements AbsListView.OnItemCli
             }
         }
 
-        mAdapter = new ArrayAdapter<String>(getActivity(),
+        adapter = new ArrayAdapter<String>(getActivity(),
                 android.R.layout.simple_list_item_1, android.R.id.text1, groups);
     }
 
@@ -82,11 +72,11 @@ public class GroupListFragment extends Fragment implements AbsListView.OnItemCli
         View view = inflater.inflate(R.layout.fragment_grouplist, container, false);
 
         // Set the adapter
-        mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+        listView = (AbsListView) view.findViewById(android.R.id.list);
+        ((AdapterView<ListAdapter>) listView).setAdapter(adapter);
 
         // Set OnItemClickListener so we can be notified on item clicks
-        mListView.setOnItemClickListener(this);
+        listView.setOnItemClickListener(this);
 
         return view;
     }
@@ -95,25 +85,23 @@ public class GroupListFragment extends Fragment implements AbsListView.OnItemCli
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            mListener = (OnFragmentInteractionListener) activity;
+            listener = (OnGroupSelectedListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement " + OnGroupSelectedListener.class.getSimpleName());
         }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        listener = null;
     }
 
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (null != mListener) {
-            // TODO
-            Log.v(this.getClass().toString(), "Item clicked: " + id);
+        if (null != listener) {
         }
     }
 
@@ -123,26 +111,15 @@ public class GroupListFragment extends Fragment implements AbsListView.OnItemCli
      * to supply the text it should use.
      */
     public void setEmptyText(CharSequence emptyText) {
-        View emptyView = mListView.getEmptyView();
+        View emptyView = listView.getEmptyView();
 
         if (emptyView instanceof TextView) {
             ((TextView) emptyView).setText(emptyText);
         }
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        public void onFragmentInteraction(String id);
+    public interface OnGroupSelectedListener {
+        public void onGroupSelected(Uri groupUri);
     }
 
 }

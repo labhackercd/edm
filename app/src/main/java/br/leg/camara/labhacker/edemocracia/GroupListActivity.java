@@ -3,6 +3,8 @@ package br.leg.camara.labhacker.edemocracia;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.app.Fragment;
@@ -22,7 +24,7 @@ import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
 
-public class GroupListActivity extends Activity implements GroupListFragment.OnFragmentInteractionListener {
+public class GroupListActivity extends Activity implements GroupListFragment.OnGroupSelectedListener {
 
     private List<String> groups = null;
     private LoadGroupsTask loadGroupsTask = null;
@@ -101,8 +103,8 @@ public class GroupListActivity extends Activity implements GroupListFragment.OnF
     }
 
     @Override
-    public void onFragmentInteraction(String id) {
-        // TODO FIXME Can I leave this empty?
+    public void onGroupSelected(Uri groupUri) {
+        Log.v(getClass().getSimpleName(), "Group selected: " + groupUri.toString());
     }
 
     public class LoadGroupsTask extends AsyncTask<Void, Void, Boolean> {
