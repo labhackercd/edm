@@ -4,8 +4,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.app.Activity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.util.Log;
 
 import java.io.IOException;
 
@@ -21,35 +20,14 @@ public class SplashScreenActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
 
-        if (savedInstanceState == null) {
-        }
-
         // Kick off background task to check if the user is authenticated
         showProgress(true);
         isAuthenticatedTask = new IsAuthenticatedTask();
         isAuthenticatedTask.execute((Void) null);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_splash, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        return super.onOptionsItemSelected(item);
-    }
-
     public void showProgress(final boolean show) {
         // The Splash Screen IS a loading screen. No need to show a spinner here.
-        // NOOP
     }
 
     class IsAuthenticatedTask extends AsyncTask<Void, Void, Boolean> {
@@ -67,6 +45,7 @@ public class SplashScreenActivity extends Activity {
                 authenticated = helper.credentialsAreStillValid(application.getCredentials());
             } catch (IOException e) {
                 // TODO FIXME Deal with errors
+                Log.e(getClass().getSimpleName(), "Failed to check if the user is authenticated. " + e.toString());
             }
 
             return authenticated;
