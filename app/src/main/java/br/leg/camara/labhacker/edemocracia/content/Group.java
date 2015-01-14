@@ -7,9 +7,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Group {
-    public static final String AUTHORITY = Group.class.getName();
-    public static final Uri CONTENT_URI = (new Uri.Builder()).authority(AUTHORITY).scheme(ContentResolver.SCHEME_CONTENT).build();
-
     private boolean active;
     private int companyId;
     private String description;

@@ -4,12 +4,12 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ListFragment;
 import android.content.ContentUris;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,23 +25,51 @@ import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.content.Content;
 import br.leg.camara.labhacker.edemocracia.content.Group;
+import br.leg.camara.labhacker.edemocracia.content.Thread;
 import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
 
 
-public class GroupListFragment extends ListFragment {
+public class ThreadListFragment extends ListFragment {
+
+    public static String ARG_PARENT = "parent";
 
     private View progressView;
     private RefreshListTask refreshListTask;
-    private OnGroupSelectedListener listener;
+    private OnThreadSelectedListener listener;
+    private int parentContentId;
+    private Class parentContentClass;
 
+    public static ThreadListFragment newInstance(Uri groupUri) {
+        ThreadListFragment fragment = new ThreadListFragment();
 
-    public GroupListFragment() {
+        Bundle args = new Bundle();
+        args.putString(ARG_PARENT, groupUri.toString());
+
+        fragment.setArguments(args);
+
+        return fragment;
+    }
+
+    public ThreadListFragment() {
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if (getArguments() != null) {
+            Uri parentUri = Uri.parse(getArguments().getString(ARG_PARENT));
+
+            // FIXME We will support other kinds of parents later on
+            setParentContent(Group.class, ContentUris.parseId(parentUri));
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.group_list_fragment, container, false);
     }
+
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -57,10 +85,10 @@ public class GroupListFragment extends ListFragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            listener = (OnGroupSelectedListener) activity;
+            listener = (OnThreadSelectedListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
-                    + " must implement " + OnGroupSelectedListener.class.getSimpleName());
+                    + " must implement " + OnThreadSelectedListener.class.getSimpleName());
         }
     }
 
@@ -76,9 +104,22 @@ public class GroupListFragment extends ListFragment {
         super.onListItemClick(l, v, position, id);
 
         if (listener != null) {
-            Uri groupUri = Content.withAppendedId(Group.class, id);
-            listener.onGroupSelected(groupUri);
+            Uri uri = Content.withAppendedId(Thread.class, id);
+            listener.onThreadSelected(uri);
         }
+    }
+
+    protected void setParentContent(Class cls, long id) {
+        parentContentId = (int) id;
+        parentContentClass = cls;
+    }
+
+    protected Class getParentContentClass() {
+        return parentContentClass;
+    }
+
+    protected int getParentContentId() {
+        return parentContentId;
     }
 
     private void refreshGroupList() {
@@ -106,13 +147,13 @@ public class GroupListFragment extends ListFragment {
     }
 
 
-    public interface OnGroupSelectedListener {
-        public void onGroupSelected(Uri uri);
+    public interface OnThreadSelectedListener {
+        public void onThreadSelected(Uri uri);
     }
 
 
     public class RefreshListTask extends AsyncTask<Void, Void, Boolean> {
-        List<Group> items;
+        List<Thread> items;
 
         @Override
         protected Boolean doInBackground(Void... params) {
@@ -120,10 +161,10 @@ public class GroupListFragment extends ListFragment {
 
             JSONArray result;
             try {
-                result = client.listGroups(Application.DEFAULT_COMPANY_ID);
+                result = client.listGroupThreads(getParentContentId());
             } catch (Exception e) {
                 // TODO FIXME Notify error
-                Log.e(this.getClass().getName(), "Failed to retrieve group list: " + e.toString());
+                Log.e(this.getClass().getName(), "Failed to retrieve thread list: " + e.toString());
                 return false;
             }
 
@@ -131,18 +172,11 @@ public class GroupListFragment extends ListFragment {
 
             for (int i = 0; i < result.length(); i++) {
                 try {
-                    Group group = Group.fromJSONObject(result.getJSONObject(i));
-
-                    // Ignore non public (type != 1) or inactive (active != true) groups
-                    // FIXME We should probably place this filter at some other layer.
-                    if (!group.isActive() || group.getType() != 1) {
-                        continue;
-                    }
-
-                    items.add(group);
+                    Thread item = Thread.fromJSONObject(result.getJSONObject(i));
+                    items.add(item);
                 } catch (JSONException e) {
                     // FIXME XXX Notify error
-                    Log.e(this.getClass().getSimpleName(), "Failed to load group list: " + e.toString());
+                    Log.e(this.getClass().getSimpleName(), "Failed to load thread list: " + e.toString());
                     return false;
                 }
             }
@@ -159,7 +193,7 @@ public class GroupListFragment extends ListFragment {
                 items = new ArrayList<>();
             }
 
-            ListAdapter adapter = new GroupListAdapter(getActivity(),
+            ListAdapter adapter = new ThreadListAdapter(getActivity(),
                     android.R.layout.simple_list_item_1, android.R.id.text1, items);
 
             setListAdapter(adapter);

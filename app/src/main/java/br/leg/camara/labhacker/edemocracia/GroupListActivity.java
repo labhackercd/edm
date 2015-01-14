@@ -10,7 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class GroupListActivity extends Activity implements GroupListFragment.OnGroupSelectedListener {
+public class GroupListActivity extends Activity implements GroupListFragment.OnGroupSelectedListener, ThreadListFragment.OnThreadSelectedListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,5 +43,19 @@ public class GroupListActivity extends Activity implements GroupListFragment.OnG
     @Override
     public void onGroupSelected(Uri groupUri) {
         Log.v(getClass().getSimpleName(), "Group selected: " + groupUri.toString());
+
+        ThreadListFragment fragment = ThreadListFragment.newInstance(groupUri);
+
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.replace(R.id.mainFrame, fragment);
+
+        transaction.addToBackStack(null);
+
+        transaction.commit();
+    }
+
+    @Override
+    public void onThreadSelected(Uri uri) {
+        Log.v(getClass().getSimpleName(), "Thread selected: " + uri.toString());
     }
 }
