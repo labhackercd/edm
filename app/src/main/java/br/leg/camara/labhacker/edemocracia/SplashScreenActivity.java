@@ -43,7 +43,7 @@ public class SplashScreenActivity extends Activity {
                 Application application = (Application) getApplication();
 
                 authenticated = helper.credentialsAreStillValid(application.getCredentials());
-            } catch (IOException e) {
+            } catch (Exception e) {
                 // TODO FIXME Deal with errors
                 Log.e(getClass().getSimpleName(), "Failed to check if the user is authenticated. " + e.toString());
             }

@@ -69,8 +69,8 @@ public class AuthenticationHelper {
         return null;
     }
 
-    public boolean credentialsAreStillValid(CookieCredentials credentials) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) getURL().openConnection();
+    public boolean credentialsAreStillValid(CookieCredentials credentials) throws IOException, URISyntaxException {
+        HttpURLConnection connection = (HttpURLConnection) getURL().toURI().resolve("/").toURL().openConnection();
 
         credentials.authenticate(connection);
 

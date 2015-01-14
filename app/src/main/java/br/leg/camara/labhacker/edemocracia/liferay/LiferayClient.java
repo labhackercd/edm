@@ -148,7 +148,7 @@ public class LiferayClient {
         return token;
     }
 
-    private AuthenticationToken fetchAuthenticationToken() throws IOException {
+    private AuthenticationToken fetchAuthenticationToken() throws IOException, URISyntaxException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
         getCredentials().authenticate(connection);
