@@ -28,17 +28,20 @@ import br.leg.camara.labhacker.edemocracia.content.Content;
 import br.leg.camara.labhacker.edemocracia.content.Group;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
 import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
+import android.support.v4.widget.SwipeRefreshLayout;
 
 
-public class ThreadListFragment extends ListFragment {
+public class ThreadListFragment extends ListFragment implements SwipeRefreshLayout.OnRefreshListener {
 
     public static String ARG_PARENT = "parent";
 
-    private View progressView;
+
     private RefreshListTask refreshListTask;
+    private SwipeRefreshLayout refreshLayout;
     private OnThreadSelectedListener listener;
     private int parentContentId;
     private Class parentContentClass;
+
 
     public static ThreadListFragment newInstance(Uri groupUri) {
         ThreadListFragment fragment = new ThreadListFragment();
@@ -77,7 +80,9 @@ public class ThreadListFragment extends ListFragment {
         super.onActivityCreated(savedInstanceState);
 
         if (savedInstanceState == null) {
-            progressView = getActivity().findViewById(R.id.refresh_progress);
+            refreshLayout = (SwipeRefreshLayout) getActivity().findViewById(R.id.swipe_container);
+            refreshLayout.setOnRefreshListener(this);
+            setAppearance();
             refreshGroupList();
         }
     }
@@ -129,28 +134,41 @@ public class ThreadListFragment extends ListFragment {
     }
 
     private void refreshGroupList() {
-        showProgress(true);
+
         refreshListTask = new RefreshListTask();
         refreshListTask.execute((Void) null);
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    public void showProgress(final boolean show) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-            progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            progressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-        }
+
+    private void setAppearance() {
+        refreshLayout.setColorScheme(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
     }
+
+    /**
+     * It shows the SwipeRefreshLayout progress
+     */
+    public void showSwipeProgress() {
+        refreshLayout.setRefreshing(true);
+    }
+
+    /**
+     * It shows the SwipeRefreshLayout progress
+     */
+    public void hideSwipeProgress() {
+        refreshLayout.setRefreshing(false);
+    }
+
+    @Override public void onRefresh() {
+        refreshGroupList();
+        hideSwipeProgress();
+    }
+
+
+
 
 
     public interface OnThreadSelectedListener {
@@ -193,7 +211,6 @@ public class ThreadListFragment extends ListFragment {
         @Override
         protected void onPostExecute(final Boolean success) {
             refreshListTask = null;
-            showProgress(false);
 
             if (!success) {
                 items = new ArrayList<>();
@@ -208,7 +225,10 @@ public class ThreadListFragment extends ListFragment {
         @Override
         protected void onCancelled() {
             refreshListTask = null;
-            showProgress(false);
+            setListAdapter(null);
         }
+
     }
+
+
 }

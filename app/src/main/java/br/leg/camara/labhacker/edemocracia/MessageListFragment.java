@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,9 +29,10 @@ import br.leg.camara.labhacker.edemocracia.content.Message;
 import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
 
 
-public class MessageListFragment extends ListFragment {
+public class MessageListFragment extends ListFragment implements SwipeRefreshLayout.OnRefreshListener {
 
     public static String ARG_GROUP = "group";
+    private SwipeRefreshLayout refreshLayout;
     public static String ARG_CATEGORY = "category";
     public static String ARG_THREAD = "thread";
 
@@ -38,7 +40,6 @@ public class MessageListFragment extends ListFragment {
     private int categoryId;
     private int threadId;
 
-    private View progressView;
     private RefreshListTask refreshListTask;
     private OnMessageSelectedListener listener;
 
@@ -75,6 +76,38 @@ public class MessageListFragment extends ListFragment {
         }
     }
 
+
+    private void setAppearance() {
+        refreshLayout.setColorScheme(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
+    }
+
+    /**
+     * It shows the SwipeRefreshLayout progress
+     */
+    public void showSwipeProgress() {
+        refreshLayout.setRefreshing(true);
+    }
+
+    /**
+     * It shows the SwipeRefreshLayout progress
+     */
+    public void hideSwipeProgress() {
+        refreshLayout.setRefreshing(false);
+    }
+
+    /**
+     * It must be overriden by parent classes if manual swipe is enabled.
+     */
+    @Override
+    public void onRefresh() {
+        refreshList();
+        hideSwipeProgress();
+    }
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.group_list_fragment, container, false);
@@ -86,7 +119,9 @@ public class MessageListFragment extends ListFragment {
         super.onActivityCreated(savedInstanceState);
 
         if (savedInstanceState == null) {
-            progressView = getActivity().findViewById(R.id.refresh_progress);
+            refreshLayout = (SwipeRefreshLayout) getActivity().findViewById(R.id.swipe_container);
+            refreshLayout.setOnRefreshListener(this);
+            setAppearance();
             refreshList();
         }
     }
@@ -120,28 +155,11 @@ public class MessageListFragment extends ListFragment {
     }
 
     private void refreshList() {
-        showProgress(true);
         refreshListTask = new RefreshListTask();
         refreshListTask.execute((Void) null);
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    public void showProgress(final boolean show) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-            progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            progressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-        }
-    }
 
 
     public interface OnMessageSelectedListener {
@@ -186,7 +204,7 @@ public class MessageListFragment extends ListFragment {
         @Override
         protected void onPostExecute(final Boolean success) {
             refreshListTask = null;
-            showProgress(false);
+
 
             if (!success) {
                 items = new ArrayList<>();
@@ -201,7 +219,8 @@ public class MessageListFragment extends ListFragment {
         @Override
         protected void onCancelled() {
             refreshListTask = null;
-            showProgress(false);
+            setListAdapter(null);
+
         }
     }
 }

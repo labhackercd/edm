@@ -26,16 +26,47 @@ import java.util.List;
 import br.leg.camara.labhacker.edemocracia.content.Content;
 import br.leg.camara.labhacker.edemocracia.content.Group;
 import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
+import android.support.v4.widget.SwipeRefreshLayout;
 
 
-public class GroupListFragment extends ListFragment {
+public class GroupListFragment extends ListFragment implements SwipeRefreshLayout.OnRefreshListener {
 
-    private View progressView;
     private RefreshListTask refreshListTask;
+    private SwipeRefreshLayout refreshLayout;
     private OnGroupSelectedListener listener;
 
 
     public GroupListFragment() {
+    }
+
+
+    private void setAppearance() {
+        refreshLayout.setColorScheme(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
+    }
+
+    /**
+     * It shows the SwipeRefreshLayout progress
+     */
+    public void showSwipeProgress() {
+        refreshLayout.setRefreshing(true);
+    }
+
+    /**
+     * It shows the SwipeRefreshLayout progress
+     */
+    public void hideSwipeProgress() {
+        refreshLayout.setRefreshing(false);
+    }
+
+    /**
+     * It must be overriden by parent classes if manual swipe is enabled.
+     */
+    @Override public void onRefresh() {
+      refreshGroupList();
+       hideSwipeProgress();
     }
 
     @Override
@@ -48,7 +79,9 @@ public class GroupListFragment extends ListFragment {
         super.onActivityCreated(savedInstanceState);
 
         if (savedInstanceState == null) {
-            progressView = getActivity().findViewById(R.id.refresh_progress);
+            refreshLayout = (SwipeRefreshLayout) getActivity().findViewById(R.id.swipe_container);
+            refreshLayout.setOnRefreshListener(this);
+            setAppearance();
             refreshGroupList();
         }
     }
@@ -82,27 +115,8 @@ public class GroupListFragment extends ListFragment {
     }
 
     private void refreshGroupList() {
-        showProgress(true);
         refreshListTask = new RefreshListTask();
         refreshListTask.execute((Void) null);
-    }
-
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    public void showProgress(final boolean show) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-            progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            progressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-        }
     }
 
 
@@ -153,7 +167,7 @@ public class GroupListFragment extends ListFragment {
         @Override
         protected void onPostExecute(final Boolean success) {
             refreshListTask = null;
-            showProgress(false);
+
 
             if (!success) {
                 items = new ArrayList<>();
@@ -162,13 +176,14 @@ public class GroupListFragment extends ListFragment {
             ListAdapter adapter = new GroupListAdapter(getActivity(),
                     android.R.layout.simple_list_item_1, android.R.id.text1, items);
 
+
             setListAdapter(adapter);
         }
 
         @Override
         protected void onCancelled() {
             refreshListTask = null;
-            showProgress(false);
+            setListAdapter(null);
         }
     }
 }
