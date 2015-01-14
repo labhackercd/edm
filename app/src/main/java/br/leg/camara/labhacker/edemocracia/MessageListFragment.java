@@ -23,46 +23,55 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.List;
 
-import br.leg.camara.labhacker.edemocracia.content.Category;
 import br.leg.camara.labhacker.edemocracia.content.Content;
-import br.leg.camara.labhacker.edemocracia.content.Group;
-import br.leg.camara.labhacker.edemocracia.content.Thread;
+import br.leg.camara.labhacker.edemocracia.content.Message;
 import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
 
 
-public class ThreadListFragment extends ListFragment {
+public class MessageListFragment extends ListFragment {
 
-    public static String ARG_PARENT = "parent";
+    public static String ARG_GROUP = "group";
+    public static String ARG_CATEGORY = "category";
+    public static String ARG_THREAD = "thread";
+
+    private int groupId;
+    private int categoryId;
+    private int threadId;
 
     private View progressView;
     private RefreshListTask refreshListTask;
-    private OnThreadSelectedListener listener;
-    private int parentContentId;
-    private Class parentContentClass;
+    private OnMessageSelectedListener listener;
 
-    public static ThreadListFragment newInstance(Uri groupUri) {
-        ThreadListFragment fragment = new ThreadListFragment();
+    public static MessageListFragment newInstance(Uri groupUri, Uri categoryUri, Uri threadUri) {
+        MessageListFragment fragment = new MessageListFragment();
 
         Bundle args = new Bundle();
-        args.putString(ARG_PARENT, groupUri.toString());
+        args.putString(ARG_GROUP, groupUri.toString());
+        args.putString(ARG_CATEGORY, categoryUri.toString());
+        args.putString(ARG_THREAD, threadUri.toString());
 
         fragment.setArguments(args);
 
         return fragment;
     }
 
-    public ThreadListFragment() {
+    public MessageListFragment() {
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            Uri parentUri = Uri.parse(getArguments().getString(ARG_PARENT));
+        Bundle args = getArguments();
 
-            // FIXME We will support other kinds of parents later on
-            setParentContent(Group.class, ContentUris.parseId(parentUri));
+        if (args != null) {
+            Uri groupUri = Uri.parse(args.getString(ARG_GROUP));
+            Uri categoryUri = Uri.parse(args.getString(ARG_CATEGORY));
+            Uri threadUri = Uri.parse(args.getString(ARG_THREAD));
+
+            groupId = (int) ContentUris.parseId(groupUri);
+            categoryId = (int) ContentUris.parseId(categoryUri);
+            threadId = (int) ContentUris.parseId(threadUri);
         }
     }
 
@@ -78,7 +87,7 @@ public class ThreadListFragment extends ListFragment {
 
         if (savedInstanceState == null) {
             progressView = getActivity().findViewById(R.id.refresh_progress);
-            refreshGroupList();
+            refreshList();
         }
     }
 
@@ -86,10 +95,10 @@ public class ThreadListFragment extends ListFragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            listener = (OnThreadSelectedListener) activity;
+            listener = (OnMessageSelectedListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
-                    + " must implement " + OnThreadSelectedListener.class.getSimpleName());
+                    + " must implement " + OnMessageSelectedListener.class.getSimpleName());
         }
     }
 
@@ -105,30 +114,12 @@ public class ThreadListFragment extends ListFragment {
         super.onListItemClick(l, v, position, id);
 
         if (listener != null) {
-            Thread item = (Thread) getListAdapter().getItem(position);
-
-            Uri groupUri = Content.withAppendedId(Group.class, item.getGroupId());
-            Uri categoryUri = Content.withAppendedId(Category.class, item.getCategoryId());
-            Uri threadUri = Content.withAppendedId(Thread.class, item.getThreadId());
-
-            listener.onThreadSelected(groupUri, categoryUri, threadUri);
+            Uri uri = Content.withAppendedId(Thread.class, id);
+            listener.onMessageSelect(uri);
         }
     }
 
-    protected void setParentContent(Class cls, long id) {
-        parentContentId = (int) id;
-        parentContentClass = cls;
-    }
-
-    protected Class getParentContentClass() {
-        return parentContentClass;
-    }
-
-    protected int getParentContentId() {
-        return parentContentId;
-    }
-
-    private void refreshGroupList() {
+    private void refreshList() {
         showProgress(true);
         refreshListTask = new RefreshListTask();
         refreshListTask.execute((Void) null);
@@ -153,13 +144,13 @@ public class ThreadListFragment extends ListFragment {
     }
 
 
-    public interface OnThreadSelectedListener {
-        public void onThreadSelected(Uri groupUri, Uri categoryUri, Uri threadUri);
+    public interface OnMessageSelectedListener {
+        public void onMessageSelect(Uri uri);
     }
 
 
     public class RefreshListTask extends AsyncTask<Void, Void, Boolean> {
-        List<Thread> items;
+        List<Message> items;
 
         @Override
         protected Boolean doInBackground(Void... params) {
@@ -167,10 +158,10 @@ public class ThreadListFragment extends ListFragment {
 
             JSONArray result;
             try {
-                result = client.listGroupThreads(getParentContentId());
+                result = client.listThreadMessages(groupId, categoryId, threadId);
             } catch (Exception e) {
                 // TODO FIXME Notify error
-                Log.e(this.getClass().getName(), "Failed to retrieve thread list: " + e.toString());
+                Log.e(this.getClass().getName(), "Failed to retrieve message list: " + e.toString());
                 return false;
             }
 
@@ -178,14 +169,16 @@ public class ThreadListFragment extends ListFragment {
 
             for (int i = 0; i < result.length(); i++) {
                 try {
-                    Thread item = Thread.fromJSONObject(result.getJSONObject(i));
+                    Message item = Message.fromJSONObject(result.getJSONObject(i));
                     items.add(item);
                 } catch (JSONException e) {
                     // FIXME XXX Notify error
-                    Log.e(this.getClass().getSimpleName(), "Failed to load thread list: " + e.toString());
+                    Log.e(this.getClass().getSimpleName(), "Failed to load message list: " + e.toString());
                     return false;
                 }
             }
+
+            Log.v(getClass().getSimpleName(), "Loaded " + items.size() + " items with " + groupId + ", " + categoryId + ", " + threadId);
 
             return true;
         }
@@ -199,7 +192,7 @@ public class ThreadListFragment extends ListFragment {
                 items = new ArrayList<>();
             }
 
-            ListAdapter adapter = new ThreadListAdapter(getActivity(),
+            ListAdapter adapter = new MessageListAdapter(getActivity(),
                     android.R.layout.simple_list_item_1, android.R.id.text1, items);
 
             setListAdapter(adapter);

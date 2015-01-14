@@ -9,7 +9,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class MainActivity extends Activity implements GroupListFragment.OnGroupSelectedListener, ThreadListFragment.OnThreadSelectedListener {
+public class MainActivity
+        extends Activity
+        implements GroupListFragment.OnGroupSelectedListener,
+                   ThreadListFragment.OnThreadSelectedListener,
+                   MessageListFragment.OnMessageSelectedListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +58,21 @@ public class MainActivity extends Activity implements GroupListFragment.OnGroupS
     }
 
     @Override
-    public void onThreadSelected(Uri uri) {
-        Log.v(getClass().getSimpleName(), "Thread selected: " + uri.toString());
+    public void onThreadSelected(Uri companyUri, Uri groupUri, Uri threadUri) {
+        Log.v(getClass().getSimpleName(), "Thread selected: " + threadUri.toString());
+
+        MessageListFragment fragment = MessageListFragment.newInstance(companyUri, groupUri, threadUri);
+
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.replace(R.id.mainFrame, fragment);
+
+        transaction.addToBackStack(null);
+
+        transaction.commit();
+    }
+
+    @Override
+    public void onMessageSelect(Uri messageUri) {
+        Log.v(getClass().getSimpleName(), "Message selected: " + messageUri.toString());
     }
 }

@@ -78,6 +78,22 @@ public class LiferayClient {
         return this.call("/mbthread/get-group-threads", args);
     }
 
+    public JSONArray listThreadMessages(int groupId, int categoryId, int threadId) throws IOException, URISyntaxException, ServerException {
+        List<NameValuePair> args = new ArrayList<>();
+
+        args.add(new BasicNameValuePair("groupId", Integer.toString(groupId)));
+        args.add(new BasicNameValuePair("categoryId", Integer.toString(categoryId)));
+        args.add(new BasicNameValuePair("threadId", Integer.toString(threadId)));
+        args.add(new BasicNameValuePair("status", Integer.toString(0)));
+        args.add(new BasicNameValuePair("start", Integer.toString(-1)));
+        args.add(new BasicNameValuePair("end", Integer.toString(-1)));
+
+        // Always add token last, and make sure it exists.
+        args.add(new BasicNameValuePair("p_auth", getValidAuthenticationToken().getToken()));
+
+        return this.call("/mbmessage/get-thread-messages", args);
+    }
+
     protected JSONArray call(String method, List<NameValuePair> args) throws ServerException, IOException, URISyntaxException {
         AuthenticationToken token = getToken();
 
