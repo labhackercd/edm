@@ -15,6 +15,8 @@ public class Thread {
     private int threadId;
     private int viewCount;
 
+    private Message rootMessage;
+
     /* {
         "categoryId": 1934029,
         "companyId": 10131,
@@ -43,6 +45,11 @@ public class Thread {
         r.rootMessageId = o.getInt("rootMessageId");
         r.threadId = o.getInt("threadId");
         r.viewCount = o.getInt("viewCount");
+
+        JSONObject rootMsg = o.getJSONObject("rootMessage");
+        if (rootMsg != null) {
+            r.rootMessage = Message.fromJSONObject(rootMsg);
+        }
 
         return r;
     }
@@ -77,5 +84,9 @@ public class Thread {
 
     public int getViewCount() {
         return viewCount;
+    }
+
+    public Message getRootMessage() {
+        return rootMessage;
     }
 }

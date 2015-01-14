@@ -3,6 +3,7 @@ package br.leg.camara.labhacker.edemocracia;
 import android.test.ApplicationTestCase;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,5 +77,28 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         if (groups.length() < 1) {
             throw new AssertionError("We expected to receive at least one group");
         }
+
+        int groupId = -1;
+        for (int i = 0; i < groups.length(); i++) {
+            JSONObject group = groups.getJSONObject(i);
+
+            if (group.getString("friendlyURL").contains("hackathon-de-genero")) {
+                groupId = group.getInt("groupId");
+            }
+        }
+
+        if (groupId < 0) {
+            throw new AssertionError("We couldn't find the a group containing hackathon-de-genero");
+        }
+
+        JSONArray threads = client.listGroupThreads(groupId);
+
+        assertNotNull(threads);
+
+        if (threads.length() < 1) {
+            throw new AssertionError("We expected to receive at least one thread");
+        }
+
+        assertNotNull(threads.getJSONObject(0).getJSONObject("rootMessage"));
     }
 }

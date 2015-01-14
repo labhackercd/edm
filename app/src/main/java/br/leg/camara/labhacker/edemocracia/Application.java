@@ -16,7 +16,7 @@ public class Application extends android.app.Application {
 
     static {
         try {
-            SERVICE_URL = new URL("http://edemocracia.camara.gov.br/api/jsonws");
+            SERVICE_URL = new URL("http://edemocracia.camara.gov.br/api/jsonws/invoke");
             SERVICE_LOGIN_URL = new URL("http://edemocracia.camara.gov.br/cadastro");
         } catch (MalformedURLException e) {
             throw new IllegalStateException(e);
@@ -31,8 +31,7 @@ public class Application extends android.app.Application {
     }
 
     public void setCredentials(CookieCredentials credentials) {
-        int n = PersistentCredentials.store(getApplicationContext(), credentials);
-
+        PersistentCredentials.store(getApplicationContext(), credentials);
         this.credentials = credentials;
         this.liferayClient = null;
     }
