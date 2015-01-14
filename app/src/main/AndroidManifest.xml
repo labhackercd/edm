@@ -35,7 +35,7 @@
                 android:value=".SplashScreenActivity" />
         </activity>
         <activity
-            android:name=".GroupListActivity"
+            android:name=".MainActivity"
             android:label="@string/title_activity_group_list"
             android:parentActivityName=".SplashScreenActivity" >
             <meta-data

@@ -279,7 +279,7 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
             showProgress(false);
 
             if (success) {
-                startActivity(new Intent(getApplicationContext(), GroupListActivity.class));
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 finish();
             } else {
                 // FIXME Should not be displayed in the Password Field
