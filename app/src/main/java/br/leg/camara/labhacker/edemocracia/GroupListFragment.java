@@ -1,43 +1,38 @@
 package br.leg.camara.labhacker.edemocracia;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.ContentUris;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.app.ListFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
-import android.widget.TextView;
+import android.widget.ListView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.content.Group;
+import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
 
-public class GroupListFragment extends Fragment implements AbsListView.OnItemClickListener {
 
-    private static final String ARG_GROUPS = "groups";
+public class GroupListFragment extends ListFragment {
 
-    private List<String> groups;
-
+    private View progressView;
+    private RefreshListTask refreshListTask;
     private OnGroupSelectedListener listener;
 
-    private AbsListView listView;
-
-    private ListAdapter adapter;
-
-    public static GroupListFragment newInstance(List<String> groups) {
-        GroupListFragment fragment = new GroupListFragment();
-        Bundle args = new Bundle();
-        args.putCharSequenceArray(ARG_GROUPS, groups.toArray(new CharSequence[groups.size()]));
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     public GroupListFragment() {
     }
@@ -46,31 +41,15 @@ public class GroupListFragment extends Fragment implements AbsListView.OnItemCli
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            CharSequence[] groupsCs = getArguments().getCharSequenceArray(ARG_GROUPS);
-            groups = new ArrayList<String>();
-            for (CharSequence cs : groupsCs) {
-                groups.add(cs.toString());
-            }
+        if (savedInstanceState == null) {
+            progressView = getActivity().findViewById(R.id.refresh_progress);
+            refreshGroupList();
         }
-
-        adapter = new ArrayAdapter<String>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, groups);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_grouplist, container, false);
-
-        // Set the adapter
-        listView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) listView).setAdapter(adapter);
-
-        // Set OnItemClickListener so we can be notified on item clicks
-        listView.setOnItemClickListener(this);
-
-        return view;
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.group_list_fragment, container, false);
     }
 
     @Override
@@ -92,28 +71,103 @@ public class GroupListFragment extends Fragment implements AbsListView.OnItemCli
 
 
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        super.onListItemClick(l, v, position, id);
+
         if (listener != null) {
             Uri groupUri = ContentUris.withAppendedId(Group.CONTENT_URI, id);
             listener.onGroupSelected(groupUri);
         }
     }
 
-    /**
-     * The default content for this Fragment has a TextView that is shown when
-     * the list is empty. If you would like to change the text, call this method
-     * to supply the text it should use.
-     */
-    public void setEmptyText(CharSequence emptyText) {
-        View emptyView = listView.getEmptyView();
+    private void refreshGroupList() {
+        showProgress(true);
+        refreshListTask = new RefreshListTask();
+        refreshListTask.execute((Void) null);
+    }
 
-        if (emptyView instanceof TextView) {
-            ((TextView) emptyView).setText(emptyText);
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    public void showProgress(final boolean show) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+            progressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            progressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    progressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            progressView.setVisibility(show ? View.VISIBLE : View.GONE);
         }
     }
+
 
     public interface OnGroupSelectedListener {
         public void onGroupSelected(Uri groupUri);
     }
 
+
+    public class RefreshListTask extends AsyncTask<Void, Void, Boolean> {
+        List<Group> items;
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            LiferayClient client = ((Application) getActivity().getApplication()).getLiferayClient();
+
+            JSONArray result;
+            try {
+                result = client.listGroups(Application.DEFAULT_COMPANY_ID);
+            } catch (Exception e) {
+                // TODO FIXME Notify error
+                Log.e(this.getClass().getName(), "Failed to retrieve group list: " + e.toString());
+                return false;
+            }
+
+            items = new ArrayList<>(result.length());
+
+            for (int i = 0; i < result.length(); i++) {
+                try {
+                    Group group = Group.fromJSONObject(result.getJSONObject(i));
+
+                    // Ignore non public (type != 1) or inactive (active != true) groups
+                    // FIXME We should probably place this filter at some other layer.
+                    if (!group.isActive() || group.getType() != 1) {
+                        continue;
+                    }
+
+                    items.add(group);
+                } catch (JSONException e) {
+                    // FIXME XXX Notify error
+                    Log.e(this.getClass().getSimpleName(), "Failed to load group list: " + e.toString());
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            refreshListTask = null;
+            showProgress(false);
+
+            if (!success) {
+                items = new ArrayList<>();
+            }
+
+            ListAdapter adapter = new GroupListAdapter(getActivity(),
+                    android.R.layout.simple_list_item_1, android.R.id.text1, items);
+
+            setListAdapter(adapter);
+        }
+
+        @Override
+        protected void onCancelled() {
+            refreshListTask = null;
+            showProgress(false);
+        }
+    }
 }

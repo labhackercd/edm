@@ -4,9 +4,11 @@
     tools:context="br.leg.camara.labhacker.edemocracia.GroupListActivity"
     tools:ignore="MergeRootFrame">
 
-    <ProgressBar android:id="@+id/group_list_update_progress" style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp" android:visibility="gone" />
+    <FrameLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center"
+        android:id="@+id/mainFrame"></FrameLayout>
 
 </FrameLayout>
 
