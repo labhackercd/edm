@@ -1,6 +1,4 @@
-package br.leg.camara.labhacker.edemocracia.liferay;
-
-import android.util.Log;
+package br.leg.camara.labhacker.edemocracia.liferay.auth;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -17,8 +15,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AuthenticationHelper {
+import br.leg.camara.labhacker.edemocracia.liferay.HttpHelper;
+import br.leg.camara.labhacker.edemocracia.liferay.Session;
 
+
+public class CookieAuthenticator {
     public static CookieCredentials authenticate(URL loginUrl, String username, String password) throws IOException {
         CookieManager cookieManager = new CookieManager();
         CookieHandler.setDefault(cookieManager);
@@ -43,18 +44,17 @@ public class AuthenticationHelper {
 
         connection.setInstanceFollowRedirects(true);
 
-        LiferayClient.writeFormData(connection, loginFormData);
+        HttpHelper.writeFormData(connection, loginFormData);
 
-        String loginBody = LiferayClient.readBody(connection);
+        String loginBody = HttpHelper.readBody(connection);
 
         String location;
         while (null != (location = connection.getHeaderField("Location"))) {
             connection = (HttpURLConnection) (new URL(location)).openConnection();
-            loginBody = LiferayClient.readBody(connection);
+            loginBody = HttpHelper.readBody(connection);
         }
 
         if (!checkIsAuthenticated(loginBody)) {
-            Log.e(">", "rofl?");
             return null;
         }
 
@@ -68,7 +68,7 @@ public class AuthenticationHelper {
 
         HttpURLConnection connection = (HttpURLConnection) session.getPortalURL().openConnection();
 
-        String body = LiferayClient.readBody(connection);
+        String body = HttpHelper.readBody(connection);
 
         return checkIsAuthenticated(body);
     }
@@ -76,7 +76,7 @@ public class AuthenticationHelper {
     private static FormElement getLoginForm(URL url) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-        String body = LiferayClient.readBody(connection);
+        String body = HttpHelper.readBody(connection);
 
         Document document = Jsoup.parse(body, "UTF-8");
 

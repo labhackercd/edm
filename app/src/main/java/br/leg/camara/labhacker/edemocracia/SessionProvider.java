@@ -8,13 +8,18 @@ import java.net.URL;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import br.leg.camara.labhacker.edemocracia.liferay.AuthenticationHelper;
-import br.leg.camara.labhacker.edemocracia.liferay.CookieCredentials;
-import br.leg.camara.labhacker.edemocracia.liferay.LiferaySession;
+import br.leg.camara.labhacker.edemocracia.liferay.auth.CookieAuthenticator;
+import br.leg.camara.labhacker.edemocracia.liferay.auth.CookieCredentials;
+import br.leg.camara.labhacker.edemocracia.liferay.SessionImpl;
 import br.leg.camara.labhacker.edemocracia.liferay.Session;
 
 
-public class ApplicationSession {
+/**
+ * Provides Session objects for Applications.
+ *
+ * Create sessions using createSession. Reuse created sessions through getSession.
+ */
+public class SessionProvider {
 
     public static final int DEFAULT_COMPANY_ID = 10131;
 
@@ -36,16 +41,16 @@ public class ApplicationSession {
         return sessions.get(application);
     }
 
-    public static Session authenticate(Application application, String username, String password) throws IOException {
-        CookieCredentials credentials = AuthenticationHelper.authenticate(SERVICE_LOGIN_URL, username, password);
+    public static Session createSession(Application application, String username, String password) throws IOException {
+        CookieCredentials credentials = CookieAuthenticator.authenticate(SERVICE_LOGIN_URL, username, password);
 
         if (credentials == null) {
             return null;
         }
 
-        PersistentCredentials.store(application.getApplicationContext(), credentials);
+        CredentialsStorage.store(application.getApplicationContext(), credentials);
 
-        Session session = new LiferaySession(SERVICE_URL, credentials);
+        Session session = new SessionImpl(SERVICE_URL, credentials);
 
         sessions.put(application, session);
 

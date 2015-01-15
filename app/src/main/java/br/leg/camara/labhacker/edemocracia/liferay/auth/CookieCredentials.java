@@ -1,4 +1,4 @@
-package br.leg.camara.labhacker.edemocracia.liferay;
+package br.leg.camara.labhacker.edemocracia.liferay.auth;
 
 import android.util.Log;
 
@@ -10,6 +10,8 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+
+import br.leg.camara.labhacker.edemocracia.liferay.Session;
 
 public class CookieCredentials implements Session.Middleware {
     private CookieManager cookieManager;
@@ -39,7 +41,7 @@ public class CookieCredentials implements Session.Middleware {
         try {
             cookieManager.put(response.getURL().toURI(), response.getHeaderFields());
         } catch (URISyntaxException e) {
-            Log.w(getClass().getSimpleName(), "Invalid response URI. Ignoring cookies.");
+            Log.w(getClass().getSimpleName(), "Failed to extract cookies from response: " + e);
         }
     }
 }

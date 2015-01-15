@@ -1,13 +1,12 @@
 package br.leg.camara.labhacker.edemocracia;
 
-import android.app.Application;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 
-import br.leg.camara.labhacker.edemocracia.liferay.AuthenticationHelper;
+import br.leg.camara.labhacker.edemocracia.liferay.auth.CookieAuthenticator;
 import br.leg.camara.labhacker.edemocracia.liferay.Session;
 
 
@@ -38,8 +37,8 @@ public class SplashScreenActivity extends Activity {
 
             try {
                 // Check if the stored credentials are still authenticated
-                Session session = ApplicationSession.getSession(getApplication());
-                authenticated = AuthenticationHelper.isAuthenticated(session);
+                Session session = SessionProvider.getSession(getApplication());
+                authenticated = CookieAuthenticator.isAuthenticated(session);
             } catch (Exception e) {
                 // TODO FIXME Deal with errors
                 Log.e(getClass().getSimpleName(), "Failed to check if the user is authenticated. " + e.toString());

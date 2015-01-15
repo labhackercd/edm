@@ -10,13 +10,16 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import br.leg.camara.labhacker.edemocracia.liferay.auth.CookieCredentials;
+import br.leg.camara.labhacker.edemocracia.liferay.exception.ServerException;
 
-public class LiferaySession implements Session {
+
+public class SessionImpl implements Session {
 
     private final URL url;
     private final CookieCredentials credentials;
 
-    public LiferaySession(URL url, CookieCredentials credentials) {
+    public SessionImpl(URL url, CookieCredentials credentials) {
         this.url = url;
         this.credentials = credentials;
     }
@@ -65,6 +68,6 @@ public class LiferaySession implements Session {
 
     @Override
     public JSONArray invoke(JSONArray commands) throws IOException, ServerException {
-        return LiferayClient.invoke(this, commands);
+        return HttpHelper.invoke(this, commands);
     }
 }

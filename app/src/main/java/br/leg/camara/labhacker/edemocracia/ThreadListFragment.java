@@ -28,7 +28,7 @@ import br.leg.camara.labhacker.edemocracia.content.Category;
 import br.leg.camara.labhacker.edemocracia.content.Content;
 import br.leg.camara.labhacker.edemocracia.content.Group;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
-import br.leg.camara.labhacker.edemocracia.liferay.CustomService;
+import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
 import br.leg.camara.labhacker.edemocracia.liferay.Session;
 
 
@@ -166,7 +166,7 @@ public class ThreadListFragment extends ListFragment {
         @Override
         protected Boolean doInBackground(Void... params) {
             Application application = getActivity().getApplication();
-            Session session = ApplicationSession.getSession(application);
+            Session session = SessionProvider.getSession(application);
             CustomService service = new CustomService(session);
 
             JSONArray result;

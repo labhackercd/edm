@@ -11,12 +11,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import br.leg.camara.labhacker.edemocracia.liferay.CookieCredentials;
+import br.leg.camara.labhacker.edemocracia.liferay.auth.CookieCredentials;
 
 /**
- * Helper class for loading and storing cookie based credentials on SharedPreferences.
+ * Persists {@link CookieCredentials} through {@link android.content.SharedPreferences}.
  */
-public class PersistentCredentials  {
+public class CredentialsStorage {
     private static final String KEY = "credentials";
 
     public static CookieCredentials load(Context context) {
@@ -56,6 +56,6 @@ public class PersistentCredentials  {
     }
 
     private static final SharedPreferences getSharedPreferences(Context context) {
-        return context.getSharedPreferences(PersistentCredentials.class.getCanonicalName(), 0);
+        return context.getSharedPreferences(CredentialsStorage.class.getCanonicalName(), 0);
     }
 }

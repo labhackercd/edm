@@ -1,4 +1,4 @@
-package br.leg.camara.labhacker.edemocracia.liferay;
+package br.leg.camara.labhacker.edemocracia.liferay.auth;
 
 import com.google.common.base.CharMatcher;
 
@@ -10,6 +10,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.text.format.Time;
+
+import br.leg.camara.labhacker.edemocracia.liferay.HttpHelper;
+import br.leg.camara.labhacker.edemocracia.liferay.Session;
 
 
 class Token {
@@ -73,7 +76,10 @@ class Token {
 }
 
 
-public class AuthTokenManager {
+/**
+ * Provides authentication tokens for Sessions.
+ */
+public class AuthTokenProvider {
 
     private static Map<Session, Token> tokens = new WeakHashMap<>();
 
@@ -105,7 +111,7 @@ public class AuthTokenManager {
         session.processResponse(connection);
 
         // Read the response body
-        String body = LiferayClient.readBody(connection);
+        String body = HttpHelper.readBody(connection);
 
         return extractToken(body);
     }
@@ -125,7 +131,6 @@ public class AuthTokenManager {
     private static boolean isTokenUsable(Token token) {
         return token != null && !token.toString().isEmpty() && !token.isExpired();
     }
-
 }
 
 

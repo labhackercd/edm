@@ -242,7 +242,7 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
     }
 
     /**
-     * Represents an asynchronous login/registration task used to authenticate
+     * Represents an asynchronous login/registration task used to createSession
      * the user.
      */
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
@@ -261,7 +261,7 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
 
             try {
                 Application application = getApplication();
-                Session session = ApplicationSession.authenticate(application, mEmail, mPassword);
+                Session session = SessionProvider.createSession(application, mEmail, mPassword);
 
                 result = session != null;
             } catch (IOException e) {

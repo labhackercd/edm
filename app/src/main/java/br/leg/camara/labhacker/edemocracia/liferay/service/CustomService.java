@@ -1,10 +1,13 @@
-package br.leg.camara.labhacker.edemocracia.liferay;
+package br.leg.camara.labhacker.edemocracia.liferay.service;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+
+import br.leg.camara.labhacker.edemocracia.liferay.Session;
+import br.leg.camara.labhacker.edemocracia.liferay.exception.ServerException;
 
 
 public class CustomService extends Service {

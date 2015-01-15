@@ -10,8 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import br.leg.camara.labhacker.edemocracia.liferay.AuthenticationHelper;
-import br.leg.camara.labhacker.edemocracia.liferay.CustomService;
+import br.leg.camara.labhacker.edemocracia.liferay.auth.CookieAuthenticator;
+import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
 import br.leg.camara.labhacker.edemocracia.liferay.Session;
 
 class Helper {
@@ -65,10 +65,10 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         assertNotNull(username);
         assertNotNull(password);
 
-        Session session = ApplicationSession.authenticate(getApplication(), username, password);
+        Session session = SessionProvider.createSession(getApplication(), username, password);
 
         assertNotNull(session);
-        assertTrue(AuthenticationHelper.isAuthenticated(session));
+        assertTrue(CookieAuthenticator.isAuthenticated(session));
 
         CustomService service = new CustomService(session);
 

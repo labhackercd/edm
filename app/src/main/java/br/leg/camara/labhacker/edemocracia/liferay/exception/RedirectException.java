@@ -1,4 +1,4 @@
-package br.leg.camara.labhacker.edemocracia.liferay;
+package br.leg.camara.labhacker.edemocracia.liferay.exception;
 
 public class RedirectException extends ServerException {
     public RedirectException(String url) {

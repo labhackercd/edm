@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import br.leg.camara.labhacker.edemocracia.liferay.exception.ServerException;
+
 public interface Session {
     public URL getURL();
 

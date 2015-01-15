@@ -1,4 +1,6 @@
-package br.leg.camara.labhacker.edemocracia.liferay;
+package br.leg.camara.labhacker.edemocracia.liferay.service;
+
+import br.leg.camara.labhacker.edemocracia.liferay.Session;
 
 public class Service {
     private Session session;

@@ -19,8 +19,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.leg.camara.labhacker.edemocracia.liferay.auth.AuthTokenProvider;
+import br.leg.camara.labhacker.edemocracia.liferay.exception.RedirectException;
+import br.leg.camara.labhacker.edemocracia.liferay.exception.ServerException;
 
-public class LiferayClient {
+
+public class HttpHelper {
 
     public static JSONArray getServiceResponse(HttpURLConnection response) throws ServerException, IOException {
         int status = response.getResponseCode();
@@ -114,14 +118,15 @@ public class LiferayClient {
 
         session.processResponse(connection);
 
-        return LiferayClient.getServiceResponse(connection);
+        return HttpHelper.getServiceResponse(connection);
     }
 
     private static URL buildURL(Session session, JSONArray commands) throws IOException, ServerException {
         List<NameValuePair> params = new ArrayList<>();
 
+        // FIXME We should really move this code to another layer (probably the Session layer?)
         try {
-            String token = AuthTokenManager.getAuthenticationToken(session);
+            String token = AuthTokenProvider.getAuthenticationToken(session);
             if (token != null) {
                 params.add(new BasicNameValuePair("p_auth", token));
             }

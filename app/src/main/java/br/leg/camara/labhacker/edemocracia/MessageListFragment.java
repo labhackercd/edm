@@ -25,7 +25,7 @@ import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.content.Content;
 import br.leg.camara.labhacker.edemocracia.content.Message;
-import br.leg.camara.labhacker.edemocracia.liferay.CustomService;
+import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
 import br.leg.camara.labhacker.edemocracia.liferay.Session;
 
 
@@ -155,7 +155,7 @@ public class MessageListFragment extends ListFragment {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            Session session = ApplicationSession.getSession(getActivity().getApplication());
+            Session session = SessionProvider.getSession(getActivity().getApplication());
             CustomService service = new CustomService(session);
 
             JSONArray result;
