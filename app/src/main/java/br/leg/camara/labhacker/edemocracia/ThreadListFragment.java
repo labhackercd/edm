@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Application;
 import android.app.ListFragment;
 import android.content.ContentUris;
 import android.net.Uri;
@@ -27,7 +28,8 @@ import br.leg.camara.labhacker.edemocracia.content.Category;
 import br.leg.camara.labhacker.edemocracia.content.Content;
 import br.leg.camara.labhacker.edemocracia.content.Group;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
-import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
+import br.leg.camara.labhacker.edemocracia.liferay.CustomService;
+import br.leg.camara.labhacker.edemocracia.liferay.Session;
 
 
 public class ThreadListFragment extends ListFragment {
@@ -163,11 +165,13 @@ public class ThreadListFragment extends ListFragment {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            LiferayClient client = ((Application) getActivity().getApplication()).getLiferayClient();
+            Application application = getActivity().getApplication();
+            Session session = ApplicationSession.getSession(application);
+            CustomService service = new CustomService(session);
 
             JSONArray result;
             try {
-                result = client.listGroupThreads(getParentContentId());
+                result = service.listGroupThreads(getParentContentId());
             } catch (Exception e) {
                 // TODO FIXME Notify error
                 Log.e(this.getClass().getName(), "Failed to retrieve thread list: " + e.toString());

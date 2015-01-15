@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Application;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -16,6 +17,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -26,11 +28,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import br.leg.camara.labhacker.edemocracia.liferay.AuthenticationHelper;
-import br.leg.camara.labhacker.edemocracia.liferay.CookieCredentials;
+import br.leg.camara.labhacker.edemocracia.liferay.Session;
 
 
 /**
@@ -255,22 +257,19 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
 
         @Override
         protected Boolean doInBackground(Void... params) {
+            boolean result = false;
+
             try {
-                AuthenticationHelper helper = new AuthenticationHelper(Application.SERVICE_LOGIN_URL);
+                Application application = getApplication();
+                Session session = ApplicationSession.authenticate(application, mEmail, mPassword);
 
-                CookieCredentials credentials = helper.authenticate(mEmail, mPassword);
-
-                if (credentials != null) {
-                    Application application = (Application) getApplication();
-                    application.setCredentials(credentials);
-                }
-
-                return true;
-            } catch (Exception e) {
+                result = session != null;
+            } catch (IOException e) {
                 // TODO FIXME Notify errors
+                Log.e(getClass().getSimpleName(), "Login failed. " + e);
             }
 
-            return false;
+            return result;
         }
 
         @Override

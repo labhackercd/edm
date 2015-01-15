@@ -1,5 +1,7 @@
 package br.leg.camara.labhacker.edemocracia.liferay;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.net.CookieManager;
 import java.net.CookieStore;
@@ -9,7 +11,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
-public class CookieCredentials {
+public class CookieCredentials implements Session.Middleware {
     private CookieManager cookieManager;
 
     public CookieCredentials(List<HttpCookie> cookies) {
@@ -27,12 +29,17 @@ public class CookieCredentials {
         return cookieManager.getCookieStore().getCookies();
     }
 
-    public void authenticate(HttpURLConnection connection) throws URISyntaxException, IOException {
+    public void prepareRequest(HttpURLConnection request, Session session) {
         for (HttpCookie cookie : getCookies()) {
-            connection.addRequestProperty("Cookie", cookie.toString());
+            request.addRequestProperty("Cookie", cookie.toString());
         }
+    }
 
-        // TODO FIXME This should really be placed somewhere else, like *processResponse* or something
-        cookieManager.put(connection.getURL().toURI(), connection.getHeaderFields());
+    public void processResponse(HttpURLConnection response, Session session) throws IOException {
+        try {
+            cookieManager.put(response.getURL().toURI(), response.getHeaderFields());
+        } catch (URISyntaxException e) {
+            Log.w(getClass().getSimpleName(), "Invalid response URI. Ignoring cookies.");
+        }
     }
 }

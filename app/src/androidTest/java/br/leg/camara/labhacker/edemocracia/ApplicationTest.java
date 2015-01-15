@@ -1,5 +1,6 @@
 package br.leg.camara.labhacker.edemocracia;
 
+import android.app.Application;
 import android.test.ApplicationTestCase;
 
 import org.json.JSONArray;
@@ -10,8 +11,8 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import br.leg.camara.labhacker.edemocracia.liferay.AuthenticationHelper;
-import br.leg.camara.labhacker.edemocracia.liferay.CookieCredentials;
-import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
+import br.leg.camara.labhacker.edemocracia.liferay.CustomService;
+import br.leg.camara.labhacker.edemocracia.liferay.Session;
 
 class Helper {
     private static Properties properties = null;
@@ -56,21 +57,22 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
     }
 
     public void testItAll() throws Exception {
+        createApplication();
+
         String username = getUsername();
         String password = getPassword();
 
         assertNotNull(username);
         assertNotNull(password);
 
-        AuthenticationHelper authenticator = new AuthenticationHelper(Application.SERVICE_LOGIN_URL);
+        Session session = ApplicationSession.authenticate(getApplication(), username, password);
 
-        CookieCredentials credentials = authenticator.authenticate(username, password);
+        assertNotNull(session);
+        assertTrue(AuthenticationHelper.isAuthenticated(session));
 
-        assertNotNull(credentials);
+        CustomService service = new CustomService(session);
 
-        LiferayClient client = new LiferayClient(Application.SERVICE_URL, credentials);
-
-        JSONArray groups = client.listGroups(getCompanyId());
+        JSONArray groups = service.listGroups(getCompanyId());
 
         assertNotNull(groups);
 
@@ -91,7 +93,7 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
             throw new AssertionError("We couldn't find the a group containing hackathon-de-genero");
         }
 
-        JSONArray threads = client.listGroupThreads(groupId);
+        JSONArray threads = service.listGroupThreads(groupId);
 
         assertNotNull(threads);
 

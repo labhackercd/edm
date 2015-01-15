@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.ContentUris;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -25,7 +24,8 @@ import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.content.Content;
 import br.leg.camara.labhacker.edemocracia.content.Group;
-import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
+import br.leg.camara.labhacker.edemocracia.liferay.CustomService;
+import br.leg.camara.labhacker.edemocracia.liferay.Session;
 
 
 public class GroupListFragment extends ListFragment {
@@ -116,11 +116,12 @@ public class GroupListFragment extends ListFragment {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            LiferayClient client = ((Application) getActivity().getApplication()).getLiferayClient();
+            Session session = ApplicationSession.getSession(getActivity().getApplication());
+            CustomService service = new CustomService(session);
 
             JSONArray result;
             try {
-                result = client.listGroups(Application.DEFAULT_COMPANY_ID);
+                result = service.listGroups(ApplicationSession.DEFAULT_COMPANY_ID);
             } catch (Exception e) {
                 // TODO FIXME Notify error
                 Log.e(this.getClass().getName(), "Failed to retrieve group list: " + e.toString());

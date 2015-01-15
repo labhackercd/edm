@@ -1,5 +1,7 @@
 package br.leg.camara.labhacker.edemocracia.liferay;
 
+import android.util.Log;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.jsoup.Connection;
@@ -11,28 +13,17 @@ import java.io.IOException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AuthenticationHelper {
 
-    private URL url;
-
-    public AuthenticationHelper(URL url) {
-        this.url = url;
-    }
-
-    public URL getURL() {
-        return url;
-    }
-
-    public CookieCredentials authenticate(String username, String password) throws IOException, URISyntaxException {
+    public static CookieCredentials authenticate(URL loginUrl, String username, String password) throws IOException {
         CookieManager cookieManager = new CookieManager();
         CookieHandler.setDefault(cookieManager);
 
-        FormElement form = getLoginForm();
+        FormElement form = getLoginForm(loginUrl);
 
         List<NameValuePair> loginFormData = getLoginFormData(form);
 
@@ -47,42 +38,45 @@ public class AuthenticationHelper {
             }
         }
 
-        URL loginUrl = new URL(form.attr("action"));
+        loginUrl = new URL(form.attr("action"));
         HttpURLConnection connection = (HttpURLConnection) loginUrl.openConnection();
 
         connection.setInstanceFollowRedirects(true);
 
-        RequestsHelper.writeFormData(connection, loginFormData);
+        LiferayClient.writeFormData(connection, loginFormData);
 
-        String loginBody = RequestsHelper.readBody(connection);
+        String loginBody = LiferayClient.readBody(connection);
 
         String location;
         while (null != (location = connection.getHeaderField("Location"))) {
             connection = (HttpURLConnection) (new URL(location)).openConnection();
-            loginBody = RequestsHelper.readBody(connection);
+            loginBody = LiferayClient.readBody(connection);
         }
 
-        if (checkIsAuthenticated(loginBody)) {
-            return CookieCredentials.fromCookieStore(cookieManager.getCookieStore());
+        if (!checkIsAuthenticated(loginBody)) {
+            Log.e(">", "rofl?");
+            return null;
         }
 
-        return null;
+        return CookieCredentials.fromCookieStore(cookieManager.getCookieStore());
     }
 
-    public boolean credentialsAreStillValid(CookieCredentials credentials) throws IOException, URISyntaxException {
-        HttpURLConnection connection = (HttpURLConnection) getURL().toURI().resolve("/").toURL().openConnection();
+    public static boolean isAuthenticated(Session session) throws IOException {
+        if (session == null) {
+            return false;
+        }
 
-        credentials.authenticate(connection);
+        HttpURLConnection connection = (HttpURLConnection) session.getPortalURL().openConnection();
 
-        String body = RequestsHelper.readBody(connection);
+        String body = LiferayClient.readBody(connection);
 
         return checkIsAuthenticated(body);
     }
 
-    private FormElement getLoginForm() throws IOException, URISyntaxException {
-        HttpURLConnection connection = (HttpURLConnection) getURL().openConnection();
+    private static FormElement getLoginForm(URL url) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-        String body = RequestsHelper.readBody(connection);
+        String body = LiferayClient.readBody(connection);
 
         Document document = Jsoup.parse(body, "UTF-8");
 

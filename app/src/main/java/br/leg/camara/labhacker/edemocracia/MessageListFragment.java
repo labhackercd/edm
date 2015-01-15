@@ -25,7 +25,8 @@ import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.content.Content;
 import br.leg.camara.labhacker.edemocracia.content.Message;
-import br.leg.camara.labhacker.edemocracia.liferay.LiferayClient;
+import br.leg.camara.labhacker.edemocracia.liferay.CustomService;
+import br.leg.camara.labhacker.edemocracia.liferay.Session;
 
 
 public class MessageListFragment extends ListFragment {
@@ -154,11 +155,12 @@ public class MessageListFragment extends ListFragment {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            LiferayClient client = ((Application) getActivity().getApplication()).getLiferayClient();
+            Session session = ApplicationSession.getSession(getActivity().getApplication());
+            CustomService service = new CustomService(session);
 
             JSONArray result;
             try {
-                result = client.listThreadMessages(groupId, categoryId, threadId);
+                result = service.listThreadMessages(groupId, categoryId, threadId);
             } catch (Exception e) {
                 // TODO FIXME Notify error
                 Log.e(this.getClass().getName(), "Failed to retrieve message list: " + e.toString());
