@@ -10,10 +10,12 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 
 import br.leg.camara.labhacker.edemocracia.liferay.Session;
 
 public class CookieCredentials implements Session.Middleware {
+
     private CookieManager cookieManager;
 
     public CookieCredentials(List<HttpCookie> cookies) {
@@ -32,8 +34,20 @@ public class CookieCredentials implements Session.Middleware {
     }
 
     public void prepareRequest(HttpURLConnection request, Session session) {
-        for (HttpCookie cookie : getCookies()) {
-            request.addRequestProperty("Cookie", cookie.toString());
+        Map<String, List<String>> cookies;
+
+        try {
+            cookies = cookieManager.get(request.getURL().toURI(), request.getRequestProperties());
+        } catch (IOException | URISyntaxException e) {
+            Log.w(getClass().getSimpleName(), "Failed to select cookies for request: " + e);
+            return;
+        }
+
+        for (String key : cookies.keySet()) {
+            List<String> value = cookies.get(key);
+            for (String item : value) {
+                request.addRequestProperty(key, item);
+            }
         }
     }
 

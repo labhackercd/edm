@@ -68,7 +68,11 @@ public class CookieAuthenticator {
 
         HttpURLConnection connection = (HttpURLConnection) session.getPortalURL().openConnection();
 
+        session.prepareRequest(connection);
+
         String body = HttpHelper.readBody(connection);
+
+        session.processResponse(connection);
 
         return checkIsAuthenticated(body);
     }

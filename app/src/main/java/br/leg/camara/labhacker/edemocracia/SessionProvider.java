@@ -38,21 +38,38 @@ public class SessionProvider {
     private static Map<Application, Session> sessions = new WeakHashMap<>();
 
     public static Session getSession(Application application) {
+        if (!sessions.containsKey(application)) {
+            CookieCredentials credentials = CredentialsStorage.load(application.getApplicationContext());
+            if (credentials != null) {
+                return setCredentials(application, credentials, false);
+            }
+        }
         return sessions.get(application);
     }
 
     public static Session createSession(Application application, String username, String password) throws IOException {
         CookieCredentials credentials = CookieAuthenticator.authenticate(SERVICE_LOGIN_URL, username, password);
 
-        if (credentials == null) {
-            return null;
+        return setCredentials(application, credentials);
+    }
+
+    private static Session setCredentials(Application application, CookieCredentials cookieCredentials) {
+        return setCredentials(application, cookieCredentials, true);
+    }
+
+    private static Session setCredentials(Application application, CookieCredentials credentials, boolean store) {
+        if (store) {
+            CredentialsStorage.store(application.getApplicationContext(), credentials);
         }
 
-        CredentialsStorage.store(application.getApplicationContext(), credentials);
+        Session session = null;
 
-        Session session = new SessionImpl(SERVICE_URL, credentials);
+        if (credentials != null) {
+            session = new SessionImpl(SERVICE_URL, credentials);
+        }
 
         sessions.put(application, session);
+
 
         return session;
     }

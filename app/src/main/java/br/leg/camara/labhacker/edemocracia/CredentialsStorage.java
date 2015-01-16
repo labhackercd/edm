@@ -22,15 +22,17 @@ public class CredentialsStorage {
     public static CookieCredentials load(Context context) {
         Gson gson = new Gson();
 
-        SharedPreferences settings = getSharedPreferences(context);
-        Set<String> jsonCookies = settings.getStringSet(KEY, new HashSet<String>());
+        Set<String> jsonValues = getSharedPreferences(context).getStringSet(KEY, null);
+
+        if (jsonValues == null) {
+            return null;
+        }
+
         List<HttpCookie> cookies = new ArrayList<>();
 
-        if (jsonCookies.size() > 0) {
-            for (String item : jsonCookies) {
-                HttpCookie cookie = gson.fromJson(item, HttpCookie.class);
-                cookies.add(cookie);
-            }
+        for (String value : jsonValues) {
+            HttpCookie cookie = gson.fromJson(value, HttpCookie.class);
+            cookies.add(cookie);
         }
 
         return new CookieCredentials(cookies);
@@ -39,23 +41,29 @@ public class CredentialsStorage {
     public static int store(Context context, CookieCredentials credentials) {
         Gson gson = new Gson();
 
-        SharedPreferences settings = getSharedPreferences(context);
-        SharedPreferences.Editor editor = settings.edit();
+        SharedPreferences.Editor editor = getSharedPreferences(context).edit();
 
-        Set<String> jsonCookies = new HashSet<>();
-
-        for (HttpCookie cookie : credentials.getCookies()) {
-            jsonCookies.add(gson.toJson(cookie));
+        List<HttpCookie> cookies;
+        if (credentials != null) {
+            cookies = credentials.getCookies();
+        } else {
+            cookies = new ArrayList<>();
         }
 
-        editor.putStringSet(KEY, jsonCookies);
+        Set<String> jsonValues = new HashSet<>();
 
-        editor.commit();
+        for (HttpCookie cookie : cookies) {
+            jsonValues.add(gson.toJson(cookie));
+        }
 
-        return jsonCookies.size();
+        editor.putStringSet(KEY, jsonValues);
+
+        editor.apply();
+
+        return jsonValues.size();
     }
 
-    private static final SharedPreferences getSharedPreferences(Context context) {
+    private static SharedPreferences getSharedPreferences(Context context) {
         return context.getSharedPreferences(CredentialsStorage.class.getCanonicalName(), 0);
     }
 }
