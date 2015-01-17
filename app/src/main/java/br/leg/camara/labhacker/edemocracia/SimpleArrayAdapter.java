@@ -10,17 +10,15 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import br.leg.camara.labhacker.edemocracia.content.Group;
+import br.leg.camara.labhacker.edemocracia.content.Content;
 
-public class GroupListAdapter extends ArrayAdapter<Group> {
+class SimpleArrayAdapter<T> extends ArrayAdapter<T> {
 
-    private int resourceId;
-    private int nameTextId;
+    private static int DEFAULT_RESOURCE_ID = android.R.layout.simple_list_item_1;
+    private static int DEFAULT_TEXT_VIEW_ID = android.R.id.text1;
 
-    public GroupListAdapter(Context context, int resource, int nameTextId, List<Group> objects) {
-        super(context, resource, objects);
-        this.resourceId = resource;
-        this.nameTextId = nameTextId;
+    public SimpleArrayAdapter(Context context, List<T> objects) {
+        super(context, DEFAULT_RESOURCE_ID, DEFAULT_TEXT_VIEW_ID, objects);
     }
 
     @Override
@@ -29,7 +27,7 @@ public class GroupListAdapter extends ArrayAdapter<Group> {
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            view = inflater.inflate(resourceId, parent, false);
+            view = inflater.inflate(DEFAULT_RESOURCE_ID, parent, false);
         } else {
             view = convertView;
         }
@@ -37,27 +35,29 @@ public class GroupListAdapter extends ArrayAdapter<Group> {
         TextView name;
 
         try {
-            name = (TextView) view.findViewById(nameTextId);
+            name = (TextView) view.findViewById(DEFAULT_TEXT_VIEW_ID);
         } catch (ClassCastException e) {
             Log.e(getClass().getSimpleName(), "You must supply a resource ID for a TextView");
             throw new IllegalStateException(
                     getClass().getSimpleName() + " requires the resource ID to be a TextView", e);
         }
 
-        Group item = getItem(position);
-
-        name.setText(getItemName(item));
+        if (name != null) {
+            T item = getItem(position);
+            name.setText(item.toString());
+        } else {
+            Log.w(getClass().getSimpleName(), "Missing text view");
+        }
 
         return view;
     }
 
     @Override
     public long getItemId(int position) {
-        Group item = getItem(position);
-        return item.getGroupId();
-    }
-
-    public String getItemName(Group item) {
-        return item.getName();
+        T item = getItem(position);
+        if (item instanceof Content) {
+            return ((Content) item).getId();
+        }
+        return position;
     }
 }

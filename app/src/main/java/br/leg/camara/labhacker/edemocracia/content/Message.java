@@ -5,7 +5,7 @@ import org.json.JSONObject;
 
 import java.util.Date;
 
-public class Message {
+public class Message extends Content {
 
     private String body;
     private int categoryId;
@@ -135,5 +135,15 @@ public class Message {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    @Override
+    public String toString() {
+        return getBody();
+    }
+
+    @Override
+    public long getId() {
+        return getMessageId();
     }
 }

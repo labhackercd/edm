@@ -1,22 +1,15 @@
 package br.leg.camara.labhacker.edemocracia;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Application;
-import android.app.ListFragment;
 import android.content.ContentUris;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import org.json.JSONArray;
@@ -29,27 +22,22 @@ import br.leg.camara.labhacker.edemocracia.content.Category;
 import br.leg.camara.labhacker.edemocracia.content.Content;
 import br.leg.camara.labhacker.edemocracia.content.Group;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
-import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
 import br.leg.camara.labhacker.edemocracia.liferay.Session;
+import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
 
 
-public class ThreadListFragment extends ListFragment {
+public class ThreadListFragment extends SimpleListFragment<Thread> {
 
     public static String ARG_PARENT = "parent";
 
-    private RefreshListTask refreshListTask;
+    private Uri parentUri;
     private OnThreadSelectedListener listener;
-    private int parentContentId;
-    private Class parentContentClass;
 
-    private View listView;
-    private View progressView;
-
-    public static ThreadListFragment newInstance(Uri groupUri) {
+    public static ThreadListFragment newInstance(Uri parentUri) {
         ThreadListFragment fragment = new ThreadListFragment();
 
         Bundle args = new Bundle();
-        args.putString(ARG_PARENT, groupUri.toString());
+        args.putString(ARG_PARENT, parentUri.toString());
 
         fragment.setArguments(args);
 
@@ -59,15 +47,16 @@ public class ThreadListFragment extends ListFragment {
     public ThreadListFragment() {
     }
 
+    public Uri getParentUri() {
+        return parentUri;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            Uri parentUri = Uri.parse(getArguments().getString(ARG_PARENT));
-
-            // FIXME We will support other kinds of parents later on
-            setParentContent(Group.class, ContentUris.parseId(parentUri));
+            parentUri = Uri.parse(getArguments().getString(ARG_PARENT));
         }
     }
 
@@ -75,22 +64,9 @@ public class ThreadListFragment extends ListFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.list_fragment, container, false);
 
-        listView = view.findViewById(android.R.id.list);
-        progressView = view.findViewById(android.R.id.progress);
-
-        progressView.setVisibility(View.GONE);
+        setContentView(view);
 
         return view;
-    }
-
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        if (savedInstanceState == null) {
-            refreshGroupList();
-        }
     }
 
     @Override
@@ -125,105 +101,33 @@ public class ThreadListFragment extends ListFragment {
         }
     }
 
-    protected void setParentContent(Class cls, long id) {
-        parentContentId = (int) id;
-        parentContentClass = cls;
-    }
+    @Override
+    protected List<Thread> fetchItems() throws Exception {
+        Application application = getActivity().getApplication();
+        Session session = SessionProvider.getSession(application);
+        CustomService service = new CustomService(session);
 
-    protected Class getParentContentClass() {
-        return parentContentClass;
-    }
+        JSONArray result;
 
-    protected int getParentContentId() {
-        return parentContentId;
-    }
+        long parentId = ContentUris.parseId(getParentUri());
+        result = service.listGroupThreads((int) parentId);
 
-    private void refreshGroupList() {
-        showProgress(true);
+        List<Thread> items = new ArrayList<>(result.length());
 
-        setListItems(new ArrayList<Thread>());
-
-        refreshListTask = new RefreshListTask();
-        refreshListTask.execute((Void) null);
-    }
-    
-    private void setListItems(List<Thread> items) {
-        if (getActivity() == null) {
-            return;
+        for (int i = 0; i < result.length(); i++) {
+            try {
+                Thread item = Thread.fromJSONObject(result.getJSONObject(i));
+                items.add(item);
+            } catch (JSONException e) {
+                // XXX Silently ignore errors
+                Log.w(this.getClass().getSimpleName(), "Failed to load thread list: " + e.toString());
+            }
         }
 
-       ThreadListAdapter adapter = new ThreadListAdapter(getActivity(),
-               android.R.layout.simple_list_item_1, android.R.id.text1, items);
-
-        setListAdapter(adapter);
-    }
-
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    public void showProgress(final boolean show) {
-        listView.setVisibility(show ? View.GONE : View.VISIBLE);
-        progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-
-        if (getActivity() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-            listView.animate().setDuration(shortAnimTime).alpha(show ? 0 : 1);
-            progressView.animate().setDuration(shortAnimTime).alpha(show ? 1 : 0);
-        }
+        return items;
     }
 
     public interface OnThreadSelectedListener {
         public void onThreadSelected(Uri groupUri, Uri categoryUri, Uri threadUri);
-    }
-
-    public class RefreshListTask extends AsyncTask<Void, Void, Boolean> {
-        List<Thread> items;
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            Application application = getActivity().getApplication();
-            Session session = SessionProvider.getSession(application);
-            CustomService service = new CustomService(session);
-
-            JSONArray result;
-            try {
-                result = service.listGroupThreads(getParentContentId());
-            } catch (Exception e) {
-                // TODO FIXME Notify error
-                Log.e(this.getClass().getName(), "Failed to retrieve thread list: " + e.toString());
-                return false;
-            }
-
-            items = new ArrayList<>(result.length());
-
-            for (int i = 0; i < result.length(); i++) {
-                try {
-                    Thread item = Thread.fromJSONObject(result.getJSONObject(i));
-                    items.add(item);
-                } catch (JSONException e) {
-                    // FIXME XXX Notify error
-                    Log.e(this.getClass().getSimpleName(), "Failed to load thread list: " + e.toString());
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            refreshListTask = null;
-            showProgress(false);
-
-            if (!success) {
-                items = new ArrayList<>();
-            }
-
-            setListItems(items);
-        }
-
-        @Override
-        protected void onCancelled() {
-            refreshListTask = null;
-            showProgress(false);
-        }
     }
 }

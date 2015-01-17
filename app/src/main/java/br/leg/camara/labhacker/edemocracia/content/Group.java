@@ -6,7 +6,7 @@ import android.net.Uri;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Group {
+public class Group extends Content {
     private boolean active;
     private int companyId;
     private String description;
@@ -47,5 +47,14 @@ public class Group {
 
     public int getType() {
         return type;
+    }
+
+    public String toString() {
+        return getName();
+    }
+
+    @Override
+    public long getId() {
+        return getGroupId();
     }
 }

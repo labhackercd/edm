@@ -1,11 +1,9 @@
 package br.leg.camara.labhacker.edemocracia.content;
 
-import android.net.Uri;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Thread {
+public class Thread extends Content {
     private int categoryId;
     private int groupId;
     private int messageCount;
@@ -88,5 +86,19 @@ public class Thread {
 
     public Message getRootMessage() {
         return rootMessage;
+    }
+
+    @Override
+    public String toString() {
+        if (getRootMessage() == null) {
+            return "Thread " + Integer.toString(getThreadId());
+        } else {
+            return getRootMessage().getSubject();
+        }
+    }
+
+    @Override
+    public long getId() {
+        return getThreadId();
     }
 }

@@ -4,7 +4,7 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.net.Uri;
 
-public class Content {
+public abstract class Content {
     public static String getAuthority(Class cls) {
         return cls.getName();
     }
@@ -19,4 +19,6 @@ public class Content {
     public static Uri withAppendedId(Class cls, long id) {
         return ContentUris.withAppendedId(getContentUri(cls), id);
     }
+
+    public abstract long getId();
 }
