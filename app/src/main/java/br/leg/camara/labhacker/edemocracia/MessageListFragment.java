@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,6 +40,7 @@ public class MessageListFragment extends ListFragment {
     private int categoryId;
     private int threadId;
 
+    private View listView;
     private View progressView;
     private RefreshListTask refreshListTask;
     private OnMessageSelectedListener listener;
@@ -66,28 +68,33 @@ public class MessageListFragment extends ListFragment {
         Bundle args = getArguments();
 
         if (args != null) {
-            Uri groupUri = Uri.parse(args.getString(ARG_GROUP));
             Uri categoryUri = Uri.parse(args.getString(ARG_CATEGORY));
+            Uri groupUri = Uri.parse(args.getString(ARG_GROUP));
             Uri threadUri = Uri.parse(args.getString(ARG_THREAD));
 
-            groupId = (int) ContentUris.parseId(groupUri);
             categoryId = (int) ContentUris.parseId(categoryUri);
+            groupId = (int) ContentUris.parseId(groupUri);
             threadId = (int) ContentUris.parseId(threadUri);
         }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.group_list_fragment, container, false);
-    }
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.list_fragment, container, false);
 
+        listView = view.findViewById(android.R.id.list);
+        progressView = view.findViewById(android.R.id.progress);
+
+        progressView.setVisibility(View.GONE);
+
+        return view;
+    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
         if (savedInstanceState == null) {
-            progressView = getActivity().findViewById(R.id.refresh_progress);
             refreshList();
         }
     }
@@ -122,25 +129,29 @@ public class MessageListFragment extends ListFragment {
 
     private void refreshList() {
         showProgress(true);
+
+        setListItems(new ArrayList<Message>());
+
         refreshListTask = new RefreshListTask();
         refreshListTask.execute((Void) null);
     }
 
+    private void setListItems(List<Message> items) {
+        ListAdapter adapter = new MessageListAdapter(getActivity(),
+                android.R.layout.simple_list_item_1, android.R.id.text1, items);
+
+        setListAdapter(adapter);
+    }
+
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     public void showProgress(final boolean show) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+        listView.setVisibility(show ? View.GONE : View.VISIBLE);
+        progressView.setVisibility(show ? View.VISIBLE : View.GONE);
 
-            progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            progressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            progressView.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (getActivity() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+            listView.animate().setDuration(shortAnimTime).alpha(show ? 0 : 1);
+            progressView.animate().setDuration(shortAnimTime).alpha(show ? 1 : 0);
         }
     }
 
@@ -194,10 +205,7 @@ public class MessageListFragment extends ListFragment {
                 items = new ArrayList<>();
             }
 
-            ListAdapter adapter = new MessageListAdapter(getActivity(),
-                    android.R.layout.simple_list_item_1, android.R.id.text1, items);
-
-            setListAdapter(adapter);
+            setListItems(items);
         }
 
         @Override

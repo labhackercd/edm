@@ -9,10 +9,12 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.app.ListFragment;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewPropertyAnimator;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
@@ -24,23 +26,31 @@ import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.content.Content;
 import br.leg.camara.labhacker.edemocracia.content.Group;
-import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
 import br.leg.camara.labhacker.edemocracia.liferay.Session;
+import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
 
 
 public class GroupListFragment extends ListFragment {
 
+    private View listView;
     private View progressView;
     private RefreshListTask refreshListTask;
     private OnGroupSelectedListener listener;
 
-
     public GroupListFragment() {
+        // Required empty constructor
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.group_list_fragment, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.list_fragment, container, false);
+
+        listView = view.findViewById(android.R.id.list);
+        progressView = view.findViewById(android.R.id.progress);
+
+        progressView.setVisibility(View.GONE);
+
+        return view;
     }
 
     @Override
@@ -48,7 +58,6 @@ public class GroupListFragment extends ListFragment {
         super.onActivityCreated(savedInstanceState);
 
         if (savedInstanceState == null) {
-            progressView = getActivity().findViewById(R.id.refresh_progress);
             refreshGroupList();
         }
     }
@@ -70,7 +79,6 @@ public class GroupListFragment extends ListFragment {
         listener = null;
     }
 
-
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
@@ -83,35 +91,41 @@ public class GroupListFragment extends ListFragment {
 
     private void refreshGroupList() {
         showProgress(true);
+
+        setListItems(new ArrayList<Group>());
+
         refreshListTask = new RefreshListTask();
         refreshListTask.execute((Void) null);
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    public void showProgress(final boolean show) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-            progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            progressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            progressView.setVisibility(show ? View.VISIBLE : View.GONE);
+    private void setListItems(List<Group> items) {
+        if (getActivity() == null) {
+            return;
         }
+
+        ListAdapter adapter = new GroupListAdapter(getActivity(),
+                android.R.layout.simple_list_item_1, android.R.id.text1, items);
+
+        setListAdapter(adapter);
     }
 
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    public void showProgress(final boolean show) {
+        listView.setVisibility(show ? View.GONE : View.VISIBLE);
+        progressView.setVisibility(show ? View.VISIBLE : View.GONE);
+
+        if (getActivity() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+            listView.animate().setDuration(shortAnimTime).alpha(show ? 0 : 1);
+            progressView.animate().setDuration(shortAnimTime).alpha(show ? 1 : 0);
+        }
+    }
 
     public interface OnGroupSelectedListener {
         public void onGroupSelected(Uri uri);
     }
 
-
-    public class RefreshListTask extends AsyncTask<Void, Void, Boolean> {
+    private class RefreshListTask extends AsyncTask<Void, Void, Boolean> {
         List<Group> items;
 
         @Override
@@ -154,21 +168,20 @@ public class GroupListFragment extends ListFragment {
         @Override
         protected void onPostExecute(final Boolean success) {
             refreshListTask = null;
-            showProgress(false);
 
             if (!success) {
                 items = new ArrayList<>();
             }
 
-            ListAdapter adapter = new GroupListAdapter(getActivity(),
-                    android.R.layout.simple_list_item_1, android.R.id.text1, items);
+            setListItems(items);
 
-            setListAdapter(adapter);
+            showProgress(false);
         }
 
         @Override
         protected void onCancelled() {
             refreshListTask = null;
+
             showProgress(false);
         }
     }

@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,11 +37,13 @@ public class ThreadListFragment extends ListFragment {
 
     public static String ARG_PARENT = "parent";
 
-    private View progressView;
     private RefreshListTask refreshListTask;
     private OnThreadSelectedListener listener;
     private int parentContentId;
     private Class parentContentClass;
+
+    private View listView;
+    private View progressView;
 
     public static ThreadListFragment newInstance(Uri groupUri) {
         ThreadListFragment fragment = new ThreadListFragment();
@@ -69,8 +72,15 @@ public class ThreadListFragment extends ListFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.group_list_fragment, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.list_fragment, container, false);
+
+        listView = view.findViewById(android.R.id.list);
+        progressView = view.findViewById(android.R.id.progress);
+
+        progressView.setVisibility(View.GONE);
+
+        return view;
     }
 
 
@@ -79,7 +89,6 @@ public class ThreadListFragment extends ListFragment {
         super.onActivityCreated(savedInstanceState);
 
         if (savedInstanceState == null) {
-            progressView = getActivity().findViewById(R.id.refresh_progress);
             refreshGroupList();
         }
     }
@@ -100,7 +109,6 @@ public class ThreadListFragment extends ListFragment {
         super.onDetach();
         listener = null;
     }
-
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
@@ -132,33 +140,39 @@ public class ThreadListFragment extends ListFragment {
 
     private void refreshGroupList() {
         showProgress(true);
+
+        setListItems(new ArrayList<Thread>());
+
         refreshListTask = new RefreshListTask();
         refreshListTask.execute((Void) null);
+    }
+    
+    private void setListItems(List<Thread> items) {
+        if (getActivity() == null) {
+            return;
+        }
+
+       ThreadListAdapter adapter = new ThreadListAdapter(getActivity(),
+               android.R.layout.simple_list_item_1, android.R.id.text1, items);
+
+        setListAdapter(adapter);
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     public void showProgress(final boolean show) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+        listView.setVisibility(show ? View.GONE : View.VISIBLE);
+        progressView.setVisibility(show ? View.VISIBLE : View.GONE);
 
-            progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            progressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            progressView.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (getActivity() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+            listView.animate().setDuration(shortAnimTime).alpha(show ? 0 : 1);
+            progressView.animate().setDuration(shortAnimTime).alpha(show ? 1 : 0);
         }
     }
-
 
     public interface OnThreadSelectedListener {
         public void onThreadSelected(Uri groupUri, Uri categoryUri, Uri threadUri);
     }
-
 
     public class RefreshListTask extends AsyncTask<Void, Void, Boolean> {
         List<Thread> items;
@@ -203,10 +217,7 @@ public class ThreadListFragment extends ListFragment {
                 items = new ArrayList<>();
             }
 
-            ListAdapter adapter = new ThreadListAdapter(getActivity(),
-                    android.R.layout.simple_list_item_1, android.R.id.text1, items);
-
-            setListAdapter(adapter);
+            setListItems(items);
         }
 
         @Override
