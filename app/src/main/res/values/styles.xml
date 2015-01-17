@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- the theme applied to the application or activity -->
-    <style name="AppTheme"
-        parent="@android:style/Theme.Material.Light.DarkActionBar">
-        <item name="android:actionBarStyle">@style/MyActionBar</item>
+    <style name="GreenTheme">
+        <item name="android:actionBarStyle">@style/GreenActionBarTheme</item>
     </style>
 
-    <!-- ActionBar styles -->
-    <style name="MyActionBar"
-        parent="AppTheme">
+    <style name="GreenActionBarTheme"
+        parent="GreenTheme">
         <item name="android:background">@color/dark_green</item>
     </style>
 
-    <style name="AppThemeNoBar"
-        parent="AppTheme">
+    <style name="NoActionBar"
+        parent="GreenTheme">
+        <item name="android:windowActionBar">false</item>
         <item name ="android:windowNoTitle">true</item>
     </style>
-
 </resources>

@@ -1,5 +1,6 @@
 package br.leg.camara.labhacker.edemocracia;
 
+import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.net.Uri;
 import android.app.Activity;
@@ -9,8 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class MainActivity
-        extends Activity
+public class MainActivity extends Activity
         implements GroupListFragment.OnGroupSelectedListener,
                    ThreadListFragment.OnThreadSelectedListener,
                    MessageListFragment.OnMessageSelectedListener {
@@ -18,7 +18,12 @@ public class MainActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
+
+        ActionBar actionBar = getActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(false);
+
         if (savedInstanceState == null) {
             FragmentTransaction transaction = getFragmentManager().beginTransaction();
             GroupListFragment groupListFragment = new GroupListFragment();
