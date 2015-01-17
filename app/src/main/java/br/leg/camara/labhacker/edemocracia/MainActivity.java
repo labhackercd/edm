@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-
 public class MainActivity extends Activity
         implements GroupListFragment.OnGroupSelectedListener,
                    ThreadListFragment.OnThreadSelectedListener,
@@ -22,12 +21,14 @@ public class MainActivity extends Activity
         setContentView(R.layout.activity_main);
 
         ActionBar actionBar = getActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(false);
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(false);
+        }
 
         if (savedInstanceState == null) {
             FragmentTransaction transaction = getFragmentManager().beginTransaction();
             GroupListFragment groupListFragment = new GroupListFragment();
-            transaction.add(R.id.mainFrame, groupListFragment);
+            transaction.add(R.id.container, groupListFragment);
             transaction.commit();
         }
     }
@@ -41,10 +42,6 @@ public class MainActivity extends Activity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
         return super.onOptionsItemSelected(item);
     }
 
@@ -55,7 +52,7 @@ public class MainActivity extends Activity
         ThreadListFragment fragment = ThreadListFragment.newInstance(groupUri);
 
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction.replace(R.id.mainFrame, fragment);
+        transaction.replace(R.id.container, fragment);
 
         transaction.addToBackStack(null);
 
@@ -69,7 +66,7 @@ public class MainActivity extends Activity
         MessageListFragment fragment = MessageListFragment.newInstance(companyUri, groupUri, threadUri);
 
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction.replace(R.id.mainFrame, fragment);
+        transaction.replace(R.id.container, fragment);
 
         transaction.addToBackStack(null);
 

@@ -7,11 +7,5 @@
     tools:context="br.leg.camara.labhacker.edemocracia.MainActivity"
     tools:ignore="MergeRootFrame">
 
-    <FrameLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_gravity="center"
-        android:id="@+id/mainFrame"></FrameLayout>
-
 </FrameLayout>
 
