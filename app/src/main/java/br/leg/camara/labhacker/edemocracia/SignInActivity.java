@@ -1,7 +1,5 @@
 package br.leg.camara.labhacker.edemocracia;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Application;
@@ -43,6 +41,7 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
 
     private AutoCompleteTextView emailView;
     private EditText passwordView;
+
     private View progressView;
     private View loginFormView;
 
@@ -80,7 +79,9 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
         });
 
         loginFormView = findViewById(R.id.login_form);
-        progressView = findViewById(R.id.login_progress);
+        progressView = findViewById(android.R.id.progress);
+
+        progressView.setVisibility(View.GONE);
     }
 
     private void populateAutoComplete() {
@@ -151,34 +152,13 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     public void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
+        loginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+        progressView.setVisibility(show ? View.VISIBLE : View.GONE);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-            loginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            loginFormView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    loginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
-
-            progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            progressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
-            progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            loginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            loginFormView.animate().setDuration(shortAnimTime).alpha(show ? 0 : 1);
+            progressView.animate().setDuration(shortAnimTime).alpha(show ? 1 : 0);
         }
     }
 
