@@ -12,11 +12,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import br.leg.camara.labhacker.edemocracia.content.Content;
 
 
 /**
@@ -26,16 +27,16 @@ import java.util.List;
  *
  * It's possible to use specific ListAdapters by overriding the createAdapter method.
  *
- * @param <T>
+ * @param <T extends Content>
  */
-public abstract class SimpleListFragment<T> extends ListFragment {
+public abstract class ContentListFragment<T extends Content> extends ListFragment {
 
     private View listView;
     private View progressView;
 
     private RefreshListTask refreshListTask;
 
-    public SimpleListFragment() {
+    public ContentListFragment() {
         // Required empty constructor
     }
 
@@ -59,7 +60,7 @@ public abstract class SimpleListFragment<T> extends ListFragment {
 
     @NonNull
     protected ListAdapter createAdapter(Context context, List<T> items) {
-        return new SimpleArrayAdapter<>(context, items);
+        return new ContentArrayAdapter<>(context, items);
     }
 
     protected final void setContentView(View view) {

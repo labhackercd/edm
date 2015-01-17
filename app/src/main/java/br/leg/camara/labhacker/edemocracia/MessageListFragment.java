@@ -22,7 +22,7 @@ import br.leg.camara.labhacker.edemocracia.content.Message;
 import br.leg.camara.labhacker.edemocracia.liferay.Session;
 import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
 
-public class MessageListFragment extends SimpleListFragment<Message> {
+public class MessageListFragment extends ContentListFragment<Message> {
 
     public static String ARG_GROUP = "group";
     public static String ARG_CATEGORY = "category";
@@ -45,9 +45,6 @@ public class MessageListFragment extends SimpleListFragment<Message> {
         fragment.setArguments(args);
 
         return fragment;
-    }
-
-    public MessageListFragment() {
     }
 
     @Override

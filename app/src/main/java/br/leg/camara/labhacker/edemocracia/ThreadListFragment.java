@@ -26,7 +26,7 @@ import br.leg.camara.labhacker.edemocracia.liferay.Session;
 import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
 
 
-public class ThreadListFragment extends SimpleListFragment<Thread> {
+public class ThreadListFragment extends ContentListFragment<Thread> {
 
     public static String ARG_PARENT = "parent";
 
@@ -42,9 +42,6 @@ public class ThreadListFragment extends SimpleListFragment<Thread> {
         fragment.setArguments(args);
 
         return fragment;
-    }
-
-    public ThreadListFragment() {
     }
 
     public Uri getParentUri() {

@@ -20,13 +20,9 @@ import br.leg.camara.labhacker.edemocracia.liferay.Session;
 import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
 
 
-public class GroupListFragment extends SimpleListFragment<Group> {
+public class GroupListFragment extends ContentListFragment<Group> {
 
     private OnGroupSelectedListener listener;
-
-    public GroupListFragment() {
-        // Required empty constructor
-    }
 
     @Override
     protected List<Group> fetchItems() throws Exception {
