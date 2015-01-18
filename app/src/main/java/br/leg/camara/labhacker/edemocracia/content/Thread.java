@@ -3,98 +3,112 @@ package br.leg.camara.labhacker.edemocracia.content;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Date;
+
 public class Thread extends Content {
-    private int categoryId;
-    private int groupId;
-    private int messageCount;
-    private boolean question;
-    private int rootMessageId;
+
     private int status;
-    private int threadId;
     private int viewCount;
+    private int messageCount;
+    private Date lastPostDate;
+    private long companyId;
+    private long statusByUserId;
+    private long rootMessageUserId;
+    private long rootMessageId;
+    private boolean question;
+    private long lastPostByUserId;
+    private int priority;
+    private long threadId;
+    private long groupId;
+    private String statusByUserName;
+    private Date statusDate;
+    private long categoryId;
 
-    private Message rootMessage;
+    public static Thread fromJSONObject(JSONObject obj) throws JSONException {
+        Thread instance = new Thread();
 
-    /* {
-        "categoryId": 1934029,
-        "companyId": 10131,
-        "groupId": 1927974,
-        "lastPostByUserId": 12777,
-        "lastPostDate": 1412953871147,
-        "messageCount": 1,
-        "priority": 0,
-        "question": false,
-        "rootMessageId": 1941849,
-        "rootMessageUserId": 12777,
-        "status": 0,
-        "statusByUserId": 12777,
-        "statusByUserName": "Equipe e-Democracia",
-        "statusDate": 1412953871147,
-        "threadId": 1941850,
-        "viewCount": 162
-    } */
-    public static Thread fromJSONObject(JSONObject o) throws JSONException {
-        Thread r = new Thread();
+        instance.status = obj.getInt("status");
+        instance.viewCount = obj.getInt("viewCount");
+        instance.messageCount = obj.getInt("messageCount");
+        instance.lastPostDate = new Date(obj.getLong("lastPostDate"));
+        instance.companyId = obj.getLong("companyId");
+        instance.statusByUserId = obj.getLong("statusByUserId");
+        instance.rootMessageUserId = obj.getLong("rootMessageUserId");
+        instance.rootMessageId = obj.getLong("rootMessageId");
+        instance.question = obj.getBoolean("question");
+        instance.lastPostByUserId = obj.getLong("lastPostByUserId");
+        instance.priority = obj.getInt("priority");
+        instance.threadId = obj.getLong("threadId");
+        instance.groupId = obj.getLong("groupId");
+        instance.statusByUserName = obj.getString("statusByUserName");
+        instance.statusDate = new Date(obj.getLong("statusDate"));
+        instance.categoryId = obj.getLong("categoryId");
 
-        r.categoryId = o.getInt("categoryId");
-        r.groupId = o.getInt("groupId");
-        r.messageCount = o.getInt("messageCount");
-        r.question = o.getBoolean("question");
-        r.rootMessageId = o.getInt("rootMessageId");
-        r.threadId = o.getInt("threadId");
-        r.viewCount = o.getInt("viewCount");
-
-        JSONObject rootMsg = o.getJSONObject("rootMessage");
-        if (rootMsg != null) {
-            r.rootMessage = Message.fromJSONObject(rootMsg);
-        }
-
-        return r;
-    }
-
-    public int getCategoryId() {
-        return categoryId;
-    }
-
-    public int getGroupId() {
-        return groupId;
-    }
-
-    public int getMessageCount() {
-        return messageCount;
-    }
-
-    public boolean isQuestion() {
-        return question;
-    }
-
-    public int getRootMessageId() {
-        return rootMessageId;
+        return instance;
     }
 
     public int getStatus() {
         return status;
     }
 
-    public int getThreadId() {
-        return threadId;
-    }
-
     public int getViewCount() {
         return viewCount;
     }
 
-    public Message getRootMessage() {
-        return rootMessage;
+    public int getMessageCount() {
+        return messageCount;
     }
 
-    @Override
-    public String toString() {
-        if (getRootMessage() == null) {
-            return "Thread " + Integer.toString(getThreadId());
-        } else {
-            return getRootMessage().getSubject();
-        }
+    public Date getLastPostDate() {
+        return lastPostDate;
+    }
+
+    public long getCompanyId() {
+        return companyId;
+    }
+
+    public long getStatusByUserId() {
+        return statusByUserId;
+    }
+
+    public long getRootMessageUserId() {
+        return rootMessageUserId;
+    }
+
+    public long getRootMessageId() {
+        return rootMessageId;
+    }
+
+    public boolean isQuestion() {
+        return question;
+    }
+
+    public long getLastPostByUserId() {
+        return lastPostByUserId;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public long getThreadId() {
+        return threadId;
+    }
+
+    public long getGroupId() {
+        return groupId;
+    }
+
+    public String getStatusByUserName() {
+        return statusByUserName;
+    }
+
+    public Date getStatusDate() {
+        return statusDate;
+    }
+
+    public long getCategoryId() {
+        return categoryId;
     }
 
     @Override

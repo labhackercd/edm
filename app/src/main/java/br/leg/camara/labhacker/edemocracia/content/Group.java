@@ -1,56 +1,101 @@
 package br.leg.camara.labhacker.edemocracia.content;
 
-import android.content.ContentResolver;
-import android.net.Uri;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
 public class Group extends Content {
-    private boolean active;
-    private int companyId;
+
+    private String friendlyURL;
+    private long classPK;
     private String description;
-    private int groupId;
-    private String name;
+    private long creatorUserId;
+    private long classNameId;
+    private long companyId;
+    private boolean site;
+    private String typeSettings;
+    private long parentGroupId;
+    private boolean active;
+    private long liveGroupId;
     private int type;
+    private long groupId;
+    private String name;
 
-    public static Group fromJSONObject(JSONObject o) throws JSONException {
-        Group g = new Group();
-        g.active = o.getBoolean("active");
-        g.companyId = o.getInt("companyId");
-        g.description = o.getString("description");
-        g.groupId = o.getInt("groupId");
-        g.name = o.getString("name");
-        g.type = o.getInt("type");
-        return g;
+    public static Group fromJSONObject(JSONObject obj) throws JSONException {
+        Group instance = new Group();
+
+        instance.friendlyURL = obj.getString("friendlyURL");
+        instance.classPK = obj.getLong("classPK");
+        instance.description = obj.getString("description");
+        instance.creatorUserId = obj.getLong("creatorUserId");
+        instance.classNameId = obj.getLong("classNameId");
+        instance.companyId = obj.getLong("companyId");
+        instance.site = obj.getBoolean("site");
+        instance.typeSettings = obj.getString("typeSettings");
+        instance.parentGroupId = obj.getLong("parentGroupId");
+        instance.active = obj.getBoolean("active");
+        instance.liveGroupId = obj.getLong("liveGroupId");
+        instance.type = obj.getInt("type");
+        instance.groupId = obj.getLong("groupId");
+        instance.name = obj.getString("name");
+
+        return instance;
     }
 
-    public boolean isActive() {
-        return active;
+    public String getFriendlyURL() {
+        return friendlyURL;
     }
 
-    public int getCompanyId() {
-        return companyId;
+    public long getClassPK() {
+        return classPK;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public int getGroupId() {
-        return groupId;
+    public long getCreatorUserId() {
+        return creatorUserId;
     }
 
-    public String getName() {
-        return name;
+    public long getClassNameId() {
+        return classNameId;
+    }
+
+    public long getCompanyId() {
+        return companyId;
+    }
+
+    public boolean isSite() {
+        return site;
+    }
+
+    public String getTypeSettings() {
+        return typeSettings;
+    }
+
+    public long getParentGroupId() {
+        return parentGroupId;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public long getLiveGroupId() {
+        return liveGroupId;
     }
 
     public int getType() {
         return type;
     }
 
-    public String toString() {
-        return getName();
+    public long getGroupId() {
+        return groupId;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override

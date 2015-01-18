@@ -5,70 +5,59 @@ import org.json.JSONObject;
 
 import java.util.Date;
 
-public class Category {
+public class Category extends Content {
 
-    private int categoryId;
-    private int companyId;
-    private Date createDate;
-    private String description;
-    private String displayStyle;
-    private int groupId;
-    private Date lastPostDate;
-    private int messageCount;
-    private Date modifiedDate;
-    private String name;
-    private int parentCategoryId;
-    private int threadCount;
-    private int userId;
     private String userName;
+    private String description;
+    private Date lastPostDate;
+    private long companyId;
+    private Date createDate;
+    private long parentCategoryId;
+    private long userId;
+    private String uuid;
+    private int threadCount;
+    private long categoryId;
+    private Date modifiedDate;
+    private long groupId;
+    private int messageCount;
+    private String displayStyle;
+    private String name;
 
-    /* {
-        "categoryId": 1937800,
-        "companyId": 10131,
-        "createDate": 1412194712700,
-        "description": "",
-        "displayStyle": "default",
-        "groupId": 1927974,
-        "lastPostDate": 1412194842497,
-        "messageCount": 1,
-        "modifiedDate": 1412194712700,
-        "name": "0. Lista de discussão para formação de grupos",
-        "parentCategoryId": 0,
-        "threadCount": 1,
-        "userId": 12777,
-        "userName": "Equipe e-Democracia",
-        "uuid": "49539a73-5eb3-4c2f-9e22-4ea9b99176e0"
-    } */
-    public static Category fromJSONObject(JSONObject o) throws JSONException {
-        Category r = new Category();
+    public static Category fromJSONObject(JSONObject obj) throws JSONException {
+        Category instance = new Category();
 
-        r.categoryId = o.getInt("categoryId");
-        r.companyId = o.getInt("companyId");
-        // TODO r.createDate = o.getDate("createDate");
-        r.description = o.getString("description");
-        r.displayStyle = o.getString("displayStyle");
-        r.groupId = o.getInt("groupId");
-        // TODO r.lastPostDate = o.getDate("lastPostDate");
-        r.messageCount = o.getInt("messageCount");
-        // TODO r.modifiedDate = o.getDate("modifiedDate");
-        r.name = o.getString("name");
-        r.parentCategoryId = o.getInt("parentCategoryId");
-        r.threadCount = o.getInt("threadCount");
-        r.userId = o.getInt("userId");
-        r.userName = o.getString("userName");
+        instance.userName = obj.getString("userName");
+        instance.description = obj.getString("description");
+        instance.lastPostDate = new Date(obj.getLong("lastPostDate"));
+        instance.companyId = obj.getLong("companyId");
+        instance.createDate = new Date(obj.getLong("createDate"));
+        instance.parentCategoryId = obj.getLong("parentCategoryId");
+        instance.userId = obj.getLong("userId");
+        instance.uuid = obj.getString("uuid");
+        instance.threadCount = obj.getInt("threadCount");
+        instance.categoryId = obj.getLong("categoryId");
+        instance.modifiedDate = new Date(obj.getLong("modifiedDate"));
+        instance.groupId = obj.getLong("groupId");
+        instance.messageCount = obj.getInt("messageCount");
+        instance.displayStyle = obj.getString("displayStyle");
+        instance.name = obj.getString("name");
 
-        return r;
+        return instance;
     }
 
-    public int getCategoryId() {
-        return categoryId;
+    public String getUserName() {
+        return userName;
     }
 
-    public int getGroupId() {
-        return groupId;
+    public String getDescription() {
+        return description;
     }
 
-    public int getCompanyId() {
+    public Date getLastPostDate() {
+        return lastPostDate;
+    }
+
+    public long getCompanyId() {
         return companyId;
     }
 
@@ -76,47 +65,48 @@ public class Category {
         return createDate;
     }
 
+    public long getParentCategoryId() {
+        return parentCategoryId;
+    }
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public int getThreadCount() {
+        return threadCount;
+    }
+
+    public long getCategoryId() {
+        return categoryId;
+    }
+
     public Date getModifiedDate() {
         return modifiedDate;
     }
 
-    public int getUserId() {
-        return userId;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getDisplayStyle() {
-        return displayStyle;
-    }
-
-    public Date getLastPostDate() {
-        return lastPostDate;
+    public long getGroupId() {
+        return groupId;
     }
 
     public int getMessageCount() {
         return messageCount;
     }
 
+    public String getDisplayStyle() {
+        return displayStyle;
+    }
+
     public String getName() {
         return name;
     }
 
-    public int getParentCategoryId() {
-        return parentCategoryId;
-    }
-
-    public int getThreadCount() {
-        return threadCount;
+    @Override
+    public long getId() {
+        return getCategoryId();
     }
 }

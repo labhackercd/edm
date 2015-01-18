@@ -2,8 +2,6 @@ package br.leg.camara.labhacker.edemocracia;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.ContentUris;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -18,8 +16,6 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.List;
 
-import br.leg.camara.labhacker.edemocracia.content.Category;
-import br.leg.camara.labhacker.edemocracia.content.Content;
 import br.leg.camara.labhacker.edemocracia.content.Group;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
 import br.leg.camara.labhacker.edemocracia.liferay.Session;
@@ -30,30 +26,28 @@ public class ThreadListFragment extends ContentListFragment<Thread> {
 
     public static String ARG_PARENT = "parent";
 
-    private Uri parentUri;
+    private Group group;
     private OnThreadSelectedListener listener;
 
-    public static ThreadListFragment newInstance(Uri parentUri) {
+    public static ThreadListFragment newInstance(Group group) {
         ThreadListFragment fragment = new ThreadListFragment();
 
         Bundle args = new Bundle();
-        args.putString(ARG_PARENT, parentUri.toString());
+        args.putParcelable(ARG_PARENT, group);
 
         fragment.setArguments(args);
 
         return fragment;
     }
 
-    public Uri getParentUri() {
-        return parentUri;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            parentUri = Uri.parse(getArguments().getString(ARG_PARENT));
+        Bundle args = getArguments();
+
+        if (args != null) {
+            group = args.getParcelable(ARG_PARENT);
         }
     }
 
@@ -88,13 +82,7 @@ public class ThreadListFragment extends ContentListFragment<Thread> {
         super.onListItemClick(l, v, position, id);
 
         if (listener != null) {
-            Thread item = (Thread) getListAdapter().getItem(position);
-
-            Uri groupUri = Content.withAppendedId(Group.class, item.getGroupId());
-            Uri categoryUri = Content.withAppendedId(Category.class, item.getCategoryId());
-            Uri threadUri = Content.withAppendedId(Thread.class, item.getThreadId());
-
-            listener.onThreadSelected(groupUri, categoryUri, threadUri);
+            listener.onThreadSelected((Thread) getListAdapter().getItem(position));
         }
     }
 
@@ -106,8 +94,7 @@ public class ThreadListFragment extends ContentListFragment<Thread> {
 
         JSONArray result;
 
-        long parentId = ContentUris.parseId(getParentUri());
-        result = service.listGroupThreads((int) parentId);
+        result = service.listGroupThreads(group.getId());
 
         List<Thread> items = new ArrayList<>(result.length());
 
@@ -125,6 +112,6 @@ public class ThreadListFragment extends ContentListFragment<Thread> {
     }
 
     public interface OnThreadSelectedListener {
-        public void onThreadSelected(Uri groupUri, Uri categoryUri, Uri threadUri);
+        public void onThreadSelected(Thread thread);
     }
 }

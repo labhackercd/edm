@@ -16,7 +16,7 @@ public class CustomService extends Service {
         super(session);
     }
 
-    public JSONArray listGroups(int companyId) throws JSONException, IOException, ServerException {
+    public JSONArray listGroups(long companyId) throws JSONException, IOException, ServerException {
         JSONObject args = new JSONObject();
 
         args.put("companyId", companyId);
@@ -33,7 +33,7 @@ public class CustomService extends Service {
         return getSession().invoke(cmd);
     }
 
-    public JSONArray listGroupThreads(int groupId) throws JSONException, IOException, ServerException {
+    public JSONArray listGroupThreads(long groupId) throws JSONException, IOException, ServerException {
 
         // WARNING This method actually issues two method calls on the server.
         // First we get the list of threads, and then we get a list of messages
@@ -87,7 +87,7 @@ public class CustomService extends Service {
         return threads;
     }
 
-    public JSONArray listThreadMessages(int groupId, int categoryId, int threadId) throws JSONException, IOException, ServerException {
+    public JSONArray listThreadMessages(long groupId, long categoryId, long threadId) throws JSONException, IOException, ServerException {
        JSONObject args = new JSONObject();
 
         args.put("groupId", groupId);

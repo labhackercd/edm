@@ -1,7 +1,6 @@
 package br.leg.camara.labhacker.edemocracia;
 
 import android.app.Activity;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
@@ -14,7 +13,6 @@ import org.json.JSONArray;
 import java.util.ArrayList;
 import java.util.List;
 
-import br.leg.camara.labhacker.edemocracia.content.Content;
 import br.leg.camara.labhacker.edemocracia.content.Group;
 import br.leg.camara.labhacker.edemocracia.liferay.Session;
 import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
@@ -79,12 +77,11 @@ public class GroupListFragment extends ContentListFragment<Group> {
         super.onListItemClick(l, v, position, id);
 
         if (listener != null) {
-            Uri groupUri = Content.withAppendedId(Group.class, id);
-            listener.onGroupSelected(groupUri);
+            listener.onGroupSelected((Group) getListAdapter().getItem(position));
         }
     }
 
     public interface OnGroupSelectedListener {
-        public void onGroupSelected(Uri uri);
+        public void onGroupSelected(Group group);
     }
 }

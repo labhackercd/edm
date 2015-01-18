@@ -1,8 +1,6 @@
 package br.leg.camara.labhacker.edemocracia;
 
 import android.app.Activity;
-import android.content.ContentUris;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -17,30 +15,24 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.List;
 
-import br.leg.camara.labhacker.edemocracia.content.Content;
 import br.leg.camara.labhacker.edemocracia.content.Message;
+import br.leg.camara.labhacker.edemocracia.content.Thread;
 import br.leg.camara.labhacker.edemocracia.liferay.Session;
 import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
 
 public class MessageListFragment extends ContentListFragment<Message> {
 
-    public static String ARG_GROUP = "group";
-    public static String ARG_CATEGORY = "category";
     public static String ARG_THREAD = "thread";
 
-    private int groupId;
-    private int categoryId;
-    private int threadId;
+    private Thread thread;
 
     private OnMessageSelectedListener listener;
 
-    public static MessageListFragment newInstance(Uri groupUri, Uri categoryUri, Uri threadUri) {
+    public static MessageListFragment newInstance(Thread thread) {
         MessageListFragment fragment = new MessageListFragment();
 
         Bundle args = new Bundle();
-        args.putString(ARG_GROUP, groupUri.toString());
-        args.putString(ARG_CATEGORY, categoryUri.toString());
-        args.putString(ARG_THREAD, threadUri.toString());
+        args.putParcelable(ARG_THREAD, thread);
 
         fragment.setArguments(args);
 
@@ -54,13 +46,7 @@ public class MessageListFragment extends ContentListFragment<Message> {
         Bundle args = getArguments();
 
         if (args != null) {
-            Uri categoryUri = Uri.parse(args.getString(ARG_CATEGORY));
-            Uri groupUri = Uri.parse(args.getString(ARG_GROUP));
-            Uri threadUri = Uri.parse(args.getString(ARG_THREAD));
-
-            categoryId = (int) ContentUris.parseId(categoryUri);
-            groupId = (int) ContentUris.parseId(groupUri);
-            threadId = (int) ContentUris.parseId(threadUri);
+            thread = args.getParcelable(ARG_THREAD);
         }
     }
 
@@ -96,8 +82,7 @@ public class MessageListFragment extends ContentListFragment<Message> {
         super.onListItemClick(l, v, position, id);
 
         if (listener != null) {
-            Uri uri = Content.withAppendedId(Thread.class, id);
-            listener.onMessageSelect(uri);
+            listener.onMessageSelect((Message) getListAdapter().getItem(position));
         }
     }
 
@@ -107,7 +92,7 @@ public class MessageListFragment extends ContentListFragment<Message> {
         CustomService service = new CustomService(session);
 
         JSONArray result;
-        result = service.listThreadMessages(groupId, categoryId, threadId);
+        result = service.listThreadMessages(thread.getGroupId(), thread.getCategoryId(), thread.getThreadId());
 
         List<Message> items = new ArrayList<>(result.length());
 
@@ -125,6 +110,6 @@ public class MessageListFragment extends ContentListFragment<Message> {
     }
 
     public interface OnMessageSelectedListener {
-        public void onMessageSelect(Uri uri);
+        public void onMessageSelect(Message message);
     }
 }

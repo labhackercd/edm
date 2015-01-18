@@ -2,12 +2,14 @@ package br.leg.camara.labhacker.edemocracia;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
-import android.net.Uri;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import br.leg.camara.labhacker.edemocracia.content.*;
+import br.leg.camara.labhacker.edemocracia.content.Thread;
 
 public class MainActivity extends Activity
         implements GroupListFragment.OnGroupSelectedListener,
@@ -46,10 +48,8 @@ public class MainActivity extends Activity
     }
 
     @Override
-    public void onGroupSelected(Uri groupUri) {
-        Log.v(getClass().getSimpleName(), "Group selected: " + groupUri.toString());
-
-        ThreadListFragment fragment = ThreadListFragment.newInstance(groupUri);
+    public void onGroupSelected(Group group) {
+        ThreadListFragment fragment = ThreadListFragment.newInstance(group);
 
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.replace(R.id.container, fragment);
@@ -60,10 +60,8 @@ public class MainActivity extends Activity
     }
 
     @Override
-    public void onThreadSelected(Uri companyUri, Uri groupUri, Uri threadUri) {
-        Log.v(getClass().getSimpleName(), "Thread selected: " + threadUri.toString());
-
-        MessageListFragment fragment = MessageListFragment.newInstance(companyUri, groupUri, threadUri);
+    public void onThreadSelected(Thread thread) {
+        MessageListFragment fragment = MessageListFragment.newInstance(thread);
 
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.replace(R.id.container, fragment);
@@ -74,7 +72,7 @@ public class MainActivity extends Activity
     }
 
     @Override
-    public void onMessageSelect(Uri messageUri) {
-        Log.v(getClass().getSimpleName(), "Message selected: " + messageUri.toString());
+    public void onMessageSelect(Message message) {
+        Log.v(getClass().getSimpleName(), "Message selected: " + message);
     }
 }

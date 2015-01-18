@@ -7,97 +7,99 @@ import java.util.Date;
 
 public class Message extends Content {
 
-    private String body;
-    private int categoryId;
-    private int companyId;
+    private int status;
+    private boolean attachments;
+    private String statusByUserName;
+    private long userId;
+    private long threadId;
+    private String subject;
+    private boolean answer;
+    private String uuid;
+    private long companyId;
     private Date createDate;
     private String format;
-    private int groupId;
-    private int messageId;
+    private double priority;
+    private long statusByUserId;
+    private Date statusDate;
+    private long categoryId;
+    private String body;
+    private long classPK;
+    private boolean allowPingbacks;
+    private long classNameId;
+    private long rootMessageId;
+    private long parentMessageId;
     private Date modifiedDate;
-    private int parentMessageId;
-    private int rootMessageId;
-    private int status;
-    private String subject;
-    private int threadId;
-    private int userId;
+    private boolean anonymous;
+    private long groupId;
     private String userName;
+    private long messageId;
 
-    /* {
-        "allowPingbacks": false,
-        "anonymous": false,
-        "answer": false,
-        "attachments": false,
-        "body": "Pessoal, recebemos uma sugestão da colega Mônica Xavier do Departamento de Taquigrafia da Câmara.\n\nO discurso da mulher no Parlamento – APP para visualização dos discursos das Deputadas, com nome, partido, Estado, data do pronunciamento, a partir do Banco de Discursos do DETAQ.",
-        "categoryId": 1934029,
-        "classNameId": 0,
-        "classPK": 0,
-        "companyId": 10131,
-        "createDate": 1412953870343,
-        "format": "bbcode",
-        "groupId": 1927974,
-        "messageId": 1941849,
-        "modifiedDate": 1412953886867,
-        "parentMessageId": 0,
-        "priority": 0,
-        "rootMessageId": 1941849,
-        "status": 0,
-        "statusByUserId": 12777,
-        "statusByUserName": "Equipe e-Democracia",
-        "statusDate": 1412953886870,
-        "subject": "Discurso da mulher no parlamento",
-        "threadId": 1941850,
-        "userId": 12777,
-        "userName": "Equipe e-Democracia",
-        "uuid": "a5f447f1-2c80-47df-b9dc-cb2177898353"
-    } */
-    public static Message fromJSONObject(JSONObject o) throws JSONException {
-        Message r = new Message();
+    public static Message fromJSONObject(JSONObject obj) throws JSONException {
+        Message instance = new Message();
 
-        r.body = o.getString("body");
-        r.categoryId = o.getInt("categoryId");
-        r.companyId = o.getInt("companyId");
-        // TODO r.createDate = o.getDate("createDate");
-        r.format = o.getString("format");
-        r.groupId = o.getInt("groupId");
-        r.messageId = o.getInt("messageId");
-        // TODO r.modifiedDate = o.getDate("modifiedDate");
-        r.parentMessageId = o.getInt("parentMessageId");
-        r.rootMessageId = o.getInt("rootMessageId");
-        r.status = o.getInt("status");
-        r.subject = o.getString("subject");
-        r.threadId = o.getInt("threadId");
-        r.userId = o.getInt("userId");
-        r.userName = o.getString("userName");
+        instance.status = obj.getInt("status");
+        instance.attachments = obj.getBoolean("attachments");
+        instance.statusByUserName = obj.getString("statusByUserName");
+        instance.userId = obj.getLong("userId");
+        instance.threadId = obj.getLong("threadId");
+        instance.subject = obj.getString("subject");
+        instance.answer = obj.getBoolean("answer");
+        instance.uuid = obj.getString("uuid");
+        instance.companyId = obj.getLong("companyId");
+        instance.createDate = new Date(obj.getLong("createDate"));
+        instance.format = obj.getString("format");
+        instance.priority = obj.getDouble("priority");
+        instance.statusByUserId = obj.getLong("statusByUserId");
+        instance.statusDate = new Date(obj.getLong("statusDate"));
+        instance.categoryId = obj.getLong("categoryId");
+        instance.body = obj.getString("body");
+        instance.classPK = obj.getLong("classPK");
+        instance.allowPingbacks = obj.getBoolean("allowPingbacks");
+        instance.classNameId = obj.getLong("classNameId");
+        instance.rootMessageId = obj.getLong("rootMessageId");
+        instance.parentMessageId = obj.getLong("parentMessageId");
+        instance.modifiedDate = new Date(obj.getLong("modifiedDate"));
+        instance.anonymous = obj.getBoolean("anonymous");
+        instance.groupId = obj.getLong("groupId");
+        instance.userName = obj.getString("userName");
+        instance.messageId = obj.getLong("messageId");
 
-        return r;
-    }
-
-    public int getCategoryId() {
-        return categoryId;
-    }
-
-    public int getGroupId() {
-        return groupId;
-    }
-
-    public int getRootMessageId() {
-        return rootMessageId;
+        return instance;
     }
 
     public int getStatus() {
         return status;
     }
 
-    public int getThreadId() {
+    public boolean isAttachments() {
+        return attachments;
+    }
+
+    public String getStatusByUserName() {
+        return statusByUserName;
+    }
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public long getThreadId() {
         return threadId;
     }
 
-    public String getBody() {
-        return body;
+    public String getSubject() {
+        return subject;
     }
 
-    public int getCompanyId() {
+    public boolean isAnswer() {
+        return answer;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public long getCompanyId() {
         return companyId;
     }
 
@@ -109,37 +111,64 @@ public class Message extends Content {
         return format;
     }
 
-    public int getMessageId() {
-        return messageId;
+    public double getPriority() {
+        return priority;
+    }
+
+    public long getStatusByUserId() {
+        return statusByUserId;
+    }
+
+    public Date getStatusDate() {
+        return statusDate;
+    }
+
+    public long getCategoryId() {
+        return categoryId;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public long getClassPK() {
+        return classPK;
+    }
+
+    public boolean isAllowPingbacks() {
+        return allowPingbacks;
+    }
+
+    public long getClassNameId() {
+        return classNameId;
+    }
+
+    public long getRootMessageId() {
+        return rootMessageId;
+    }
+
+    public long getParentMessageId() {
+        return parentMessageId;
     }
 
     public Date getModifiedDate() {
         return modifiedDate;
     }
 
-    public int getParentMessageId() {
-        return parentMessageId;
+    public boolean isAnonymous() {
+        return anonymous;
     }
 
-    public String getSubject() {
-        return subject;
-    }
-
-    public int getUserId() {
-        return userId;
+    public long getGroupId() {
+        return groupId;
     }
 
     public String getUserName() {
         return userName;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    @Override
-    public String toString() {
-        return getBody();
+    public long getMessageId() {
+        return messageId;
     }
 
     @Override
