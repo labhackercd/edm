@@ -8,14 +8,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.liferay.mobile.android.v62.mbmessage.MBMessageService;
+
 import org.json.JSONArray;
 
 import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.content.Message;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
-import br.leg.camara.labhacker.edemocracia.liferay.Session;
-import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
+import br.leg.camara.labhacker.edemocracia.util.EDMSession;
 import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
 public class MessageListFragment extends ContentListFragment<Message> {
@@ -86,12 +87,12 @@ public class MessageListFragment extends ContentListFragment<Message> {
 
     @Override
     protected List<Message> fetchItems() throws Exception {
-        Session session = SessionProvider.getSession(getActivity().getApplication());
-        CustomService service = new CustomService(session);
+        EDMSession session = EDMSession.get(getActivity().getApplicationContext());
 
-        JSONArray result = service.listThreadMessages(thread.getGroupId(), thread.getCategoryId(), thread.getThreadId());
+        JSONArray messages = new MBMessageService(session).getThreadMessages(
+                thread.getGroupId(), 0, thread.getThreadId(), 0, -1, -1);
 
-        return JSONReader.fromJSON(result, Message.JSON_READER);
+        return JSONReader.fromJSON(messages, Message.JSON_READER);
     }
 
     public interface OnMessageSelectedListener {

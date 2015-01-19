@@ -3,16 +3,21 @@ package br.leg.camara.labhacker.edemocracia;
 import android.app.Application;
 import android.test.ApplicationTestCase;
 
+import com.liferay.mobile.android.auth.basic.BasicAuthentication;
+import com.liferay.mobile.android.http.HttpUtil;
+import com.liferay.mobile.android.service.Session;
+import com.liferay.mobile.android.service.SessionImpl;
+import com.liferay.mobile.android.v62.group.GroupService;
+
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.Properties;
 
-import br.leg.camara.labhacker.edemocracia.liferay.auth.CookieAuthenticator;
-import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
-import br.leg.camara.labhacker.edemocracia.liferay.Session;
+import br.leg.camara.labhacker.edemocracia.util.EDMAuthentication;
+import br.leg.camara.labhacker.edemocracia.util.EDMSession;
 
 class Helper {
     private static Properties properties = null;
@@ -57,50 +62,26 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
     }
 
     public void testItAll() throws Exception {
-        createApplication();
-
         String username = getUsername();
         String password = getPassword();
 
-        assertNotNull(username);
-        assertNotNull(password);
+        Session session = new EDMSession(new BasicAuthentication(username, password));
 
-        Session session = SessionProvider.createSession(getApplication(), username, password);
+        GroupService groupService = new GroupService(session);
 
-        assertNotNull(session);
-        assertTrue(CookieAuthenticator.isAuthenticated(session));
+        JSONArray sites = groupService.getUserSites();
 
-        CustomService service = new CustomService(session);
+        assertNotNull(sites);
+        assertTrue(sites.length() > 0);
 
-        JSONArray groups = service.listGroups(getCompanyId());
+        long companyId = sites.getJSONObject(0).getLong("companyId");
 
-        assertNotNull(groups);
+        session = new EDMSession(new EDMAuthentication(username, password, companyId));
+        groupService = new GroupService(session);
 
-        if (groups.length() < 1) {
-            throw new AssertionError("We expected to receive at least one group");
-        }
+        JSONArray result = groupService.search(getCompanyId(), "%", "%", new JSONArray(), -1, -1);
 
-        int groupId = -1;
-        for (int i = 0; i < groups.length(); i++) {
-            JSONObject group = groups.getJSONObject(i);
-
-            if (group.getString("friendlyURL").contains("hackathon-de-genero")) {
-                groupId = group.getInt("groupId");
-            }
-        }
-
-        if (groupId < 0) {
-            throw new AssertionError("We couldn't find the a group containing hackathon-de-genero");
-        }
-
-        JSONArray threads = service.listGroupThreads(groupId);
-
-        assertNotNull(threads);
-
-        if (threads.length() < 1) {
-            throw new AssertionError("We expected to receive at least one thread");
-        }
-
-        assertNotNull(threads.getJSONObject(0).getJSONObject("rootMessage"));
+        assertNotNull(result);
+        assertTrue(result.length() > 0);
     }
 }

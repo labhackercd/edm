@@ -1,25 +1,22 @@
 package br.leg.camara.labhacker.edemocracia;
 
 import android.app.Activity;
-import android.app.Application;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import org.json.JSONArray;
-import org.json.JSONException;
+import com.liferay.mobile.android.v62.mbthread.MBThreadService;
 
-import java.util.ArrayList;
+import org.json.JSONArray;
+
 import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.content.Group;
+import br.leg.camara.labhacker.edemocracia.util.EDMSession;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
-import br.leg.camara.labhacker.edemocracia.liferay.Session;
-import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
 import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
 
@@ -89,13 +86,15 @@ public class ThreadListFragment extends ContentListFragment<Thread> {
 
     @Override
     protected List<Thread> fetchItems() throws Exception {
-        Application application = getActivity().getApplication();
-        Session session = SessionProvider.getSession(application);
-        CustomService service = new CustomService(session);
+        EDMSession session = EDMSession.get(getActivity().getApplicationContext());
 
-        JSONArray result = service.listGroupThreads(group.getId());
+        assert session != null;
 
-        return JSONReader.fromJSON(result, Thread.JSON_READER);
+        MBThreadService service = new MBThreadService(session);
+
+        JSONArray threads = service.getGroupThreads(group.getGroupId(), -1, 0, -1, -1);
+
+        return JSONReader.fromJSON(threads, Thread.JSON_READER);
     }
 
     public interface OnThreadSelectedListener {

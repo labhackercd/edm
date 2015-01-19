@@ -8,14 +8,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.liferay.mobile.android.v62.group.GroupService;
+
 import org.json.JSONArray;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.content.Group;
-import br.leg.camara.labhacker.edemocracia.liferay.Session;
-import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
+import br.leg.camara.labhacker.edemocracia.util.EDMSession;
 import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
 
@@ -25,10 +25,15 @@ public class GroupListFragment extends ContentListFragment<Group> {
 
     @Override
     protected List<Group> fetchItems() throws Exception {
-        Session session = SessionProvider.getSession(getActivity().getApplication());
-        CustomService service = new CustomService(session);
+        EDMSession session = EDMSession.get(getActivity().getApplicationContext());
 
-        JSONArray result = service.listGroups(SessionProvider.DEFAULT_COMPANY_ID);
+        assert session != null;
+
+
+        GroupService groupService = new GroupService(session);
+
+        JSONArray groups = groupService.search(
+                session.getCompanyId(), "%", "%", new JSONArray(), -1, -1);
 
         /* TODO Filter
         if (!group.isActive() || group.getType() != 1) {
@@ -36,7 +41,7 @@ public class GroupListFragment extends ContentListFragment<Group> {
         }
         */
 
-        return JSONReader.fromJSON(result, Group.JSON_READER);
+        return JSONReader.fromJSON(groups, Group.JSON_READER);
     }
 
     @Override

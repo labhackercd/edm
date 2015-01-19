@@ -38,4 +38,5 @@ dependencies {
     compile 'org.jsoup:jsoup:1.8.1'
     compile 'com.google.code.gson:gson:2.3.1'
     compile 'com.google.guava:guava:18.0'
+    compile 'com.liferay.mobile:liferay-android-sdk:6.2.0.13'
 }

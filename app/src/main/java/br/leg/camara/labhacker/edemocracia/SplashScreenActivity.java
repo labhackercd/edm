@@ -1,67 +1,48 @@
 package br.leg.camara.labhacker.edemocracia;
 
-import android.content.Intent;
-import android.os.AsyncTask;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
-import br.leg.camara.labhacker.edemocracia.liferay.auth.CookieAuthenticator;
-import br.leg.camara.labhacker.edemocracia.liferay.Session;
+import br.leg.camara.labhacker.edemocracia.util.EDMSession;
 
 
 public class SplashScreenActivity extends Activity {
-
-    private IsAuthenticatedTask isAuthenticatedTask = null;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_splash_screen);
 
-        // Kick off background task to check if the user is authenticated
-        showProgress(true);
-        isAuthenticatedTask = new IsAuthenticatedTask();
-        isAuthenticatedTask.execute((Void) null);
+        // Kick off a background thread to check if the user is authenticated
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                checkIsAuthenticated();
+            }
+        }).start();
     }
 
-    public void showProgress(final boolean show) {
-        // The Splash Screen IS a loading screen. No need to show a spinner here.
+    private void onResult(boolean success) {
     }
 
-    class IsAuthenticatedTask extends AsyncTask<Void, Void, Boolean> {
+    private void checkIsAuthenticated() {
+        EDMSession session = EDMSession.get(getApplicationContext());
 
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            boolean authenticated = false;
+        boolean isAuthenticated = false;
 
+        if (session != null) {
             try {
-                // Check if the stored credentials are still authenticated
-                Session session = SessionProvider.getSession(getApplication());
-                authenticated = CookieAuthenticator.isAuthenticated(session);
+                isAuthenticated = session.isAuthenticated();
             } catch (Exception e) {
-                // TODO FIXME Deal with errors
-                Log.e(getClass().getSimpleName(), "Failed to check if the user is authenticated. " + e.toString());
+                Log.d(getClass().getSimpleName(), "Failed to authenticate: " + e);
             }
-
-            return authenticated;
         }
 
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            if (!success) {
-                startActivity(new Intent(getApplicationContext(), SignInActivity.class));
-            } else {
-                startActivity(new Intent(getApplicationContext(), MainActivity.class));
-            }
-            finish();
-        }
+        Class nextActivity = isAuthenticated ? MainActivity.class : SignInActivity.class;
 
-        @Override
-        protected void onCancelled() {
-            isAuthenticatedTask = null;
-            showProgress(false);
-        }
+        startActivity(new Intent(getApplicationContext(), nextActivity));
+        finish();
     }
 }

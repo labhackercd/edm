@@ -5,6 +5,8 @@ import android.os.Parcelable;
 
 import com.google.gson.Gson;
 
+import org.json.JSONObject;
+
 public abstract class Content implements Parcelable {
 
     public abstract long getId();

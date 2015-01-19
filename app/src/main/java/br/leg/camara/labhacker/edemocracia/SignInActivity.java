@@ -2,7 +2,6 @@ package br.leg.camara.labhacker.edemocracia;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.Application;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -28,11 +27,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.io.IOException;
+import com.liferay.mobile.android.auth.Authentication;
+import com.liferay.mobile.android.auth.basic.BasicAuthentication;
+import com.liferay.mobile.android.service.Session;
+import com.liferay.mobile.android.v62.group.GroupService;
+
+import org.json.JSONArray;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import br.leg.camara.labhacker.edemocracia.liferay.Session;
+import br.leg.camara.labhacker.edemocracia.util.EDMAuthentication;
+import br.leg.camara.labhacker.edemocracia.util.EDMSession;
 
 
 public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> {
@@ -231,25 +237,37 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            boolean result = false;
+            Session session = new EDMSession(new BasicAuthentication(email, password));
 
+            GroupService groupService = new GroupService(session);
+
+            long companyId = -1;
+
+            JSONArray groups;
             try {
-                Application application = getApplication();
-
-                Session session = SessionProvider.createSession(application, email, password);
-
-                result = session != null;
-            } catch (IOException e) {
-                // TODO FIXME Notify errors
-                Log.e(getClass().getSimpleName(), "Login failed. " + e);
+                groups = groupService.getUserSites();
+                companyId = groups.getJSONObject(0).getLong("companyId");
+            } catch (Exception e) {
+                Log.d(getClass().getSimpleName(), "Failed to authenticate: " + e);
             }
 
-            return result;
+            if (companyId < 0) {
+                Log.d("ROFL", "ROFL");
+                return false;
+            }
+
+            // The user is authenticated. Let's save his session in the application context.
+            Authentication credentials = new EDMAuthentication(email, password, companyId);
+
+            new EDMSession(credentials).bind(getApplicationContext());
+
+            return true;
         }
 
         @Override
         protected void onPostExecute(final Boolean success) {
             authenticationTask = null;
+
             showProgress(false);
 
             if (success) {
