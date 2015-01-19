@@ -20,6 +20,7 @@ import br.leg.camara.labhacker.edemocracia.content.Group;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
 import br.leg.camara.labhacker.edemocracia.liferay.Session;
 import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
+import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
 
 public class ThreadListFragment extends ContentListFragment<Thread> {
@@ -92,23 +93,9 @@ public class ThreadListFragment extends ContentListFragment<Thread> {
         Session session = SessionProvider.getSession(application);
         CustomService service = new CustomService(session);
 
-        JSONArray result;
+        JSONArray result = service.listGroupThreads(group.getId());
 
-        result = service.listGroupThreads(group.getId());
-
-        List<Thread> items = new ArrayList<>(result.length());
-
-        for (int i = 0; i < result.length(); i++) {
-            try {
-                Thread item = Thread.fromJSONObject(result.getJSONObject(i));
-                items.add(item);
-            } catch (JSONException e) {
-                // XXX Silently ignore errors
-                Log.w(this.getClass().getSimpleName(), "Failed to load thread list: " + e.toString());
-            }
-        }
-
-        return items;
+        return JSONReader.fromJSON(result, Thread.JSON_READER);
     }
 
     public interface OnThreadSelectedListener {

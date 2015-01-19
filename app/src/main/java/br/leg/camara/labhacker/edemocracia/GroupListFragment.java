@@ -16,6 +16,7 @@ import java.util.List;
 import br.leg.camara.labhacker.edemocracia.content.Group;
 import br.leg.camara.labhacker.edemocracia.liferay.Session;
 import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
+import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
 
 public class GroupListFragment extends ContentListFragment<Group> {
@@ -29,21 +30,13 @@ public class GroupListFragment extends ContentListFragment<Group> {
 
         JSONArray result = service.listGroups(SessionProvider.DEFAULT_COMPANY_ID);
 
-        List<Group> items = new ArrayList<>(result.length());
-
-        for (int i = 0; i < result.length(); i++) {
-            Group group = Group.fromJSONObject(result.getJSONObject(i));
-
-            // Ignore non public (type != 1) or inactive (active != true) groups
-            // FIXME We should probably place this filter at some other layer.
-            if (!group.isActive() || group.getType() != 1) {
-                continue;
-            }
-
-            items.add(group);
+        /* TODO Filter
+        if (!group.isActive() || group.getType() != 1) {
+            continue;
         }
+        */
 
-        return items;
+        return JSONReader.fromJSON(result, Group.JSON_READER);
     }
 
     @Override

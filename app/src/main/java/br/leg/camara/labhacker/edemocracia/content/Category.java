@@ -1,9 +1,13 @@
 package br.leg.camara.labhacker.edemocracia.content;
 
+import android.support.annotation.NonNull;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
+
+import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
 public class Category extends Content {
 
@@ -23,27 +27,6 @@ public class Category extends Content {
     private String displayStyle;
     private String name;
 
-    public static Category fromJSONObject(JSONObject obj) throws JSONException {
-        Category instance = new Category();
-
-        instance.userName = obj.getString("userName");
-        instance.description = obj.getString("description");
-        instance.lastPostDate = new Date(obj.getLong("lastPostDate"));
-        instance.companyId = obj.getLong("companyId");
-        instance.createDate = new Date(obj.getLong("createDate"));
-        instance.parentCategoryId = obj.getLong("parentCategoryId");
-        instance.userId = obj.getLong("userId");
-        instance.uuid = obj.getString("uuid");
-        instance.threadCount = obj.getInt("threadCount");
-        instance.categoryId = obj.getLong("categoryId");
-        instance.modifiedDate = new Date(obj.getLong("modifiedDate"));
-        instance.groupId = obj.getLong("groupId");
-        instance.messageCount = obj.getInt("messageCount");
-        instance.displayStyle = obj.getString("displayStyle");
-        instance.name = obj.getString("name");
-
-        return instance;
-    }
 
     public String getUserName() {
         return userName;
@@ -109,4 +92,29 @@ public class Category extends Content {
     public long getId() {
         return getCategoryId();
     }
+
+    public static final JSONReader<Category> JSON_READER = new JSONReader<Category>() {
+        @Override
+        public Category fromJSONObject(JSONObject json) throws JSONException {
+            Category instance = new Category();
+
+            instance.userName = json.getString("userName");
+            instance.description = json.getString("description");
+            instance.lastPostDate = new Date(json.getLong("lastPostDate"));
+            instance.companyId = json.getLong("companyId");
+            instance.createDate = new Date(json.getLong("createDate"));
+            instance.parentCategoryId = json.getLong("parentCategoryId");
+            instance.userId = json.getLong("userId");
+            instance.uuid = json.getString("uuid");
+            instance.threadCount = json.getInt("threadCount");
+            instance.categoryId = json.getLong("categoryId");
+            instance.modifiedDate = new Date(json.getLong("modifiedDate"));
+            instance.groupId = json.getLong("groupId");
+            instance.messageCount = json.getInt("messageCount");
+            instance.displayStyle = json.getString("displayStyle");
+            instance.name = json.getString("name");
+
+            return instance;
+        }
+    };
 }

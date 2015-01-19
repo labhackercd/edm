@@ -1,7 +1,11 @@
 package br.leg.camara.labhacker.edemocracia.content;
 
+import android.support.annotation.NonNull;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
 
 public class Group extends Content {
@@ -20,27 +24,6 @@ public class Group extends Content {
     private int type;
     private long groupId;
     private String name;
-
-    public static Group fromJSONObject(JSONObject obj) throws JSONException {
-        Group instance = new Group();
-
-        instance.friendlyURL = obj.getString("friendlyURL");
-        instance.classPK = obj.getLong("classPK");
-        instance.description = obj.getString("description");
-        instance.creatorUserId = obj.getLong("creatorUserId");
-        instance.classNameId = obj.getLong("classNameId");
-        instance.companyId = obj.getLong("companyId");
-        instance.site = obj.getBoolean("site");
-        instance.typeSettings = obj.getString("typeSettings");
-        instance.parentGroupId = obj.getLong("parentGroupId");
-        instance.active = obj.getBoolean("active");
-        instance.liveGroupId = obj.getLong("liveGroupId");
-        instance.type = obj.getInt("type");
-        instance.groupId = obj.getLong("groupId");
-        instance.name = obj.getString("name");
-
-        return instance;
-    }
 
     public String getFriendlyURL() {
         return friendlyURL;
@@ -102,4 +85,28 @@ public class Group extends Content {
     public long getId() {
         return getGroupId();
     }
+
+    public static final JSONReader<Group> JSON_READER = new JSONReader<Group>() {
+        @Override
+        public Group fromJSONObject(JSONObject json) throws JSONException {
+            Group instance = new Group();
+
+            instance.friendlyURL = json.getString("friendlyURL");
+            instance.classPK = json.getLong("classPK");
+            instance.description = json.getString("description");
+            instance.creatorUserId = json.getLong("creatorUserId");
+            instance.classNameId = json.getLong("classNameId");
+            instance.companyId = json.getLong("companyId");
+            instance.site = json.getBoolean("site");
+            instance.typeSettings = json.getString("typeSettings");
+            instance.parentGroupId = json.getLong("parentGroupId");
+            instance.active = json.getBoolean("active");
+            instance.liveGroupId = json.getLong("liveGroupId");
+            instance.type = json.getInt("type");
+            instance.groupId = json.getLong("groupId");
+            instance.name = json.getString("name");
+
+            return instance;
+        }
+    };
 }

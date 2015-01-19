@@ -5,6 +5,8 @@ import org.json.JSONObject;
 
 import java.util.Date;
 
+import br.leg.camara.labhacker.edemocracia.util.JSONReader;
+
 public class Thread extends Content {
 
     private int status;
@@ -23,29 +25,6 @@ public class Thread extends Content {
     private String statusByUserName;
     private Date statusDate;
     private long categoryId;
-
-    public static Thread fromJSONObject(JSONObject obj) throws JSONException {
-        Thread instance = new Thread();
-
-        instance.status = obj.getInt("status");
-        instance.viewCount = obj.getInt("viewCount");
-        instance.messageCount = obj.getInt("messageCount");
-        instance.lastPostDate = new Date(obj.getLong("lastPostDate"));
-        instance.companyId = obj.getLong("companyId");
-        instance.statusByUserId = obj.getLong("statusByUserId");
-        instance.rootMessageUserId = obj.getLong("rootMessageUserId");
-        instance.rootMessageId = obj.getLong("rootMessageId");
-        instance.question = obj.getBoolean("question");
-        instance.lastPostByUserId = obj.getLong("lastPostByUserId");
-        instance.priority = obj.getInt("priority");
-        instance.threadId = obj.getLong("threadId");
-        instance.groupId = obj.getLong("groupId");
-        instance.statusByUserName = obj.getString("statusByUserName");
-        instance.statusDate = new Date(obj.getLong("statusDate"));
-        instance.categoryId = obj.getLong("categoryId");
-
-        return instance;
-    }
 
     public int getStatus() {
         return status;
@@ -115,4 +94,30 @@ public class Thread extends Content {
     public long getId() {
         return getThreadId();
     }
+
+    public static final JSONReader<Thread> JSON_READER = new JSONReader<Thread>() {
+        @Override
+        public Thread fromJSONObject(JSONObject json) throws JSONException {
+            Thread instance = new Thread();
+
+            instance.status = json.getInt("status");
+            instance.viewCount = json.getInt("viewCount");
+            instance.messageCount = json.getInt("messageCount");
+            instance.lastPostDate = new Date(json.getLong("lastPostDate"));
+            instance.companyId = json.getLong("companyId");
+            instance.statusByUserId = json.getLong("statusByUserId");
+            instance.rootMessageUserId = json.getLong("rootMessageUserId");
+            instance.rootMessageId = json.getLong("rootMessageId");
+            instance.question = json.getBoolean("question");
+            instance.lastPostByUserId = json.getLong("lastPostByUserId");
+            instance.priority = json.getInt("priority");
+            instance.threadId = json.getLong("threadId");
+            instance.groupId = json.getLong("groupId");
+            instance.statusByUserName = json.getString("statusByUserName");
+            instance.statusDate = new Date(json.getLong("statusDate"));
+            instance.categoryId = json.getLong("categoryId");
+
+            return instance;
+        }
+    };
 }

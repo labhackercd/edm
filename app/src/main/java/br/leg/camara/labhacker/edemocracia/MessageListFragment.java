@@ -3,22 +3,20 @@ package br.leg.camara.labhacker.edemocracia;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.content.Message;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
 import br.leg.camara.labhacker.edemocracia.liferay.Session;
 import br.leg.camara.labhacker.edemocracia.liferay.service.CustomService;
+import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
 public class MessageListFragment extends ContentListFragment<Message> {
 
@@ -91,22 +89,9 @@ public class MessageListFragment extends ContentListFragment<Message> {
         Session session = SessionProvider.getSession(getActivity().getApplication());
         CustomService service = new CustomService(session);
 
-        JSONArray result;
-        result = service.listThreadMessages(thread.getGroupId(), thread.getCategoryId(), thread.getThreadId());
+        JSONArray result = service.listThreadMessages(thread.getGroupId(), thread.getCategoryId(), thread.getThreadId());
 
-        List<Message> items = new ArrayList<>(result.length());
-
-        for (int i = 0; i < result.length(); i++) {
-            try {
-                Message item = Message.fromJSONObject(result.getJSONObject(i));
-                items.add(item);
-            } catch (JSONException e) {
-                // XXX Silently ignore errors
-                Log.w(this.getClass().getSimpleName(), "Failed to load message: " + e.toString());
-            }
-        }
-
-        return items;
+        return JSONReader.fromJSON(result, Message.JSON_READER);
     }
 
     public interface OnMessageSelectedListener {
