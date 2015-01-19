@@ -35,7 +35,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/imageView4"
-                        android:src="@drawable/ic_textsms_black_48dp" />
+                        android:src="@drawable/ic_textsms_black_48dp"
+                        android:alpha=".8" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -45,7 +46,6 @@
                         android:layout_alignBottom="@+id/imageView4"
                         android:id="@+id/textView4"
                         android:layout_gravity="center_horizontal|bottom"
-                        android:layout_margin="10dp"
                         android:textAlignment="center" />
                 </FrameLayout>
             </FrameLayout>
@@ -67,7 +67,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/imageView5"
-                        android:src="@drawable/ic_videocam_black_48dp" />
+                        android:src="@drawable/ic_videocam_black_48dp"
+                        android:alpha=".8" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -77,7 +78,6 @@
                         android:layout_alignBottom="@+id/imageView5"
                         android:id="@+id/textView5"
                         android:layout_gravity="center_horizontal|bottom"
-                        android:layout_margin="10dp"
                         android:textAlignment="center" />
                 </FrameLayout>
             </FrameLayout>
