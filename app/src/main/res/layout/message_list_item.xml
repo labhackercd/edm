@@ -38,23 +38,10 @@
             android:text="Juscelino"
             android:id="@+id/textView"
             android:textStyle="bold"
-            android:layout_alignParentTop="true"
-            android:layout_toRightOf="@+id/imageView1"
-            android:layout_toEndOf="@+id/imageView1"
-            android:layout_marginLeft="10dp"
-            android:textSize="15dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="Mai porque diabo eu to aqui nesse app ja morri fi tá de zuera co a minha cara? "
-            android:id="@+id/textView2"
-            android:layout_centerVertical="true"
-            android:layout_alignLeft="@+id/textView"
-            android:layout_alignStart="@+id/textView"
-            android:paddingTop="20dp"
-            android:textSize="14dp" />
+            android:textSize="15dp"
+            android:layout_alignBottom="@+id/imageView1"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -69,6 +56,18 @@
             android:alpha="0.5" />
 
     </RelativeLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Mai porque diabo eu to aqui nesse app ja morri fi tá de zuera co a minha cara? "
+        android:id="@+id/textView2"
+        android:layout_centerVertical="true"
+        android:layout_alignLeft="@+id/textView"
+        android:layout_alignStart="@+id/textView"
+        android:paddingTop="20dp"
+        android:textSize="14dp" />
 
     <RelativeLayout
         android:layout_width="match_parent"
