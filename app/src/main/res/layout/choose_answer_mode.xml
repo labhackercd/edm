@@ -14,10 +14,10 @@
             android:orientation="horizontal"
             android:layout_width="fill_parent"
             android:layout_height="150dp"
-            android:background="#c9c9c9"
+            android:background="@color/light_gray"
             android:layout_margin="30dp"
             android:layout_gravity="center"
-            android:id="@+id/">
+            android:id="@+id/videoFrame">
 
             <FrameLayout
                 android:layout_width="0dp"
