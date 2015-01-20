@@ -42,6 +42,8 @@ public class ThreadListFragment extends ContentListFragment<Thread> {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setHasOptionsMenu(true);
+
         Bundle args = getArguments();
 
         if (args != null) {

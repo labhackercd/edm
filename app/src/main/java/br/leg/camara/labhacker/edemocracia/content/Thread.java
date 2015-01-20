@@ -25,6 +25,7 @@ public class Thread extends Content {
     private String statusByUserName;
     private Date statusDate;
     private long categoryId;
+    private Message rootMessage = null;
 
     public int getStatus() {
         return status;
@@ -90,6 +91,10 @@ public class Thread extends Content {
         return categoryId;
     }
 
+    public Message getRootMessage() {
+        return rootMessage;
+    }
+
     @Override
     public long getId() {
         return getThreadId();
@@ -116,6 +121,10 @@ public class Thread extends Content {
             instance.statusByUserName = json.getString("statusByUserName");
             instance.statusDate = new Date(json.getLong("statusDate"));
             instance.categoryId = json.getLong("categoryId");
+
+            if (json.has("rootMessage")) {
+                instance.rootMessage = Message.JSON_READER.fromJSON(json.getJSONObject("rootMessage"));
+            }
 
             return instance;
         }

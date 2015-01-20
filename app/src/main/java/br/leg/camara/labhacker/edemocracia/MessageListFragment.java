@@ -1,9 +1,13 @@
 package br.leg.camara.labhacker.edemocracia;
 
 import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
@@ -42,6 +46,8 @@ public class MessageListFragment extends ContentListFragment<Message> {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setHasOptionsMenu(true);
+
         Bundle args = getArguments();
 
         if (args != null) {
@@ -59,6 +65,11 @@ public class MessageListFragment extends ContentListFragment<Message> {
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.threadlike_menu, menu);
+    }
+
+    @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
@@ -73,6 +84,30 @@ public class MessageListFragment extends ContentListFragment<Message> {
     public void onDetach() {
         super.onDetach();
         listener = null;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.reply:
+                return onReplySelected();
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private boolean onReplySelected() {
+        ComposeFragment fragment = ComposeFragment.newInstance(thread);
+
+        FragmentTransaction transaction = getActivity().getFragmentManager().beginTransaction();
+
+        transaction.replace(R.id.container, fragment);
+
+        transaction.addToBackStack(null);
+
+        transaction.commit();
+
+        return true;
     }
 
 
