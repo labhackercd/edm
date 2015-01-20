@@ -95,7 +95,7 @@ public class Category extends Content {
 
     public static final JSONReader<Category> JSON_READER = new JSONReader<Category>() {
         @Override
-        public Category fromJSONObject(JSONObject json) throws JSONException {
+        public Category fromJSON(JSONObject json) throws JSONException {
             Category instance = new Category();
 
             instance.userName = json.getString("userName");

@@ -149,7 +149,7 @@ public class Message extends Content {
 
     public static final JSONReader<Message> JSON_READER = new JSONReader<Message>() {
         @Override
-        public Message fromJSONObject(JSONObject json) throws JSONException {
+        public Message fromJSON(JSONObject json) throws JSONException {
             Message instance = new Message();
 
             instance.status = json.getInt("status");

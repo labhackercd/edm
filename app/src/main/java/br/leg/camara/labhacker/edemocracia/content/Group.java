@@ -88,7 +88,7 @@ public class Group extends Content {
 
     public static final JSONReader<Group> JSON_READER = new JSONReader<Group>() {
         @Override
-        public Group fromJSONObject(JSONObject json) throws JSONException {
+        public Group fromJSON(JSONObject json) throws JSONException {
             Group instance = new Group();
 
             instance.friendlyURL = json.getString("friendlyURL");

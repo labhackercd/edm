@@ -97,7 +97,7 @@ public class Thread extends Content {
 
     public static final JSONReader<Thread> JSON_READER = new JSONReader<Thread>() {
         @Override
-        public Thread fromJSONObject(JSONObject json) throws JSONException {
+        public Thread fromJSON(JSONObject json) throws JSONException {
             Thread instance = new Thread();
 
             instance.status = json.getInt("status");
