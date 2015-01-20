@@ -10,16 +10,7 @@
         android:layout_height="50dp"
         android:id="@+id/editText"
         android:background="#fff"
-        android:hint="@string/re"
-        android:padding="10dp" />
-
-    <EditText
-        android:layout_width="fill_parent"
-        android:layout_height="50dp"
-        android:id="@+id/editText2"
-        android:background="#fff"
-        android:hint="@string/subj"
-        android:layout_marginTop="1dp"
+        android:hint="@string/subject"
         android:padding="10dp" />
 
     <EditText
@@ -30,6 +21,9 @@
         android:id="@+id/editText3"
         android:background="#fff"
         android:layout_marginTop="1dp"
-        android:padding="10dp" />
+        android:padding="10dp"
+        android:autoText="true"
+        android:gravity="top"
+        android:hint="Escrever mensagem" />
 
 </LinearLayout>
