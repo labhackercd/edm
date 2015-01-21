@@ -2,7 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/light_gray">
+    android:background="@color/light_gray"
+    android:weightSum="1">
 
 
     <EditText
@@ -15,7 +16,7 @@
 
     <EditText
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:inputType="textMultiLine"
         android:ems="10"
         android:id="@+id/editText3"
@@ -24,6 +25,15 @@
         android:padding="10dp"
         android:autoText="true"
         android:gravity="top"
-        android:hint="Escrever mensagem" />
+        android:hint="Escrever mensagem"
+        android:layout_weight="1.02" />
+
+    <FrameLayout
+        android:layout_width="fill_parent"
+        android:layout_height="150dp"
+        android:layout_gravity="bottom"
+        android:id="@+id/"
+        android:layout_marginTop="1dp"
+        android:background="@color/light_gray_2"></FrameLayout>
 
 </LinearLayout>
