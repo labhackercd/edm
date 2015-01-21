@@ -7,5 +7,8 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="reply">Reply</string>
     <string name="send">Send</string>
+    <string name="attach_video">Attach Video</string>
+    <string name="record_video">Record video</string>
+    <string name="pick_video">Choose from gallery</string>
 
 </resources>

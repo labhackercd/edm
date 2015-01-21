@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <array name="attachmentTypeIcons">
+        <item>@drawable/ic_video_collection_black_36dp</item>
+        <item>@drawable/ic_videocam_black_36dp</item>
+    </array>
+    <array name="attachmentTypeItems">
+        <item>@string/pick_video</item>
+        <item>@string/record_video</item>
+    </array>
+    <array name="testItems">
+        <item android:id="@+id/send"
+            android:icon="@drawable/ic_send_white_36dp"
+            android:title="@string/send"
+            android:showAsAction="ifRoom"/>
+    </array>
+</resources>
