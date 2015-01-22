@@ -16,11 +16,17 @@
             android:id="@+id/editText"
             android:inputType="textEmailSubject" />
 
+        <VideoView
+            android:layout_width="wrap_content"
+            android:layout_height="100dp"
+            android:id="@+id/videoView" />
+
         <EditText
             android:layout_width="match_parent"
             android:layout_height="fill_parent"
             android:inputType="textMultiLine"
             android:ems="10"
             android:id="@+id/editText2" />
+
     </LinearLayout>
 </FrameLayout>

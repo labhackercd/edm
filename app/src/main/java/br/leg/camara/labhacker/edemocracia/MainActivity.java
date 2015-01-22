@@ -16,7 +16,6 @@ public class MainActivity extends Activity
                    ThreadListFragment.OnThreadSelectedListener,
                    MessageListFragment.OnMessageSelectedListener {
 
-    public static final String VIDEO_ATTACHMENT_FRAGMENT = "videoAttachmentFragment";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,13 +29,7 @@ public class MainActivity extends Activity
         }
 
         if (savedInstanceState == null) {
-
-            VideoAttachmentFragment frag = new VideoAttachmentFragment();
             FragmentTransaction transaction = getFragmentManager().beginTransaction();
-            transaction.add(frag, VIDEO_ATTACHMENT_FRAGMENT);
-            transaction.commit();
-
-            transaction = getFragmentManager().beginTransaction();
             GroupListFragment groupListFragment = new GroupListFragment();
             transaction.add(R.id.container, groupListFragment);
             transaction.commit();

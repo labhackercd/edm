@@ -4,7 +4,6 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,7 +12,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
-import android.view.LayoutInflater;
+import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -29,10 +28,12 @@ import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.ytdl.Auth;
 
-public class VideoAttachmentFragment extends Fragment {
+public class VideoPickerActivity extends Activity {
     private static final String ARG_ACCOUNT_NAME = "accountName";
     private String chosenAccountName;
     private GoogleAccountCredential credential;
+
+    public static final int RESULT_PICK = 4;
 
     private static final int REQUEST_DIRECT_TAG = 12;
     private static final int REQUEST_AUTHORIZATION = 13;
@@ -46,21 +47,21 @@ public class VideoAttachmentFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setFinishOnTouchOutside(true);
+
         credential = GoogleAccountCredential.usingOAuth2(
-                getActivity().getApplicationContext(), Arrays.asList(Auth.SCOPES));
+                getApplicationContext(), Arrays.asList(Auth.SCOPES));
         credential.setBackOff(new ExponentialBackOff());
 
-        if (savedInstanceState != null) {
-            chosenAccountName = savedInstanceState.getString(ARG_ACCOUNT_NAME);
-        } else {
-            chosenAccountName = loadChosenAccount();
-        }
-    }
+        // Process intents
+        Intent intent = getIntent();
 
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return null;
+        if (Intent.ACTION_PICK.equals(intent.getAction())) {
+            attachVideo();
+        } else {
+            // FIXME What to do when no action is requested?
+            finish();
+        }
     }
 
     @Override
@@ -101,13 +102,11 @@ public class VideoAttachmentFragment extends Fragment {
                 if (resultCode == Activity.RESULT_OK) {
                     Uri fileUri = data.getData();
                     if (fileUri != null) {
-                        /*
-                        TODO Upload the video
-                        Intent uploadIntent = new Intent(this, UploadService.class);
-                        uploadIntent.setData(fileUri);
-                        uploadIntent.putExtra(MainActivity.ACCOUNT_KEY, mChosenAccountName);
-                        startService(uploadIntent);
-                        */
+                        Intent intent = new Intent();
+                        intent.setData(fileUri);
+                        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, credential.getSelectedAccountName());
+                        setResult(Activity.RESULT_OK, intent);
+                        finish();
                     }
                 }
                 break;
@@ -142,13 +141,14 @@ public class VideoAttachmentFragment extends Fragment {
         }
 
         // TODO FIXME ALL THIS CODE SUCKS. PLEASE FIX.
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(
+                new ContextThemeWrapper(this, android.R.style.Theme_Material_Light_Dialog));
 
         List<String> items = Arrays.asList(getResources().getStringArray(R.array.attachmentTypeItems));
         final int[] icons = getResources().getIntArray(R.array.attachmentTypeIcons);
 
         ListAdapter adapter = new ArrayAdapter<String>(
-                getActivity(),
+                this,
                 R.layout.simple_list_item_with_icon,
                 android.R.id.text1,
                 items) {
@@ -185,6 +185,8 @@ public class VideoAttachmentFragment extends Fragment {
 
         builder.create().show();
 
+        // TODO Finish the activity when the user clicks outside the dialog, but how do we do that?
+
         return true;
     }
 
@@ -212,12 +214,12 @@ public class VideoAttachmentFragment extends Fragment {
 
     @Nullable
     private String loadChosenAccount() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         return prefs.getString(getClass().getSimpleName() + "." + ARG_ACCOUNT_NAME, null);
     }
 
     private void storeChosenAccount(String accountName) {
-        PreferenceManager.getDefaultSharedPreferences(getActivity())
+        PreferenceManager.getDefaultSharedPreferences(this)
                 .edit()
                 .putString(getClass().getSimpleName() + "." + ARG_ACCOUNT_NAME, accountName)
                 .apply();
@@ -241,13 +243,13 @@ public class VideoAttachmentFragment extends Fragment {
 
     private boolean checkGooglePlayServicesAvailable() {
         final int connectionStatusCode = GooglePlayServicesUtil
-                .isGooglePlayServicesAvailable(getActivity());
+                .isGooglePlayServicesAvailable(this);
 
         if (GooglePlayServicesUtil.isUserRecoverableError(connectionStatusCode)) {
-            getActivity().runOnUiThread(new Runnable() {
+            runOnUiThread(new Runnable() {
                 public void run() {
                     Dialog dialog = GooglePlayServicesUtil.getErrorDialog(
-                            connectionStatusCode, getActivity(),
+                            connectionStatusCode, VideoPickerActivity.this,
                             REQUEST_GOOGLE_PLAY_SERVICES);
                     dialog.show();
                 }

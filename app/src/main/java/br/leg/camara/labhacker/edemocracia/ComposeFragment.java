@@ -1,5 +1,8 @@
 package br.leg.camara.labhacker.edemocracia;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
@@ -8,13 +11,18 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.VideoView;
 
 import br.leg.camara.labhacker.edemocracia.content.Thread;
 
 
 public class ComposeFragment extends Fragment {
     private static final String ARG_THREADLIKE = "threadLike";
+
+    private static final int RESULT_ATTACH_VIDEO = 17;
+
     private Thread threadLike;
+    private VideoView videoView;
 
     public static ComposeFragment newInstance(Thread thread) {
         ComposeFragment fragment = new ComposeFragment();
@@ -44,7 +52,14 @@ public class ComposeFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater,ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_compose, container, false);
+        View view = inflater.inflate(R.layout.fragment_compose, container, false);
+
+        // Hide the video attachment view
+        videoView = (VideoView) view.findViewById(R.id.videoView);
+
+        videoView.setVisibility(View.GONE);
+
+        return view;
     }
 
     @Override
@@ -62,12 +77,28 @@ public class ComposeFragment extends Fragment {
         }
     }
 
-    private boolean attachVideo() {
-        VideoAttachmentFragment videoSelectorFragment =
-                (VideoAttachmentFragment) getActivity().getFragmentManager()
-                .findFragmentByTag(MainActivity.VIDEO_ATTACHMENT_FRAGMENT);
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-        return videoSelectorFragment.attachVideo();
+        switch (requestCode) {
+            case RESULT_ATTACH_VIDEO:
+                if (resultCode == Activity.RESULT_OK) {
+                    Uri videoUri = data.getData();
+                    if (videoUri != null) {
+                        videoView.setVideoURI(videoUri);
+                        videoView.setVisibility(View.VISIBLE);
+                    }
+                }
+                break;
+        }
+    }
+
+    private boolean attachVideo() {
+        Intent intent = new Intent(getActivity(), VideoPickerActivity.class);
+        intent.setAction(Intent.ACTION_PICK);
+        startActivityForResult(intent, RESULT_ATTACH_VIDEO);
+        return true;
     }
 
     public void sendMessage() {
