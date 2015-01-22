@@ -29,7 +29,6 @@ public class GroupListFragment extends ContentListFragment<Group> {
 
         assert session != null;
 
-
         GroupService groupService = new GroupService(session);
 
         JSONArray groups = groupService.search(

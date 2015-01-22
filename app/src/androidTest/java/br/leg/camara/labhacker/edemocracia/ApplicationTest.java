@@ -4,20 +4,24 @@ import android.app.Application;
 import android.test.ApplicationTestCase;
 
 import com.liferay.mobile.android.auth.basic.BasicAuthentication;
-import com.liferay.mobile.android.http.HttpUtil;
+import com.liferay.mobile.android.service.JSONObjectWrapper;
 import com.liferay.mobile.android.service.Session;
-import com.liferay.mobile.android.service.SessionImpl;
 import com.liferay.mobile.android.v62.group.GroupService;
+import com.liferay.mobile.android.v62.mbmessage.MBMessageService;
+import com.liferay.mobile.android.v62.mbthread.MBThreadService;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.util.Properties;
 
+import br.leg.camara.labhacker.edemocracia.content.*;
+import br.leg.camara.labhacker.edemocracia.content.Thread;
 import br.leg.camara.labhacker.edemocracia.util.EDMAuthentication;
 import br.leg.camara.labhacker.edemocracia.util.EDMSession;
+import br.leg.camara.labhacker.edemocracia.util.SessionWrapper;
 
 class Helper {
     private static Properties properties = null;
@@ -28,7 +32,7 @@ class Helper {
 
     public static String getProperty(String name, String defaultValue) throws IOException {
         if (properties == null) {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            ClassLoader loader = java.lang.Thread.currentThread().getContextClassLoader();
             InputStream stream = loader.getResourceAsStream("test.properties");
             if (stream == null) {
                 throw new IOException("Resource `test.properties` doesn't exist");
@@ -79,9 +83,36 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         session = new EDMSession(new EDMAuthentication(username, password, companyId));
         groupService = new GroupService(session);
 
-        JSONArray result = groupService.search(getCompanyId(), "%", "%", new JSONArray(), -1, -1);
+         JSONArray groupsJson = groupService.search(getCompanyId(), "%", "%", new JSONArray(), -1, -1);
 
-        assertNotNull(result);
-        assertTrue(result.length() > 0);
+        assertNotNull(groupsJson);
+        assertTrue(groupsJson.length() > 0);
+
+        Group group = Group.JSON_READER.fromJSON(groupsJson.getJSONObject(0));
+
+        JSONArray threadsJson = new MBThreadService(session)
+                .getGroupThreads(group.getGroupId(), -1, 0, -1, -1);
+
+        assertNotNull(threadsJson);
+        assertTrue(threadsJson.length() > 0);
+
+        br.leg.camara.labhacker.edemocracia.content.Thread thread =
+                Thread.JSON_READER.fromJSON(threadsJson.getJSONObject(0));
+
+        Session wrappedSession = new SessionWrapper(session);
+
+        JSONObject serviceContextJson = new JSONObject();
+
+        serviceContextJson.put("addGuestPermissions", "true");
+
+        JSONObjectWrapper serviceContext = new JSONObjectWrapper(
+                "com.liferay.portal.service.ServiceContext", serviceContextJson);
+
+        JSONObject messageJson = new MBMessageService(wrappedSession)
+                .addMessage(thread.getGroupId(), thread.getCategoryId(), thread.getThreadId(), thread.getRootMessageId(),
+                //.addMessage(28402, 182302, 182403, 182402,
+                        "ASSUNTO", "CORPO", "bbcode", new JSONArray(), false, 0, true, serviceContext);
+
+        Message message = Message.JSON_READER.fromJSON(messageJson);
     }
 }
