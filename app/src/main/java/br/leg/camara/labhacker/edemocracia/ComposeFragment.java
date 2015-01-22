@@ -27,7 +27,7 @@ import org.json.JSONObject;
 import br.leg.camara.labhacker.edemocracia.content.Message;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
 import br.leg.camara.labhacker.edemocracia.util.EDMSession;
-import br.leg.camara.labhacker.edemocracia.util.SessionWrapper;
+import br.leg.camara.labhacker.edemocracia.util.EDMGetSessionWrapper;
 
 
 public class ComposeFragment extends Fragment {
@@ -219,11 +219,11 @@ public class ComposeFragment extends Fragment {
 
             serviceContextJson.put("addGuestPermissions", "true");
 
-            // XXX We gotta use this wrapped session because the original webservice is bugged
             JSONObjectWrapper serviceContext = new JSONObjectWrapper(
                     "com.liferay.portal.service.ServiceContext", serviceContextJson);
 
-            return new MBMessageService(new SessionWrapper(session)).addMessage(
+            // XXX We gotta use this wrapped session because the original webservice is bugged
+            return new MBMessageService(new EDMGetSessionWrapper(session)).addMessage(
                     threadLike.getGroupId(), threadLike.getCategoryId(),
                     threadLike.getThreadId(), threadLike.getRootMessageId(),
                     subject, message, "bbcode", new JSONArray(), false, 0,

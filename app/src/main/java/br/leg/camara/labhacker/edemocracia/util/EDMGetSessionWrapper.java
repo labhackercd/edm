@@ -36,13 +36,13 @@ import java.util.List;
  * Note that most of the Session API is not implemented and will only raise a RuntimeError. Only
  * the methods required to call the methods we need are implemented so far.
  */
-public class SessionWrapper implements Session {
+public class EDMGetSessionWrapper implements Session {
     private Session session;
     private static final List<String> INTERCEPT_COMMANDS = Arrays.asList(
             "/mbmessage/add-message"
     );
 
-    public SessionWrapper(Session session) {
+    public EDMGetSessionWrapper(Session session) {
         this.session = session;
     }
 

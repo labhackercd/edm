@@ -21,7 +21,7 @@ import br.leg.camara.labhacker.edemocracia.content.*;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
 import br.leg.camara.labhacker.edemocracia.util.EDMAuthentication;
 import br.leg.camara.labhacker.edemocracia.util.EDMSession;
-import br.leg.camara.labhacker.edemocracia.util.SessionWrapper;
+import br.leg.camara.labhacker.edemocracia.util.EDMGetSessionWrapper;
 
 class Helper {
     private static Properties properties = null;
@@ -99,7 +99,7 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         br.leg.camara.labhacker.edemocracia.content.Thread thread =
                 Thread.JSON_READER.fromJSON(threadsJson.getJSONObject(0));
 
-        Session wrappedSession = new SessionWrapper(session);
+        Session wrappedSession = new EDMGetSessionWrapper(session);
 
         JSONObject serviceContextJson = new JSONObject();
 
