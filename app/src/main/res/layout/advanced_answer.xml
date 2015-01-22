@@ -14,26 +14,12 @@
         android:hint="@string/subject"
         android:padding="10dp" />
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="textMultiLine"
-        android:ems="10"
-        android:id="@+id/editText3"
-        android:background="#fff"
-        android:layout_marginTop="1dp"
-        android:autoText="true"
-        android:gravity="top"
-        android:hint="Escrever mensagem"
-        android:layout_weight="1.02"
-        android:paddingLeft="10dp"
-        android:paddingTop="10dp" />
-
     <FrameLayout
         android:layout_width="fill_parent"
-        android:layout_height="150dp"
+        android:layout_height="wrap_content"
         android:background="#fff"
-        android:padding="10dp">
+        android:padding="10dp"
+        android:layout_marginTop="1dp">
 
         <FrameLayout
             android:layout_width="fill_parent"
@@ -44,61 +30,68 @@
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="fill_parent"
-                android:layout_height="150dp"
+                android:layout_height="wrap_content"
                 android:background="@color/light_gray_2"
-                android:padding="10dp">
+                android:padding="10dp"
+                android:gravity="top">
 
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="fill_parent"
-                    android:layout_weight="2">
+                <VideoView
+                    android:layout_width="92dp"
+                    android:layout_height="92dp"
+                    android:id="@+id/videoView" />
 
-                    <VideoView
+                <GridLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:id="@+id/videoView"
-                        android:layout_marginBottom="20dp" />
-                </FrameLayout>
+                        android:layout_gravity="left"
+                        android:layout_marginLeft="10dp"
+                        android:orientation="vertical"
+                        android:layout_marginRight="10dp">
 
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="fill_parent"
-                    android:layout_weight="2"
-                    android:layout_marginLeft="10dp" >
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:text="Titulo"
+                            android:id="@+id/textView7" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:text="Tamanho"
-                        android:id="@+id/textView6"
-                        android:layout_marginTop="30dp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:text="Titulo"
-                        android:id="@+id/textView7" />
-                </FrameLayout>
-
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="fill_parent"
-                    android:layout_weight="1">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:text="Tamanho"
+                            android:id="@+id/textView6" />
+                    </LinearLayout>
 
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/imageView6"
-                        android:layout_gravity="right|top"
                         android:src="@drawable/ic_close_black_24dp"
                         android:alpha=".7" />
 
-                </FrameLayout>
+                </GridLayout>
             </LinearLayout>
+
         </FrameLayout>
     </FrameLayout>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:inputType="textMultiLine"
+        android:ems="10"
+        android:id="@+id/editText3"
+        android:background="#fff"
+        android:autoText="true"
+        android:gravity="top"
+        android:hint="Escrever mensagem"
+        android:paddingLeft="10dp"
+        android:paddingTop="10dp" />
 
 
 </LinearLayout>
