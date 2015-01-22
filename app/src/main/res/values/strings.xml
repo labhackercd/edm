@@ -10,5 +10,16 @@
     <string name="attach_video">Attach Video</string>
     <string name="record_video">Record video</string>
     <string name="pick_video">Choose from gallery</string>
+    <string name="initiation_started">Video Initialized</string>
+    <string name="initiation_completed">Initiation Completed</string>
+    <string name="upload_in_progress">Upload in Progress</string>
+    <string name="yt_upload_completed">Upload Completed</string>
+    <string name="upload_completed">Upload Completed</string>
+    <string name="youtube_upload">Youtube Upload</string>
+    <string name="youtube_upload_started">Youtube Upload Started</string>
+    <string name="upload_not_started">Upload not Started</string>
+    <string name="cant_access_play">Google Play Services is not avaible</string>
+    <string name="please_try_again">Try Again</string>
+    <string name="yt_upload_failed">Upload on Youtube has been failed</string>
 
 </resources>
