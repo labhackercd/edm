@@ -22,18 +22,83 @@
         android:id="@+id/editText3"
         android:background="#fff"
         android:layout_marginTop="1dp"
-        android:padding="10dp"
         android:autoText="true"
         android:gravity="top"
         android:hint="Escrever mensagem"
-        android:layout_weight="1.02" />
+        android:layout_weight="1.02"
+        android:paddingLeft="10dp"
+        android:paddingTop="10dp" />
 
     <FrameLayout
         android:layout_width="fill_parent"
         android:layout_height="150dp"
-        android:layout_gravity="bottom"
-        android:id="@+id/"
-        android:layout_marginTop="1dp"
-        android:background="@color/light_gray_2"></FrameLayout>
+        android:background="#fff"
+        android:padding="10dp">
+
+        <FrameLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/light_gray"
+            android:padding="1dp">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="150dp"
+                android:background="@color/light_gray_2"
+                android:padding="10dp">
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="2">
+
+                    <VideoView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/videoView"
+                        android:layout_marginBottom="20dp" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="2"
+                    android:layout_marginLeft="10dp" >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:text="Tamanho"
+                        android:id="@+id/textView6"
+                        android:layout_marginTop="30dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:text="Titulo"
+                        android:id="@+id/textView7" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="1">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/imageView6"
+                        android:layout_gravity="right|top"
+                        android:src="@drawable/ic_close_black_24dp"
+                        android:alpha=".7" />
+
+                </FrameLayout>
+            </LinearLayout>
+        </FrameLayout>
+    </FrameLayout>
+
 
 </LinearLayout>
