@@ -7,91 +7,101 @@
 
 
     <EditText
-        android:layout_width="fill_parent"
-        android:layout_height="50dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:id="@+id/editText"
         android:background="#fff"
         android:hint="@string/subject"
-        android:padding="10dp" />
-
-    <FrameLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="#fff"
         android:padding="10dp"
-        android:layout_marginTop="1dp">
+        android:layout_marginBottom="1dp" />
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:inputType="textMultiLine"
+            android:ems="10"
+            android:id="@+id/editText3"
+            android:background="#fff"
+            android:autoText="true"
+            android:gravity="top"
+            android:hint="@string/compose_message"
+            android:paddingLeft="10dp"
+            android:paddingTop="10dp"
+            android:layout_alignParentTop="true" />
 
         <FrameLayout
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/light_gray"
-            android:padding="1dp">
+            android:background="#fff"
+            android:padding="10dp"
+            android:layout_gravity="bottom"
+            android:layout_alignParentBottom="true">
 
-            <LinearLayout
-                android:orientation="horizontal"
+            <FrameLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/light_gray_2"
-                android:padding="10dp"
-                android:gravity="top">
+                android:background="@color/light_gray"
+                android:padding="1dp">
 
-                <VideoView
-                    android:layout_width="92dp"
-                    android:layout_height="92dp"
-                    android:id="@+id/videoView" />
-
-                <GridLayout
+                <LinearLayout
+                    android:orientation="horizontal"
                     android:layout_width="fill_parent"
-                    android:layout_height="fill_parent">
+                    android:layout_height="wrap_content"
+                    android:background="@color/light_gray_2"
+                    android:padding="10dp"
+                    android:gravity="top">
 
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="left"
-                        android:layout_marginLeft="10dp"
-                        android:orientation="vertical"
-                        android:layout_marginRight="10dp">
+                    <VideoView
+                        android:layout_width="92dp"
+                        android:layout_height="92dp"
+                        android:id="@+id/videoView" />
 
-                        <TextView
+                    <GridLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent">
+
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textAppearance="?android:attr/textAppearanceMedium"
-                            android:text="Titulo"
-                            android:id="@+id/textView7" />
+                            android:layout_gravity="left"
+                            android:layout_marginLeft="10dp"
+                            android:orientation="vertical"
+                            android:layout_marginRight="10dp">
 
-                        <TextView
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?android:attr/textAppearanceMedium"
+                                android:text="Titulo"
+                                android:id="@+id/textView7"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?android:attr/textAppearanceMedium"
+                                android:text="Tamanho"
+                                android:id="@+id/textView6" />
+                        </LinearLayout>
+
+                        <ImageView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textAppearance="?android:attr/textAppearanceMedium"
-                            android:text="Tamanho"
-                            android:id="@+id/textView6" />
-                    </LinearLayout>
+                            android:id="@+id/imageView6"
+                            android:src="@drawable/ic_close_black_24dp"
+                            android:alpha=".7" />
 
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/imageView6"
-                        android:src="@drawable/ic_close_black_24dp"
-                        android:alpha=".7" />
+                    </GridLayout>
+                </LinearLayout>
 
-                </GridLayout>
-            </LinearLayout>
-
+            </FrameLayout>
         </FrameLayout>
-    </FrameLayout>
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="fill_parent"
-        android:inputType="textMultiLine"
-        android:ems="10"
-        android:id="@+id/editText3"
-        android:background="#fff"
-        android:autoText="true"
-        android:gravity="top"
-        android:hint="Escrever mensagem"
-        android:paddingLeft="10dp"
-        android:paddingTop="10dp" />
+    </RelativeLayout>
 
 
 </LinearLayout>
