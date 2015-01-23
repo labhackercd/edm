@@ -9,6 +9,8 @@ import com.squareup.otto.Bus;
 
 import javax.inject.Singleton;
 
+import br.leg.camara.labhacker.edemocracia.tasks.VideoUploadTaskQueue;
+import br.leg.camara.labhacker.edemocracia.tasks.VideoUploadTaskService;
 import dagger.ObjectGraph;
 import dagger.Provides;
 
@@ -31,7 +33,8 @@ public class EDMApplication extends Application {
     @dagger.Module(
             injects = {
                     MainActivity.class,
-                    AddMessageTaskService.class
+                    AddMessageTaskService.class,
+                    VideoUploadTaskService.class
             }
     )
     static class Module {
@@ -48,6 +51,12 @@ public class EDMApplication extends Application {
             return AddMessageTaskQueue.create(applicationContext, gson, bus);
         }
 
+        @Provides
+        @Singleton
+        @SuppressWarnings("UnusedDeclaration")
+        VideoUploadTaskQueue provideVideoUploadTaskQueue(Gson gson, Bus bus) {
+            return VideoUploadTaskQueue.create(applicationContext, gson);
+        }
 
         @Provides
         @Singleton

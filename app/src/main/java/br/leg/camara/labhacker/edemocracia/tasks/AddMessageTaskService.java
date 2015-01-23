@@ -1,11 +1,13 @@
 package br.leg.camara.labhacker.edemocracia.tasks;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
 import com.squareup.otto.Bus;
+import com.squareup.tape.ObjectQueue;
 
 import javax.inject.Inject;
 
@@ -24,7 +26,7 @@ public class AddMessageTaskService extends Service implements AddMessageTask.Cal
     public void onCreate() {
         super.onCreate();
         ((EDMApplication) getApplication()).inject(this);
-        Log.i(TAG, "Starting service!");
+        Log.i(TAG, "Starting service");
     }
 
     @Override
@@ -43,7 +45,7 @@ public class AddMessageTaskService extends Service implements AddMessageTask.Cal
 
     @Override
     public void onFailure(Message message, Exception e) {
-        Log.w(TAG, "Failed to submit message: " + e.toString());
+        Log.e(TAG, "Failed to submit message: " + e.toString());
 
         running = false;
         bus.post(new AddMessageFailureEvent(message, e));

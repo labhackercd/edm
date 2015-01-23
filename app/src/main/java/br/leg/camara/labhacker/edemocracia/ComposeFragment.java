@@ -1,5 +1,6 @@
 package br.leg.camara.labhacker.edemocracia;
 
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -28,7 +29,7 @@ import java.util.List;
 import br.leg.camara.labhacker.edemocracia.content.Message;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
 import br.leg.camara.labhacker.edemocracia.tasks.AddMessageTask;
-import br.leg.camara.labhacker.edemocracia.tasks.AddMessageTaskQueue;
+import br.leg.camara.labhacker.edemocracia.tasks.VideoUploadTask;
 
 
 public class ComposeFragment extends Fragment {
@@ -36,13 +37,19 @@ public class ComposeFragment extends Fragment {
 
     private static final int RESULT_ATTACH_VIDEO = 17;
 
+    public static final String THREADLIKE_KEY = "ROFLYEAHTHREADLIKE";
+    public static final String SUBJECT_KEY = "subject";
+    public static final String MESSAGE_KEY = "message";
+
     private Thread threadLike;
+    private Uri attachedVideoUri;
+
+    private String videoAccount;
 
     private TextView subjectView;
     private TextView messageView;
     private View videoFrame;
     private ImageView videoThumbView;
-    private Uri attachedVideoUri;
     private TextView videoTitleView;
     private TextView videoSizeView;
 
@@ -184,6 +191,7 @@ public class ComposeFragment extends Fragment {
                     if (videoUri != null) {
                         setAttachedVideoUri(videoUri);
                         setVideoFrameShown(true);
+                        videoAccount = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
                     }
                 }
                 break;
@@ -208,16 +216,21 @@ public class ComposeFragment extends Fragment {
 
         Message message = Message.create(threadLike, subject, body, "bbcode", false, 0.0, true);
 
-        // FIXME This is really bad way to get the queue!
-        ((MainActivity) getActivity()).addMessageTaskQueue.add(new AddMessageTask(message));
+        // FIXME It's probably a sign of bad design to tie up this fragment and MainActivity.
+        MainActivity activity = (MainActivity) getActivity();
+
+        assert activity != null;
+
+        if (attachedVideoUri == null) {
+            activity.addMessageTaskQueue.add(new AddMessageTask(message));
+        } else {
+            activity.videoUploadTaskQueue.add(
+                    new VideoUploadTask(attachedVideoUri, videoAccount, message));
+        }
+
+        activity.getFragmentManager().popBackStack();
 
         Toast.makeText(getActivity(), R.string.sending_message, Toast.LENGTH_SHORT).show();
-
-        Activity activity = getActivity();
-
-        if (activity != null) {
-            activity.getFragmentManager().popBackStack();
-        }
 
         return true;
     }

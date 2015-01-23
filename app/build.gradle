@@ -23,6 +23,7 @@ android {
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/LICENSE'
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
     }
@@ -35,8 +36,8 @@ repositories {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.squareup.dagger:dagger:1.2.+'
-    provided 'com.squareup.dagger:dagger-compiler:1.2.+'
+    compile 'com.squareup.dagger:dagger:1.2.2'
+    provided 'com.squareup.dagger:dagger-compiler:1.2.2'
     compile 'com.google.guava:guava-jdk5:17.0'
     compile 'com.google.code.gson:gson:2.3.1'
     compile 'com.liferay.mobile:liferay-android-sdk:6.2.0.13'

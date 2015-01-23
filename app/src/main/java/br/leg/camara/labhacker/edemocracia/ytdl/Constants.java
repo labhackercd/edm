@@ -25,7 +25,7 @@ public class Constants {
     // A playlist ID is a string that begins with PL. You must replace this string with the correct
     // playlist ID for the app to work
     public static final String UPLOAD_PLAYLIST = "PLdXJWWDmjGDJEJDArbcTKGEu41JvWLyTP";
-    public static final String APP_NAME = "e-democracia";
+    public static final String APP_NAME = "edemocracia";
     public static final String ACCOUNT_KEY = "ACCOUNT";
     public static final String YOUTUBE_WATCH_URL_PREFIX = "watch?v=";
 

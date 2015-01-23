@@ -1,10 +1,9 @@
 /**
  * Created by baufaker on 22/01/15.
  */
-package br.leg.camara.labhacker.edemocracia.service;
+package br.leg.camara.labhacker.edemocracia.tasks;
 
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -48,6 +47,7 @@ public class ResumableUpload {
      * Assigned to the upload
      */
     public static final String[] DEFAULT_KEYWORDS = {"MultiSquash", "Game"};
+
     /**
      * Indicates that the video is fully processed, see https://www.googleapis.com/discovery/v1/apis/youtube/v3/rpc
      */
@@ -55,6 +55,7 @@ public class ResumableUpload {
     private static final String TAG = "UploadingActivity";
     private static int UPLOAD_NOTIFICATION_ID = 1001;
     private static int PLAYBACK_NOTIFICATION_ID = 1002;
+
     /*
      * Global instance of the format used for the video being uploaded (MIME type).
      */
@@ -66,17 +67,17 @@ public class ResumableUpload {
      */
 
     public static String upload(YouTube youtube, final InputStream fileInputStream,
-                                final long fileSize, final Uri mFileUri, final String path, final Context context) {
+                                final long fileSize, final Uri mFileUri,
+                                final String path, final Context context) {
         final NotificationManager notifyManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
 
         Bitmap thumbnail = ThumbnailUtils.createVideoThumbnail(path, Thumbnails.MICRO_KIND);
-        PendingIntent contentIntent = PendingIntent.getActivity(context,
-                0, null, PendingIntent.FLAG_CANCEL_CURRENT);
         builder.setContentTitle(context.getString(R.string.youtube_upload))
                 .setContentText(context.getString(R.string.youtube_upload_started))
-                .setSmallIcon(R.drawable.ic_videocam_black_36dp).setContentIntent(contentIntent).setStyle(new NotificationCompat.BigPictureStyle().bigPicture(thumbnail));
+                .setSmallIcon(R.drawable.ic_videocam_black_36dp)
+                .setStyle(new NotificationCompat.BigPictureStyle().bigPicture(thumbnail));
         notifyManager.notify(UPLOAD_NOTIFICATION_ID, builder.build());
 
         String videoId = null;
@@ -107,7 +108,7 @@ public class ResumableUpload {
                     + "on " + cal.getTime());
 
             // Set your keywords.
-            snippet.setTags(Arrays.asList(Constants.DEFAULT_KEYWORD, Upload.generateKeywordFromPlaylistId(Constants.UPLOAD_PLAYLIST)));
+            snippet.setTags(Arrays.asList(Constants.DEFAULT_KEYWORD, generateKeywordFromPlaylistId(Constants.UPLOAD_PLAYLIST)));
 
             // Set completed snippet to the video object.
             videoObjectDefiningMetadata.setSnippet(snippet);
@@ -149,8 +150,8 @@ public class ResumableUpload {
                             break;
                         case MEDIA_IN_PROGRESS:
                             builder
-                                    .setContentTitle(context.getString(R.string.youtube_upload) +
-                                            (int) (uploader.getProgress() * 100) + "%")
+                                    .setContentTitle(context.getString(R.string.youtube_upload)
+                                            + " " + (int) (uploader.getProgress() * 100) + "%")
                                     .setContentText(context.getString(R.string.upload_in_progress))
                                     .setProgress((int) fileSize, (int) uploader.getNumBytesUploaded(), false);
                             notifyManager.notify(UPLOAD_NOTIFICATION_ID, builder.build());
@@ -180,7 +181,7 @@ public class ResumableUpload {
             notifyFailedUpload(context, context.getString(R.string.cant_access_play), notifyManager, builder);
         } catch (UserRecoverableAuthIOException userRecoverableException) {
             Log.i(TAG, String.format("UserRecoverableAuthIOException: %s",
-                    userRecoverableException.getMessage()));
+                    userRecoverableException.getCause()));
             requestAuth(context, userRecoverableException);
         } catch (IOException e) {
             Log.e(TAG, "IOException", e);
@@ -255,5 +256,18 @@ public class ResumableUpload {
             Log.e(TAG, "Error fetching video metadata", e);
         }
         return false;
+    }
+
+    private static String generateKeywordFromPlaylistId(String playlistId) {
+        if (playlistId == null) playlistId = "";
+        if (playlistId.indexOf("PL") == 0) {
+            playlistId = playlistId.substring(2);
+        }
+        playlistId = playlistId.replaceAll("\\W", "");
+        String keyword = Constants.DEFAULT_KEYWORD.concat(playlistId);
+        if (keyword.length() > Constants.MAX_KEYWORD_LENGTH) {
+            keyword = keyword.substring(0, Constants.MAX_KEYWORD_LENGTH);
+        }
+        return keyword;
     }
 }

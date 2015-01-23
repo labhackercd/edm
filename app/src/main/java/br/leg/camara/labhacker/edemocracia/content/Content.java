@@ -7,6 +7,9 @@ import com.google.gson.Gson;
 
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.Serializable;
+
 public abstract class Content implements Parcelable {
 
     public abstract long getId();
@@ -34,25 +37,24 @@ public abstract class Content implements Parcelable {
      * better here. Or we could implement decent *parcelablization*.
      */
     @Override
-    public int describeContents() {
+    public final int describeContents() {
         return 0;
     }
 
     @Override
     public void writeToParcel(Parcel out, int flags) {
-        out.writeString(getClass().toString());
+        out.writeString(getClass().getName());
         out.writeString(new Gson().toJson(this));
     }
 
     public static final Parcelable.Creator<Content> CREATOR = new Parcelable.Creator<Content>() {
         @Override
         public Content createFromParcel(Parcel in) {
-            // FIXME We should guarantee that the correct class is loaded
             Class<?> cls;
             try {
-                cls = Class.forName(in.readString());
+                cls = Class.forName(in.readString(), true, Content.class.getClassLoader());
             } catch (ClassNotFoundException e) {
-                return null;
+                throw new RuntimeException(e);
             }
             return (Content) new Gson().fromJson(in.readString(), cls);
         }

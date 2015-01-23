@@ -13,6 +13,7 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.util.Pair;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -63,7 +64,7 @@ public class VideoPickerActivity extends Activity {
     public static final int RESULT_PICK = 4;
 
     private static final int REQUEST_DIRECT_TAG = 12;
-    private static final int REQUEST_AUTHORIZATION = 13;
+    public static final int REQUEST_AUTHORIZATION = 13;
     private static final int REQUEST_GOOGLE_PLAY_SERVICES = 14;
     private static final int RESULT_PICK_IMAGE_CROP = 15;
     private static final int RESULT_VIDEO_CAP = 16;
@@ -76,9 +77,12 @@ public class VideoPickerActivity extends Activity {
 
         setFinishOnTouchOutside(true);
 
+        chosenAccountName = loadChosenAccount();
+
         credential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(Auth.SCOPES));
         credential.setBackOff(new ExponentialBackOff());
+        credential.setSelectedAccountName(chosenAccountName);
 
         // Process intents
         Intent intent = getIntent();
@@ -132,6 +136,7 @@ public class VideoPickerActivity extends Activity {
                         Intent intent = new Intent();
                         intent.setData(fileUri);
                         intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, credential.getSelectedAccountName());
+
                         setResult(Activity.RESULT_OK, intent);
                         finish();
                     }

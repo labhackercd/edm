@@ -62,6 +62,7 @@
             android:value="@integer/google_play_services_version" />
 
         <service android:name=".tasks.AddMessageTaskService"/>
+        <service android:name=".tasks.VideoUploadTaskService"/>
     </application>
 
 </manifest>

@@ -2,9 +2,9 @@ package br.leg.camara.labhacker.edemocracia.tasks;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import com.google.gson.Gson;
-import com.squareup.otto.Bus;
 import com.squareup.tape.FileObjectQueue;
 import com.squareup.tape.ObjectQueue;
 import com.squareup.tape.TaskQueue;
@@ -12,17 +12,16 @@ import com.squareup.tape.TaskQueue;
 import java.io.File;
 import java.io.IOException;
 
-public class AddMessageTaskQueue extends TaskQueue<AddMessageTask> {
-    private static final String FILENAME = "add_message_task_queue";
+public class VideoUploadTaskQueue extends TaskQueue<VideoUploadTask> {
+    private static final String FILENAME = "video_upload_task_queue";
+    private static final String TAG = "VideoUploadTaskQueue";
 
     private final Context context;
 
-    private AddMessageTaskQueue(ObjectQueue<AddMessageTask> delegate, Context context, Bus bus) {
+    private VideoUploadTaskQueue(ObjectQueue<VideoUploadTask> delegate, Context context) {
         super(delegate);
 
         this.context = context;
-
-        bus.register(this);
 
         if (size() > 0) {
             startService();
@@ -30,28 +29,28 @@ public class AddMessageTaskQueue extends TaskQueue<AddMessageTask> {
     }
 
     private void startService() {
-        context.startService(new Intent(context, AddMessageTaskService.class));
+        context.startService(new Intent(context, VideoUploadTaskService.class));
     }
 
     @Override
-    public void add(AddMessageTask entry) {
+    public void add(VideoUploadTask entry) {
         super.add(entry);
         startService();
     }
 
-    public static AddMessageTaskQueue create(Context context, Gson gson, Bus bus) {
-        FileObjectQueue.Converter<AddMessageTask> converter =
-                new GsonConverter<>(gson, AddMessageTask.class);
+    public static VideoUploadTaskQueue create(Context context, Gson gson) {
+        FileObjectQueue.Converter<VideoUploadTask> converter =
+                new GsonConverter<>(gson, VideoUploadTask.class);
 
         File queueFile = new File(context.getFilesDir(), FILENAME);
-        FileObjectQueue<AddMessageTask> delegate;
 
+        FileObjectQueue<VideoUploadTask> delegate;
         try {
             delegate = new FileObjectQueue<>(queueFile, converter);
         } catch (IOException e) {
             throw new RuntimeException("Unable to create file queue", e);
         }
 
-        return new AddMessageTaskQueue(delegate, context, bus);
+        return new VideoUploadTaskQueue(delegate, context);
     }
 }

@@ -172,6 +172,11 @@ public class Message extends Content {
         return getMessageId();
     }
 
+    @Override
+    public String toString() {
+        return getSubject();
+    }
+
     public static final JSONReader<Message> JSON_READER = new JSONReader<Message>() {
         @Override
         public Message fromJSON(JSONObject json) throws JSONException {

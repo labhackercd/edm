@@ -93,6 +93,11 @@ public class Category extends Content {
         return getCategoryId();
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
+
     public static final JSONReader<Category> JSON_READER = new JSONReader<Category>() {
         @Override
         public Category fromJSON(JSONObject json) throws JSONException {

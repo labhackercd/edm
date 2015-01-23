@@ -3,7 +3,12 @@ package br.leg.camara.labhacker.edemocracia;
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,7 +23,10 @@ import br.leg.camara.labhacker.edemocracia.content.*;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
 import br.leg.camara.labhacker.edemocracia.tasks.AddMessageFailureEvent;
 import br.leg.camara.labhacker.edemocracia.tasks.AddMessageSuccessEvent;
+import br.leg.camara.labhacker.edemocracia.tasks.AddMessageTask;
 import br.leg.camara.labhacker.edemocracia.tasks.AddMessageTaskQueue;
+import br.leg.camara.labhacker.edemocracia.tasks.VideoUploadTaskQueue;
+import br.leg.camara.labhacker.edemocracia.ytdl.Constants;
 
 public class MainActivity extends Activity
         implements GroupListFragment.OnGroupSelectedListener,
@@ -27,8 +35,11 @@ public class MainActivity extends Activity
 
     // NOTE: Injection starts queue processing!
     @Inject AddMessageTaskQueue addMessageTaskQueue;
+    @Inject VideoUploadTaskQueue videoUploadTaskQueue;
 
     @Inject Bus bus;
+
+    private UploadBroadcastReceiver broadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +67,15 @@ public class MainActivity extends Activity
     @Override
     protected void onResume() {
         super.onResume();
+
         bus.register(this);
+
+        if (broadcastReceiver == null) {
+            broadcastReceiver = new UploadBroadcastReceiver();
+        }
+
+        IntentFilter intentFilter = new IntentFilter(Constants.REQUEST_AUTHORIZATION_INTENT);
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, intentFilter);
     }
 
     @Override
@@ -107,16 +126,28 @@ public class MainActivity extends Activity
     }
 
     @Subscribe
-    @SuppressWarnings("UnusedDeclaration") // Used by the event bus.
+    @SuppressWarnings("UnusedDeclaration") // Used by the event bus
     public void onAddMessageSuccess(AddMessageSuccessEvent event) {
         Toast.makeText(this, "Message submitted", Toast.LENGTH_SHORT).show();
     }
 
     @Subscribe
-    @SuppressWarnings("UnusedDeclaration") // Used by the event bus.
+    @SuppressWarnings("UnusedDeclaration") // Used by the event bus
     public void onAddMessageFailure(AddMessageFailureEvent event) {
-        // TODO FIXME Should we add the message to the queue again? Or start
-        // the queue service again? What should we do!?
-        //Toast.makeText(this, "Failed to submit message", Toast.LENGTH_SHORT).show();
+        // TODO FIXME Should we add the message to the queue again?
+        // Or start the queue service again? What should we do!?
+        Toast.makeText(this, "Failed to submit message", Toast.LENGTH_SHORT).show();
+    }
+
+    private class UploadBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(Constants.REQUEST_AUTHORIZATION_INTENT)) {
+                Log.d(MainActivity.class.getClass().getSimpleName(), "Request auth received - executing the intent");
+                Intent toRun = intent
+                        .getParcelableExtra(Constants.REQUEST_AUTHORIZATION_INTENT_PARAM);
+                startActivityForResult(toRun, VideoPickerActivity.REQUEST_AUTHORIZATION);
+            }
+        }
     }
 }
