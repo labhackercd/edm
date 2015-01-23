@@ -3,22 +3,17 @@
  */
 package br.leg.camara.labhacker.edemocracia.service;
 
-
-
-
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.provider.MediaStore.Video.Thumbnails;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -40,7 +35,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import br.leg.camara.labhacker.edemocracia.R;
-import br.leg.camara.labhacker.edemocracia.video.Constants;
+import br.leg.camara.labhacker.edemocracia.ytdl.Constants;
 
 
 /**

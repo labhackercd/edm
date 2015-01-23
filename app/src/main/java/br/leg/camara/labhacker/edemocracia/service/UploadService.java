@@ -20,7 +20,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -35,10 +34,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import br.leg.camara.labhacker.edemocracia.MainActivity;
 import br.leg.camara.labhacker.edemocracia.R;
-import br.leg.camara.labhacker.edemocracia.video.Auth;
-import br.leg.camara.labhacker.edemocracia.video.Constants;
+import br.leg.camara.labhacker.edemocracia.ytdl.Auth;
+import br.leg.camara.labhacker.edemocracia.ytdl.Constants;
 
 
 /**

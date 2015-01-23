@@ -44,4 +44,5 @@ dependencies {
     compile 'com.google.http-client:google-http-client-android:1.19.0'
     compile 'com.google.api-client:google-api-client-android:1.19.1'
     compile 'com.google.android.gms:play-services:6.5.87'
+    compile 'com.google.api-client:google-api-client-gson:1.19.1'
 }

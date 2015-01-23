@@ -1,6 +1,6 @@
 package br.leg.camara.labhacker.edemocracia.service;
 
-import br.leg.camara.labhacker.edemocracia.video.Constants;
+import br.leg.camara.labhacker.edemocracia.ytdl.Constants;
 
 public class Upload {
     public static String generateKeywordFromPlaylistId(String playlistId) {
