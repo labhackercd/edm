@@ -56,8 +56,8 @@
                     android:gravity="top">
 
                     <VideoView
-                        android:layout_width="92dp"
-                        android:layout_height="92dp"
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
                         android:id="@+id/videoView" />
 
                     <GridLayout
