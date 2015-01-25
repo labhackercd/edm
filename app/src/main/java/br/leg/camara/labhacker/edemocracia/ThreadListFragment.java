@@ -52,15 +52,6 @@ public class ThreadListFragment extends ContentListFragment<Thread> {
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.list_fragment, container, false);
-
-        setContentView(view);
-
-        return view;
-    }
-
-    @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {

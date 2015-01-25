@@ -31,9 +31,6 @@ import br.leg.camara.labhacker.edemocracia.content.Content;
  */
 public abstract class ContentListFragment<T extends Content> extends ListFragment {
 
-    private View listView;
-    private View progressView;
-
     private RefreshListTask refreshListTask;
 
     public ContentListFragment() {
@@ -41,17 +38,10 @@ public abstract class ContentListFragment<T extends Content> extends ListFragmen
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = super.onCreateView(inflater, container, savedInstanceState);
-        setContentView(view);
-        return view;
-    }
-
-    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        if (savedInstanceState == null) {
+        if (savedInstanceState != null) {
             refreshList();
         }
     }
@@ -63,18 +53,12 @@ public abstract class ContentListFragment<T extends Content> extends ListFragmen
         return new ContentArrayAdapter<>(context, items);
     }
 
-    protected final void setContentView(View view) {
-        listView = view.findViewById(android.R.id.list);
-        progressView = view.findViewById(android.R.id.progress);
-
-        progressView.setVisibility(View.GONE);
-    }
-
     private void refreshList() {
-        showProgress(true);
-
         // Clear the list
         setListItems(null);
+
+        // Call this after that
+        setListShown(false);
 
         // Kick the background task to refresh the list
         refreshListTask = new RefreshListTask();
@@ -91,18 +75,6 @@ public abstract class ContentListFragment<T extends Content> extends ListFragmen
         }
 
         setListAdapter(createAdapter(getActivity(), items));
-    }
-
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    private void showProgress(final boolean show) {
-        listView.setVisibility(show ? View.GONE : View.VISIBLE);
-        progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-
-        if (getActivity() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-            listView.animate().setDuration(shortAnimTime).alpha(show ? 0 : 1);
-            progressView.animate().setDuration(shortAnimTime).alpha(show ? 1 : 0);
-        }
     }
 
     private class RefreshListTask extends AsyncTask<Void, Void, Boolean> {
@@ -129,15 +101,15 @@ public abstract class ContentListFragment<T extends Content> extends ListFragmen
             }
 
             setListItems(items);
-
-            showProgress(false);
+            setListShown(true);
         }
 
         @Override
         protected void onCancelled() {
             refreshListTask = null;
 
-            showProgress(false);
+            setListItems(null);
+            setListShown(true);
         }
     }
 }

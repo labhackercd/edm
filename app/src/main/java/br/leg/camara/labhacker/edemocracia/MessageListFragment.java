@@ -56,15 +56,6 @@ public class MessageListFragment extends ContentListFragment<Message> {
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.list_fragment, container, false);
-
-        setContentView(view);
-
-        return view;
-    }
-
-    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.threadlike_menu, menu);
     }
