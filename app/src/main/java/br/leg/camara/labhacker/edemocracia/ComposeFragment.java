@@ -7,12 +7,9 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
-import android.app.ProgressDialog;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,21 +21,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.common.base.Splitter;
-import com.liferay.mobile.android.service.JSONObjectWrapper;
-import com.liferay.mobile.android.v62.mbmessage.MBMessageService;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.Iterator;
 import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.content.Message;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
-import br.leg.camara.labhacker.edemocracia.util.EDMSession;
-import br.leg.camara.labhacker.edemocracia.util.EDMGetSessionWrapper;
+import br.leg.camara.labhacker.edemocracia.tasks.AddMessageTask;
+import br.leg.camara.labhacker.edemocracia.tasks.AddMessageTaskQueue;
 
 
 public class ComposeFragment extends Fragment {
@@ -48,7 +38,6 @@ public class ComposeFragment extends Fragment {
 
     private Thread threadLike;
 
-    private SendMessageTask sendMessageTask;
     private TextView subjectView;
     private TextView messageView;
     private View videoFrame;
@@ -209,110 +198,33 @@ public class ComposeFragment extends Fragment {
     }
 
     protected boolean sendMessage() {
-        if (sendMessageTask != null) {
-            return false;
-        }
-
         // Reset errors.
         subjectView.setError(null);
         messageView.setError(null);
 
         // Store values at the time of the login attempt.
+        String body = messageView.getText().toString();
         String subject = subjectView.getText().toString();
-        String message = messageView.getText().toString();
 
-        boolean cancel = false;
-        View focusView = null;
+        Message message = Message.create(threadLike, subject, body, "bbcode", true, 1.0, true);
 
-        if (cancel) {
-            focusView.requestFocus();
-        } else {
-            sendMessageTask = new SendMessageTask(subject, message);
-            sendMessageTask.execute((Void) null);
+        // FIXME This is really bad way to get the queue!
+        AddMessageTaskQueue queue = ((MainActivity) getActivity()).addMessageTaskQueue;
+
+        queue.add(new AddMessageTask(message));
+
+        Toast.makeText(getActivity(), R.string.sending_message, Toast.LENGTH_SHORT).show();
+
+        Activity activity = getActivity();
+
+        if (activity != null) {
+            activity.getFragmentManager().popBackStack();
         }
 
-        return !cancel;
+        return true;
     }
 
     protected void onMessageSubmitted() {
         getActivity().getFragmentManager().popBackStack();
-    }
-
-    private class SendMessageTask extends AsyncTask<Void, Void, Boolean> {
-        private final String subject;
-        private final String message;
-
-        public SendMessageTask(String subject, String message) {
-            this.subject = subject;
-            this.message = message;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            final ProgressDialog[] dialog = new ProgressDialog[1];
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    dialog[0] = new ProgressDialog(getActivity());
-
-                    dialog[0].setIndeterminate(true);
-                    dialog[0].setTitle("Sending message...");
-
-                    dialog[0].show();
-                }
-            });
-
-            Message message = null;
-
-            try {
-                message = Message.JSON_READER.fromJSON(doPostIt());
-            } catch (Exception e) {
-                Log.e(getClass().getSimpleName(), e.toString());
-            } finally {
-                dialog[0].dismiss();
-            }
-
-            return message != null;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            String message;
-
-            if (success) {
-                message = "Message submitted";
-            } else {
-                message = "Failed to submit messsage";
-            }
-
-            Toast toast = Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT);
-            toast.show();
-
-            if (success) {
-                onMessageSubmitted();
-            }
-
-            sendMessageTask = null;
-        }
-
-        private JSONObject doPostIt() throws Exception {
-            final EDMSession session = EDMSession.get(getActivity().getApplicationContext());
-
-            assert session != null;
-
-            JSONObject serviceContextJson = new JSONObject();
-
-            serviceContextJson.put("addGuestPermissions", "true");
-
-            JSONObjectWrapper serviceContext = new JSONObjectWrapper(
-                    "com.liferay.portal.service.ServiceContext", serviceContextJson);
-
-            // XXX We gotta use this wrapped session because the original webservice is bugged
-            return new MBMessageService(new EDMGetSessionWrapper(session)).addMessage(
-                    threadLike.getGroupId(), threadLike.getCategoryId(),
-                    threadLike.getThreadId(), threadLike.getRootMessageId(),
-                    subject, message, "bbcode", new JSONArray(), false, 0,
-                    true, serviceContext);
-        }
     }
 }

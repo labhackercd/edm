@@ -86,6 +86,11 @@ public class Group extends Content {
         return getGroupId();
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
+
     public static final JSONReader<Group> JSON_READER = new JSONReader<Group>() {
         @Override
         public Group fromJSON(JSONObject json) throws JSONException {

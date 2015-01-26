@@ -1,7 +1,5 @@
 package br.leg.camara.labhacker.edemocracia.content;
 
-import android.support.annotation.NonNull;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -37,6 +35,33 @@ public class Message extends Content {
     private long groupId;
     private String userName;
     private long messageId;
+
+    public static Message create(Thread thread, String subject, String body, String format,
+                                 boolean anonymous, double priority, boolean allowPingbacks) {
+        return create(
+                thread.getGroupId(), thread.getCategoryId(), thread.getThreadId(),
+                thread.getRootMessageId(), subject, body, format, anonymous, priority, allowPingbacks);
+    }
+
+    public static Message create(
+        long groupId, long categoryId, long threadId, long parentMessageId, String subject,
+        String body, String format, boolean anonymous, double priority, boolean allowPingbacks) {
+
+        Message r = new Message();
+
+        r.groupId = groupId;
+        r.categoryId = categoryId;
+        r.threadId = threadId;
+        r.parentMessageId = parentMessageId;
+        r.subject = subject;
+        r.body = body;
+        r.format = format;
+        r.anonymous = anonymous;
+        r.priority = priority;
+        r.allowPingbacks = allowPingbacks;
+
+        return r;
+    }
 
     public int getStatus() {
         return status;

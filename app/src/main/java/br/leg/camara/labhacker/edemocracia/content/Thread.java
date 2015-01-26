@@ -110,6 +110,15 @@ public class Thread extends Content {
         return rootMessage == null ? null : rootMessage.getSubject();
     }
 
+    @Override
+    public String toString() {
+        String subject = getSubject();
+        if (subject == null) {
+            subject = super.toString();
+        }
+        return subject;
+    }
+
     public static final JSONReader<Thread> JSON_READER = new JSONReader<Thread>() {
         @Override
         public Thread fromJSON(JSONObject json) throws JSONException {

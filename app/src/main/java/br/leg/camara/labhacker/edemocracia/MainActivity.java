@@ -7,19 +7,35 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
+
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
+
+import javax.inject.Inject;
 
 import br.leg.camara.labhacker.edemocracia.content.*;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
+import br.leg.camara.labhacker.edemocracia.tasks.AddMessageSuccessEvent;
+import br.leg.camara.labhacker.edemocracia.tasks.AddMessageTaskQueue;
 
 public class MainActivity extends Activity
         implements GroupListFragment.OnGroupSelectedListener,
                    ThreadListFragment.OnThreadSelectedListener,
                    MessageListFragment.OnMessageSelectedListener {
 
+    // NOTE: Injection starts queue processing!
+    @Inject AddMessageTaskQueue addMessageTaskQueue;
+
+    @Inject Bus bus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ((EDMApplication) getApplication()).inject(this);
+
+        Log.i(getClass().getSimpleName(), addMessageTaskQueue + ":" + bus);
 
         setContentView(R.layout.activity_main);
 
@@ -34,6 +50,18 @@ public class MainActivity extends Activity
             transaction.add(R.id.container, groupListFragment);
             transaction.commit();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        bus.register(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        bus.unregister(this);
     }
 
     @Override
@@ -75,5 +103,11 @@ public class MainActivity extends Activity
     @Override
     public void onMessageSelect(Message message) {
         Log.v(getClass().getSimpleName(), "Message selected: " + message);
+    }
+
+    @SuppressWarnings("UnusedDeclaration") // Used by event bus.
+    @Subscribe
+    public void onAddMessageSuccess(AddMessageSuccessEvent event) {
+        Toast.makeText(this, "Message submitted", Toast.LENGTH_SHORT).show();
     }
 }
