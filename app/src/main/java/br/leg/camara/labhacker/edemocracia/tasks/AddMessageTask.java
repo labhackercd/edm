@@ -49,10 +49,10 @@ public class AddMessageTask implements Task<AddMessageTask.Callback> {
                     MBMessageService service = new MBMessageService(new EDMGetSessionWrapper(session));
 
                     JSONObject insert = service.addMessage(
-                            message.getGroupId(), message.getCategoryId(), message.getSubject(),
-                            message.getBody(), message.getFormat(), new JSONArray(),
-                            message.isAnonymous(), message.getPriority(), message.isAllowPingbacks(),
-                            serviceContext);
+                            message.getGroupId(), message.getCategoryId(), message.getThreadId(),
+                            message.getRootMessageId(), message.getSubject(), message.getBody(),
+                            message.getFormat(), new JSONArray(), message.isAnonymous(),
+                            message.getPriority(), message.isAllowPingbacks(), serviceContext);
 
                     final Message inserted = Message.JSON_READER.fromJSON(insert);
 

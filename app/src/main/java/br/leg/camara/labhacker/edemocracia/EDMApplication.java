@@ -9,11 +9,10 @@ import com.squareup.otto.Bus;
 
 import javax.inject.Singleton;
 
-import br.leg.camara.labhacker.edemocracia.tasks.AddMessageTaskService;
-import dagger.Module;
 import dagger.ObjectGraph;
 import dagger.Provides;
 
+import br.leg.camara.labhacker.edemocracia.tasks.AddMessageTaskService;
 import br.leg.camara.labhacker.edemocracia.tasks.AddMessageTaskQueue;
 
 public class EDMApplication extends Application {
@@ -22,44 +21,44 @@ public class EDMApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        objectGraph = ObjectGraph.create(new DaggerModule(this));
+        objectGraph = ObjectGraph.create(new Module(this));
     }
 
     public void inject(Object object) {
         objectGraph.inject(object);
     }
 
-    @Module(
+    @dagger.Module(
             injects = {
                     MainActivity.class,
                     AddMessageTaskService.class
             }
     )
-    static class DaggerModule {
+    static class Module {
         private final Context applicationContext;
 
-        DaggerModule(Context applicationContext) {
+        Module(Context applicationContext) {
             this.applicationContext = applicationContext;
         }
 
-        @SuppressWarnings("UnusedDeclaration")
         @Provides
         @Singleton
+        @SuppressWarnings("UnusedDeclaration")
         AddMessageTaskQueue provideAddMessageTaskQueue(Gson gson, Bus bus) {
             return AddMessageTaskQueue.create(applicationContext, gson, bus);
         }
 
 
-        @SuppressWarnings("UnusedDeclaration")
         @Provides
         @Singleton
+        @SuppressWarnings("UnusedDeclaration")
         Bus provideBus() {
             return new Bus();
         }
 
-        @SuppressWarnings("UnusedDeclaration")
         @Provides
         @Singleton
+        @SuppressWarnings("UnusedDeclaration")
         Gson provideGson() {
             return new GsonBuilder().create();
         }

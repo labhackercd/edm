@@ -5,7 +5,6 @@ import android.content.Intent;
 
 import com.google.gson.Gson;
 import com.squareup.otto.Bus;
-import com.squareup.otto.Produce;
 import com.squareup.tape.FileObjectQueue;
 import com.squareup.tape.ObjectQueue;
 import com.squareup.tape.TaskQueue;
@@ -39,21 +38,7 @@ public class AddMessageTaskQueue extends TaskQueue<AddMessageTask> {
     @Override
     public void add(AddMessageTask entry) {
         super.add(entry);
-        bus.post(produceSizeChanged());
-
         startService();
-    }
-
-    @Override
-    public void remove() {
-        super.remove();
-        bus.post(produceSizeChanged());
-    }
-
-    @Produce
-    @SuppressWarnings("UnusedDeclaration") // Used by the event bus
-    public AddMessageQueueSizeEvent produceSizeChanged() {
-        return new AddMessageQueueSizeEvent(size());
     }
 
     public static AddMessageTaskQueue create(Context context, Gson gson, Bus bus) {
