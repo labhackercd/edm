@@ -95,9 +95,19 @@ public class Thread extends Content {
         return rootMessage;
     }
 
+    // FIXME Maybe we should move this *set root message* method into some other layer?
+    public void setRootMessage(Message message) {
+        rootMessage = message;
+    }
+
     @Override
     public long getId() {
         return getThreadId();
+    }
+
+    public String getSubject() {
+        Message rootMessage = getRootMessage();
+        return rootMessage == null ? null : rootMessage.getSubject();
     }
 
     public static final JSONReader<Thread> JSON_READER = new JSONReader<Thread>() {

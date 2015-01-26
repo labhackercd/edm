@@ -3,13 +3,10 @@ package br.leg.camara.labhacker.edemocracia;
 import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.liferay.mobile.android.v62.mbmessage.MBMessageService;

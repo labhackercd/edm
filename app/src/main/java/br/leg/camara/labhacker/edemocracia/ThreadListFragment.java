@@ -2,12 +2,10 @@ package br.leg.camara.labhacker.edemocracia;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.liferay.mobile.android.v62.mbmessage.MBMessageService;
 import com.liferay.mobile.android.v62.mbthread.MBThreadService;
 
 import org.json.JSONArray;
@@ -15,6 +13,8 @@ import org.json.JSONArray;
 import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.content.Group;
+import br.leg.camara.labhacker.edemocracia.content.Message;
+import br.leg.camara.labhacker.edemocracia.util.EDMBatchSession;
 import br.leg.camara.labhacker.edemocracia.util.EDMSession;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
 import br.leg.camara.labhacker.edemocracia.util.JSONReader;
@@ -85,9 +85,25 @@ public class ThreadListFragment extends ContentListFragment<Thread> {
 
         MBThreadService service = new MBThreadService(session);
 
-        JSONArray threads = service.getGroupThreads(group.getGroupId(), -1, 0, -1, -1);
+        JSONArray jsonThreads = service.getGroupThreads(group.getGroupId(), -1, 0, -1, -1);
 
-        return JSONReader.fromJSON(threads, Thread.JSON_READER);
+        List<Thread> threads = JSONReader.fromJSON(jsonThreads, Thread.JSON_READER);
+
+        EDMBatchSession batchSession = new EDMBatchSession(session);
+
+        MBMessageService messageService = new MBMessageService(batchSession);
+
+        for (Thread thread : threads) {
+            messageService.getMessage(thread.getRootMessageId());
+        }
+
+        List<Message> messages = JSONReader.fromJSON(batchSession.invoke(), Message.JSON_READER);
+
+        for (Message message : messages) {
+            threads.get(messages.indexOf(message)).setRootMessage(message);
+        }
+
+        return threads;
     }
 
     public interface OnThreadSelectedListener {

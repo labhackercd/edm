@@ -101,7 +101,27 @@ public class ComposeFragment extends Fragment {
 
         setVideoFrameShown(attachedVideoUri != null);
 
+        if (threadLike != null) {
+            if (subjectView != null) {
+                subjectView.setText(getSubjectFor(threadLike));
+            }
+        }
+
+        if (messageView != null) {
+            messageView.requestFocus();
+        }
+
         return view;
+    }
+
+    private String getSubjectFor(Thread threadLike) {
+        String subject = threadLike.getSubject();
+
+        if (!subject.startsWith("RE:")) {
+            subject = "RE: " + subject;
+        }
+
+        return subject;
     }
 
     protected void setAttachedVideoUri(Uri uri) {
