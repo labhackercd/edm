@@ -40,10 +40,7 @@ public abstract class ContentListFragment<T extends Content> extends ListFragmen
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        if (savedInstanceState != null) {
-            refreshList();
-        }
+        refreshList();
     }
 
     protected abstract List<T> fetchItems() throws Exception;
