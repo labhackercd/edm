@@ -2,8 +2,8 @@ package br.leg.camara.labhacker.edemocracia;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,21 +12,48 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
-import android.view.ContextThemeWrapper;
+import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
+import android.widget.ListView;
 
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.util.ExponentialBackOff;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.ytdl.Auth;
+
+class ItemWithIcon extends Pair<String, Integer> {
+    /**
+     * Constructor for a ItemWithIcon
+     *
+     * @param label the label of the item
+     * @param icon the icon id
+     */
+    public ItemWithIcon(String label, Integer icon) {
+        super(label, icon);
+    }
+
+    public String getLabel() {
+        return super.first;
+    }
+
+    public int getIcon() {
+        return super.second;
+    }
+
+    @Override
+    public String toString() {
+        return getLabel();
+    }
+}
+
 
 public class VideoPickerActivity extends Activity {
     private static final String ARG_ACCOUNT_NAME = "accountName";
@@ -140,14 +167,39 @@ public class VideoPickerActivity extends Activity {
             }
         }
 
-        // TODO FIXME ALL THIS CODE SUCKS. PLEASE FIX.
-        AlertDialog.Builder builder = new AlertDialog.Builder(
-                new ContextThemeWrapper(this, android.R.style.Theme_Material_Light_Dialog));
+        List<ItemWithIcon> items = new ArrayList<>();
 
-        List<String> items = Arrays.asList(getResources().getStringArray(R.array.attachmentTypeItems));
-        final int[] icons = getResources().getIntArray(R.array.attachmentTypeIcons);
+        items.add(new ItemWithIcon("Pick from gallery", R.drawable.ic_video_collection_black_36dp));
+        items.add(new ItemWithIcon("Record video", R.drawable.ic_videocam_black_36dp));
 
-        ListAdapter adapter = new ArrayAdapter<String>(
+        FragmentManager fragmentManager = getFragmentManager();
+        VideoSourceDialogFragment dialogFragment = new VideoSourceDialogFragment() {
+            @Override
+            public void onListItemClick(ListView parent, View v, int position, long id) {
+                super.onListItemClick(parent, v, position, id);
+
+                switch (position) {
+                    case 0:
+                        // Pick from gallery
+                        pickFile();
+                        break;
+                    case 1:
+                        recordVideo();
+                        break;
+                }
+            }
+
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                super.onDismiss(dialog);
+                Activity activity = getActivity();
+                if (activity != null) {
+                    activity.finish();
+                }
+            }
+        };
+
+        dialogFragment.setListAdapter(new ArrayAdapter<ItemWithIcon>(
                 this,
                 R.layout.simple_list_item_with_icon,
                 android.R.id.text1,
@@ -158,34 +210,15 @@ public class VideoPickerActivity extends Activity {
 
                 ImageView imageView = (ImageView) view.findViewById(android.R.id.icon);
 
-                // FIXME Doesn't work. icons is full o zeroes.
-                imageView.setImageResource(icons[position]);
+                ItemWithIcon item = getItem(position);
+
+                imageView.setImageResource(item.getIcon());
 
                 return view;
             }
-        };
+        });
 
-        builder.setTitle(R.string.attach_video)
-                .setAdapter(adapter, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // FIXME How to identify which *which* is which?
-                        switch (which) {
-                            case 0:
-                                // First is "pick video"
-                                pickFile();
-                                break;
-                            case 1:
-                                // Second is "record video"
-                                recordVideo();
-                                break;
-                        }
-                    }
-                });
-
-        builder.create().show();
-
-        // TODO Finish the activity when the user clicks outside the dialog, but how do we do that?
+        dialogFragment.show(fragmentManager, "dialog");
 
         return true;
     }
