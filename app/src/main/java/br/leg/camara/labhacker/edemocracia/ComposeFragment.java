@@ -1,12 +1,17 @@
 package br.leg.camara.labhacker.edemocracia;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -14,15 +19,21 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.VideoView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.common.base.Splitter;
 import com.liferay.mobile.android.service.JSONObjectWrapper;
 import com.liferay.mobile.android.v62.mbmessage.MBMessageService;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.Iterator;
+import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.content.Message;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
@@ -40,7 +51,11 @@ public class ComposeFragment extends Fragment {
     private SendMessageTask sendMessageTask;
     private TextView subjectView;
     private TextView messageView;
-    private VideoView videoView;
+    private View videoFrame;
+    private ImageView videoThumbView;
+    private Uri attachedVideoUri;
+    private TextView videoTitleView;
+    private TextView videoSizeView;
 
     public static ComposeFragment newInstance(Thread thread) {
         ComposeFragment fragment = new ComposeFragment();
@@ -74,12 +89,62 @@ public class ComposeFragment extends Fragment {
 
         subjectView = (TextView) view.findViewById(R.id.subject);
         messageView = (TextView) view.findViewById(R.id.message);
-        videoView = (VideoView) view.findViewById(R.id.videoView);
 
-        // Hide the video attachment view
-        videoView.setVisibility(View.GONE);
+        videoFrame = view.findViewById(R.id.videoFrame);
+        videoThumbView = (ImageView) videoFrame.findViewById(R.id.videoThumb);
+        videoTitleView = (TextView) videoFrame.findViewById(R.id.videoTitle);
+        videoSizeView = (TextView) videoFrame.findViewById(R.id.videoSize);
+
+        if (attachedVideoUri != null) {
+            setAttachedVideoUri(attachedVideoUri);
+        }
+
+        setVideoFrameShown(attachedVideoUri != null);
 
         return view;
+    }
+
+    protected void setAttachedVideoUri(Uri uri) {
+        attachedVideoUri = uri;
+        if (videoThumbView != null) {
+            try {
+                ContentResolver contentResolver = getActivity().getApplication().getContentResolver();
+
+                String[] projection = {MediaStore.Images.Media.DATA};
+                Cursor cursor = contentResolver.query(attachedVideoUri, projection, null, null, null);
+                int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                cursor.moveToFirst();
+                String path = cursor.getString(columnIndex);
+
+                Bitmap thumb = ThumbnailUtils.createVideoThumbnail(path, MediaStore.Images.Thumbnails.MINI_KIND);
+
+                videoThumbView.setImageBitmap(thumb);
+
+                if (videoTitleView != null) {
+                    List<String> parts = Splitter
+                            .onPattern("/")
+                            .trimResults()
+                            .omitEmptyStrings()
+                            .splitToList(path);
+                    if (parts.size() > 0) {
+                        videoTitleView.setText(parts.get(parts.size()-1));
+                    }
+                }
+
+                if (videoSizeView != null) {
+                    long fileSize = contentResolver.openFileDescriptor(attachedVideoUri, "r").getStatSize();
+                    videoSizeView.setText(Long.toString(fileSize));
+                }
+            } catch (FileNotFoundException e) {
+                // NOOP
+            }
+        }
+    }
+
+    protected void setVideoFrameShown(boolean show) {
+        if (videoFrame != null) {
+            videoFrame.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
     }
 
     @Override
@@ -108,8 +173,8 @@ public class ComposeFragment extends Fragment {
                 if (resultCode == Activity.RESULT_OK) {
                     Uri videoUri = data.getData();
                     if (videoUri != null) {
-                        videoView.setVideoURI(videoUri);
-                        videoView.setVisibility(View.VISIBLE);
+                        setAttachedVideoUri(videoUri);
+                        setVideoFrameShown(true);
                     }
                 }
                 break;

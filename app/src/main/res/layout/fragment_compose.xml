@@ -13,7 +13,9 @@
         android:background="#fff"
         android:hint="@string/subject"
         android:padding="10dp"
-        android:layout_marginBottom="1dp" />
+        android:layout_marginBottom="1dp"
+        android:capitalize="sentences"
+        android:inputType="textCapSentences|textEmailSubject" />
 
     <RelativeLayout
         android:layout_width="fill_parent"
@@ -22,7 +24,7 @@
         <EditText
             android:layout_width="match_parent"
             android:layout_height="fill_parent"
-            android:inputType="textMultiLine"
+            android:inputType="textCapSentences|textLongMessage|textMultiLine"
             android:ems="10"
             android:id="@+id/message"
             android:background="#fff"
@@ -56,10 +58,10 @@
                     android:padding="10dp"
                     android:gravity="top">
 
-                    <VideoView
+                    <ImageView
                         android:layout_width="64dp"
                         android:layout_height="64dp"
-                        android:id="@+id/video" />
+                        android:id="@+id/videoThumb" />
 
                     <GridLayout
                         android:layout_width="fill_parent"
@@ -77,16 +79,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textAppearance="?android:attr/textAppearanceMedium"
-                                android:text="Titulo"
-                                android:id="@+id/textView7"
+                                android:id="@+id/videoTitle"
                                 android:textStyle="bold" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textAppearance="?android:attr/textAppearanceMedium"
-                                android:text="Tamanho"
-                                android:id="@+id/textView6" />
+                                android:id="@+id/videoSize" />
                         </LinearLayout>
 
                         <ImageView
