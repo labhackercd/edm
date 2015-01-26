@@ -1,31 +1,109 @@
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="br.leg.camara.labhacker.edemocracia.ComposeFragment">
+    android:background="@color/light_gray"
+    android:weightSum="1">
 
-    <LinearLayout
-        android:orientation="vertical"
+
+    <EditText
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:id="@+id/subject"
+        android:background="#fff"
+        android:hint="@string/subject"
+        android:padding="10dp"
+        android:layout_marginBottom="1dp" />
 
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/subject"
-            android:inputType="textEmailSubject" />
-
-        <VideoView
-            android:layout_width="wrap_content"
-            android:layout_height="100dp"
-            android:id="@+id/videoView" />
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
 
         <EditText
             android:layout_width="match_parent"
             android:layout_height="fill_parent"
             android:inputType="textMultiLine"
             android:ems="10"
-            android:id="@+id/message" />
-    </LinearLayout>
-</FrameLayout>
+            android:id="@+id/message"
+            android:background="#fff"
+            android:autoText="true"
+            android:gravity="top"
+            android:hint="@string/compose"
+            android:paddingLeft="10dp"
+            android:paddingTop="10dp"
+            android:layout_alignParentTop="true" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#fff"
+            android:padding="10dp"
+            android:layout_gravity="bottom"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/videoFrame">
+
+            <FrameLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/light_gray"
+                android:padding="1dp">
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/light_gray_2"
+                    android:padding="10dp"
+                    android:gravity="top">
+
+                    <VideoView
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
+                        android:id="@+id/video" />
+
+                    <GridLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="left"
+                            android:layout_marginLeft="10dp"
+                            android:orientation="vertical"
+                            android:layout_marginRight="10dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?android:attr/textAppearanceMedium"
+                                android:text="Titulo"
+                                android:id="@+id/textView7"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?android:attr/textAppearanceMedium"
+                                android:text="Tamanho"
+                                android:id="@+id/textView6" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/ic_close"
+                            android:src="@drawable/ic_close_black_24dp"
+                            android:alpha=".7"
+                            />
+
+                    </GridLayout>
+                </LinearLayout>
+
+            </FrameLayout>
+        </FrameLayout>
+
+    </RelativeLayout>
+
+
+</LinearLayout>

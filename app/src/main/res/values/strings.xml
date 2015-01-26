@@ -21,5 +21,7 @@
     <string name="cant_access_play">Google Play Services is not avaible</string>
     <string name="please_try_again">Try Again</string>
     <string name="yt_upload_failed">Upload on Youtube has been failed</string>
+    <string name="compose">Compose message...</string>
+    <string name="subject">Subject</string>
 
 </resources>
