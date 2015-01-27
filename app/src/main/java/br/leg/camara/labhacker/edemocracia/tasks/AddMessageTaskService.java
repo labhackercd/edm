@@ -42,8 +42,11 @@ public class AddMessageTaskService extends Service implements AddMessageTask.Cal
     }
 
     @Override
-    public void onFailure() {
-        Log.w(TAG, "Failure");
+    public void onFailure(Message message, Exception e) {
+        Log.w(TAG, "Failed to submit message: " + e.toString());
+
+        running = false;
+        bus.post(new AddMessageFailureEvent(message, e));
     }
 
     @Override

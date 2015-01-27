@@ -16,6 +16,7 @@ import javax.inject.Inject;
 
 import br.leg.camara.labhacker.edemocracia.content.*;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
+import br.leg.camara.labhacker.edemocracia.tasks.AddMessageFailureEvent;
 import br.leg.camara.labhacker.edemocracia.tasks.AddMessageSuccessEvent;
 import br.leg.camara.labhacker.edemocracia.tasks.AddMessageTaskQueue;
 
@@ -105,9 +106,17 @@ public class MainActivity extends Activity
         Log.v(getClass().getSimpleName(), "Message selected: " + message);
     }
 
-    @SuppressWarnings("UnusedDeclaration") // Used by event bus.
     @Subscribe
+    @SuppressWarnings("UnusedDeclaration") // Used by the event bus.
     public void onAddMessageSuccess(AddMessageSuccessEvent event) {
         Toast.makeText(this, "Message submitted", Toast.LENGTH_SHORT).show();
+    }
+
+    @Subscribe
+    @SuppressWarnings("UnusedDeclaration") // Used by the event bus.
+    public void onAddMessageFailure(AddMessageFailureEvent event) {
+        // TODO FIXME Should we add the message to the queue again? Or start
+        // the queue service again? What should we do!?
+        //Toast.makeText(this, "Failed to submit message", Toast.LENGTH_SHORT).show();
     }
 }

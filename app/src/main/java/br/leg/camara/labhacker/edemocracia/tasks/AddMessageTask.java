@@ -3,7 +3,6 @@ package br.leg.camara.labhacker.edemocracia.tasks;
 import android.app.Application;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import com.liferay.mobile.android.service.JSONObjectWrapper;
 import com.liferay.mobile.android.v62.mbmessage.MBMessageService;
@@ -50,9 +49,9 @@ public class AddMessageTask implements Task<AddMessageTask.Callback> {
 
                     JSONObject insert = service.addMessage(
                             message.getGroupId(), message.getCategoryId(), message.getThreadId(),
-                            message.getRootMessageId(), message.getSubject(), message.getBody(),
+                            message.getParentMessageId(), message.getSubject(), message.getBody(),
                             message.getFormat(), new JSONArray(), message.isAnonymous(),
-                            message.getPriority(), message.isAllowPingbacks(), serviceContext);
+                            message.getPriority(), message.allowPingbacks(), serviceContext);
 
                     final Message inserted = Message.JSON_READER.fromJSON(insert);
 
@@ -62,10 +61,13 @@ public class AddMessageTask implements Task<AddMessageTask.Callback> {
                             callback.onSuccess(inserted);
                         }
                     });
-                } catch (Exception e) {
-                    // TODO Deal with specific exceptions and trigger onFailure
-                    e.printStackTrace();
-                    Log.w(getClass().getSimpleName(), e.toString());
+                } catch (final Exception e) {
+                    MAIN_THREAD.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.onFailure(message, e);
+                        }
+                    });
                 }
             }
         }).start();
@@ -73,7 +75,7 @@ public class AddMessageTask implements Task<AddMessageTask.Callback> {
 
     public interface Callback {
         void onSuccess(Message message);
-        void onFailure();
+        void onFailure(Message message, Exception exception);
     }
 }
 

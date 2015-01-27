@@ -131,7 +131,7 @@ public class Message extends Content {
         return classPK;
     }
 
-    public boolean isAllowPingbacks() {
+    public boolean allowPingbacks() {
         return allowPingbacks;
     }
 

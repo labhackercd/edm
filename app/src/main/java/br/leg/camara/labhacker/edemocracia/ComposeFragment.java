@@ -206,12 +206,10 @@ public class ComposeFragment extends Fragment {
         String body = messageView.getText().toString();
         String subject = subjectView.getText().toString();
 
-        Message message = Message.create(threadLike, subject, body, "bbcode", true, 1.0, true);
+        Message message = Message.create(threadLike, subject, body, "bbcode", false, 0.0, true);
 
         // FIXME This is really bad way to get the queue!
-        AddMessageTaskQueue queue = ((MainActivity) getActivity()).addMessageTaskQueue;
-
-        queue.add(new AddMessageTask(message));
+        ((MainActivity) getActivity()).addMessageTaskQueue.add(new AddMessageTask(message));
 
         Toast.makeText(getActivity(), R.string.sending_message, Toast.LENGTH_SHORT).show();
 
