@@ -8,11 +8,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.liferay.mobile.android.v62.group.GroupService;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import br.leg.camara.labhacker.edemocracia.content.Group;
 import br.leg.camara.labhacker.edemocracia.util.EDMSession;
@@ -22,26 +29,6 @@ import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 public class GroupListFragment extends ContentListFragment<Group> {
 
     private OnGroupSelectedListener listener;
-
-    @Override
-    protected List<Group> fetchItems() throws Exception {
-        EDMSession session = EDMSession.get(getActivity().getApplicationContext());
-
-        assert session != null;
-
-        GroupService groupService = new GroupService(session);
-
-        JSONArray groups = groupService.search(
-                session.getCompanyId(), "%", "%", new JSONArray(), -1, -1);
-
-        /* TODO Filter
-        if (!group.isActive() || group.getType() != 1) {
-            continue;
-        }
-        */
-
-        return JSONReader.fromJSON(groups, Group.JSON_READER);
-    }
 
     @Override
     public void onAttach(Activity activity) {
@@ -67,6 +54,27 @@ public class GroupListFragment extends ContentListFragment<Group> {
         if (listener != null) {
             listener.onGroupSelected((Group) getListAdapter().getItem(position));
         }
+    }
+
+    @Override
+    protected List<Group> fetchItems() throws Exception {
+        EDMSession session = EDMSession.get(getActivity().getApplicationContext());
+
+        assert session != null;
+
+        GroupService groupService = new GroupService(session);
+
+        JSONArray jsonGroups = groupService.search(
+                session.getCompanyId(), "%", "%", new JSONArray(), -1, -1);
+
+        List<Group> groups = JSONReader.fromJSON(jsonGroups, Group.JSON_READER);
+
+        return Lists.newArrayList(Collections2.filter(groups, new Predicate<Group>() {
+            @Override
+            public boolean apply(@Nullable Group group) {
+                return group != null && group.isActive() && group.getType() != 1;
+            }
+        }));
     }
 
     public interface OnGroupSelectedListener {
