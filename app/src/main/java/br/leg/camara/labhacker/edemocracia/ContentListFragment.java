@@ -1,6 +1,7 @@
 package br.leg.camara.labhacker.edemocracia;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.ListFragment;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -98,7 +99,10 @@ public abstract class ContentListFragment<T extends Content> extends ListFragmen
             }
 
             setListItems(items);
-            setListShown(true);
+
+            if (ContentListFragment.this.getView() != null) {
+                setListShown(true);
+            }
         }
 
         @Override
@@ -106,7 +110,10 @@ public abstract class ContentListFragment<T extends Content> extends ListFragmen
             refreshListTask = null;
 
             setListItems(null);
-            setListShown(true);
+
+            if (ContentListFragment.this.getView() != null) {
+                setListShown(true);
+            }
         }
     }
 }
