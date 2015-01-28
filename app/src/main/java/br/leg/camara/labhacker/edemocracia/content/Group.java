@@ -8,7 +8,7 @@ import br.leg.camara.labhacker.edemocracia.util.GsonParcelable;
 import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
 
-public class Group extends GsonParcelable implements Identifiable {
+public class Group extends GsonParcelable implements Forum, Identifiable {
 
     private String friendlyURL;
     private long classPK;
@@ -75,6 +75,12 @@ public class Group extends GsonParcelable implements Identifiable {
 
     public long getGroupId() {
         return groupId;
+    }
+
+    @Override
+    public long getCategoryId() {
+        // Groups aren't categories
+        return -1;
     }
 
     public String getName() {

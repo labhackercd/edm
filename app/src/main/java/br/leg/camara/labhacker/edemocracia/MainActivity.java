@@ -23,14 +23,13 @@ import br.leg.camara.labhacker.edemocracia.content.*;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
 import br.leg.camara.labhacker.edemocracia.tasks.AddMessageFailureEvent;
 import br.leg.camara.labhacker.edemocracia.tasks.AddMessageSuccessEvent;
-import br.leg.camara.labhacker.edemocracia.tasks.AddMessageTask;
 import br.leg.camara.labhacker.edemocracia.tasks.AddMessageTaskQueue;
 import br.leg.camara.labhacker.edemocracia.tasks.VideoUploadTaskQueue;
 import br.leg.camara.labhacker.edemocracia.ytdl.Constants;
 
 public class MainActivity extends Activity
         implements GroupListFragment.OnGroupSelectedListener,
-                   ThreadListFragment.OnThreadSelectedListener,
+                   ForumListFragment.OnThreadSelectedListener,
                    MessageListFragment.OnMessageSelectedListener {
 
     // NOTE: Injection starts queue processing!
@@ -98,7 +97,12 @@ public class MainActivity extends Activity
 
     @Override
     public void onGroupSelected(Group group) {
-        ThreadListFragment fragment = ThreadListFragment.newInstance(group);
+        onForumSelected(group);
+    }
+
+    @Override
+    public void onForumSelected(Forum forum) {
+        ForumListFragment fragment = ForumListFragment.newInstance(forum);
 
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.replace(R.id.container, fragment);

@@ -9,7 +9,7 @@ import br.leg.camara.labhacker.edemocracia.util.GsonParcelable;
 import br.leg.camara.labhacker.edemocracia.util.Identifiable;
 import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
-public class Category extends GsonParcelable implements Identifiable {
+public class Category extends GsonParcelable implements Forum, Identifiable {
 
     private String userName;
     private String description;
@@ -105,7 +105,6 @@ public class Category extends GsonParcelable implements Identifiable {
 
             instance.userName = json.getString("userName");
             instance.description = json.getString("description");
-            instance.lastPostDate = new Date(json.getLong("lastPostDate"));
             instance.companyId = json.getLong("companyId");
             instance.createDate = new Date(json.getLong("createDate"));
             instance.parentCategoryId = json.getLong("parentCategoryId");
@@ -118,6 +117,13 @@ public class Category extends GsonParcelable implements Identifiable {
             instance.messageCount = json.getInt("messageCount");
             instance.displayStyle = json.getString("displayStyle");
             instance.name = json.getString("name");
+
+
+            if (json.isNull("lastPostDate")) {
+                instance.lastPostDate = null;
+            } else {
+                instance.lastPostDate = new Date(json.getLong("lastPostDate"));
+            }
 
             return instance;
         }
