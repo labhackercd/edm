@@ -17,7 +17,7 @@
         style="?android:attr/progressBarStyleLarge"
         android:id="@+id/android:progress"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_gravity="center"
         android:layout_weight="1.0"
         android:indeterminate="true"
@@ -43,11 +43,15 @@
                 android:id="@+id/imageView"
                 android:src="@drawable/icon"
                 android:layout_marginBottom="40dp"
-                android:contentDescription="e-democracia" />
+                android:contentDescription="@string/app_name" />
 
-            <AutoCompleteTextView android:id="@+id/email" android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:hint="@string/prompt_email"
-                android:inputType="textEmailAddress" android:maxLines="1"
+            <AutoCompleteTextView
+                android:id="@+id/email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/prompt_email"
+                android:inputType="textWebEmailAddress|textAutoComplete"
+                android:maxLines="1"
                 android:singleLine="true"
                 android:autoText="false"
                 android:backgroundTint="#fff"
@@ -55,21 +59,30 @@
                 android:textColorHint="#fff"
                 android:textColor="#fff" />
 
-            <EditText android:id="@+id/password" android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:hint="@string/prompt_password"
+            <EditText
+                android:id="@+id/password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/prompt_password"
                 android:imeActionId="@+id/login"
                 android:imeActionLabel="@string/action_sign_in_short"
-                android:imeOptions="actionUnspecified" android:inputType="textPassword"
-                android:maxLines="1" android:singleLine="true"
+                android:imeOptions="actionUnspecified"
+                android:inputType="textPassword"
+                android:maxLines="1"
+                android:singleLine="true"
                 android:backgroundTint="#fff"
                 android:textIsSelectable="false"
                 android:textColor="#fff"
                 android:textColorHighlight="#fff"
                 android:textColorHint="#fff" />
 
-            <Button android:id="@+id/email_sign_in_button" style="?android:textAppearanceSmall"
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="16dp" android:text="@string/action_sign_in"
+            <Button
+                android:id="@+id/email_sign_in_button"
+                style="?android:textAppearanceSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/action_sign_in"
                 android:textStyle="bold"
                 android:background="@color/light_green"
                 android:textColor="#fff" />

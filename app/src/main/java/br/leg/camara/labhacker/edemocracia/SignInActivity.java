@@ -2,8 +2,10 @@ package br.leg.camara.labhacker.edemocracia;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
@@ -15,6 +17,7 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -45,8 +48,8 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
 
     private UserLoginTask authenticationTask = null;
 
-    private AutoCompleteTextView emailView;
     private EditText passwordView;
+    private AutoCompleteTextView emailView;
 
     private View progressView;
     private View loginFormView;
@@ -94,11 +97,6 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
         getLoaderManager().initLoader(0, null, this);
     }
 
-    /**
-     * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
-     * errors are presented and no actual login attempt is made.
-     */
     public void attemptLogin() {
         if (authenticationTask != null) {
             return;
@@ -147,13 +145,14 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
     }
 
     private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
+        // XXX Everything else would be wrong. It's very, very hard to check the
+        // validity of e-mail addresses.
         return email.contains("@");
     }
 
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return password.length() > 4;
+        // Everything is possible!
+        return true;
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
@@ -192,7 +191,6 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
             emails.add(cursor.getString(ProfileQuery.ADDRESS));
             cursor.moveToNext();
         }
-
         addEmailsToAutoComplete(emails);
     }
 
@@ -217,7 +215,6 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
         ArrayAdapter<String> adapter =
                 new ArrayAdapter<>(SignInActivity.this,
                         android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
-
         emailView.setAdapter(adapter);
     }
 
@@ -226,7 +223,6 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
      * the user.
      */
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-
         private final String email;
         private final String password;
 
@@ -252,7 +248,6 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
             }
 
             if (companyId < 0) {
-                Log.d("ROFL", "ROFL");
                 return false;
             }
 
@@ -274,9 +269,17 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 finish();
             } else {
-                // FIXME Should not be displayed in the Password Field
-                passwordView.setError("Invalid credentials");
-                passwordView.requestFocus();
+                new AlertDialog.Builder(new ContextThemeWrapper(
+                        SignInActivity.this, android.R.style.Theme_Material_Light_Dialog))
+                        .setMessage(R.string.error_invalid_credentials)
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .create()
+                        .show();
             }
         }
 
