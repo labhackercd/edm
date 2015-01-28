@@ -28,7 +28,7 @@
             android:background="#fff"
             android:autoText="true"
             android:gravity="top"
-            android:hint="@string/compose_message"
+            android:hint="@string/compose"
             android:paddingLeft="10dp"
             android:paddingTop="10dp"
             android:layout_alignParentTop="true" />
