@@ -2,58 +2,35 @@ package br.leg.camara.labhacker.edemocracia;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.util.Pair;
-import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
+import android.widget.ListAdapter;
+import android.widget.TextView;
 
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.util.ExponentialBackOff;
+import com.google.common.collect.Lists;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.ytdl.Auth;
-
-class ItemWithIcon extends Pair<String, Integer> {
-    /**
-     * Constructor for a ItemWithIcon
-     *
-     * @param label the label of the item
-     * @param icon the icon id
-     */
-    public ItemWithIcon(String label, Integer icon) {
-        super(label, icon);
-    }
-
-    public String getLabel() {
-        return super.first;
-    }
-
-    public int getIcon() {
-        return super.second;
-    }
-
-    @Override
-    public String toString() {
-        return getLabel();
-    }
-}
 
 
 public class VideoPickerActivity extends Activity {
@@ -142,23 +119,10 @@ public class VideoPickerActivity extends Activity {
                     }
                 }
                 break;
-
-            /*
-            case REQUEST_DIRECT_TAG:
-                if (resultCode == Activity.RESULT_OK && data != null
-                        && data.getExtras() != null) {
-                    String youtubeId = data.getStringExtra(YOUTUBE_ID);
-                    if (youtubeId.equals(mVideoData.getYouTubeId())) {
-                        directTag(mVideoData);
-                    }
-                }
-                break;
-            */
         }
     }
 
     public boolean attachVideo() {
-        // TODO Is this the right way/place to check this?
         if (!checkGooglePlayServicesAvailable()) {
             return false;
         }
@@ -172,39 +136,12 @@ public class VideoPickerActivity extends Activity {
             }
         }
 
-        List<ItemWithIcon> items = new ArrayList<>();
+        List<Pair<String, Integer>> items = Lists.newArrayList(
+                new Pair<>(getResources().getString(R.string.pick_video), R.drawable.ic_video_collection_black_36dp),
+                new Pair<>(getResources().getString(R.string.record_video), R.drawable.ic_videocam_black_36dp)
+        );
 
-        items.add(new ItemWithIcon("Pick from gallery", R.drawable.ic_video_collection_black_36dp));
-        items.add(new ItemWithIcon("Record video", R.drawable.ic_videocam_black_36dp));
-
-        FragmentManager fragmentManager = getFragmentManager();
-        VideoSourceDialogFragment dialogFragment = new VideoSourceDialogFragment() {
-            @Override
-            public void onListItemClick(ListView parent, View v, int position, long id) {
-                super.onListItemClick(parent, v, position, id);
-
-                switch (position) {
-                    case 0:
-                        // Pick from gallery
-                        pickFile();
-                        break;
-                    case 1:
-                        recordVideo();
-                        break;
-                }
-            }
-
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                super.onDismiss(dialog);
-                Activity activity = getActivity();
-                if (activity != null) {
-                    activity.finish();
-                }
-            }
-        };
-
-        dialogFragment.setListAdapter(new ArrayAdapter<ItemWithIcon>(
+        ListAdapter adapter = new ArrayAdapter<Pair<String, Integer>>(
                 this,
                 R.layout.simple_list_item_with_icon,
                 android.R.id.text1,
@@ -213,17 +150,52 @@ public class VideoPickerActivity extends Activity {
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
 
-                ImageView imageView = (ImageView) view.findViewById(android.R.id.icon);
+                Pair<String, Integer> item = getItem(position);
 
-                ItemWithIcon item = getItem(position);
+                ((TextView) view.findViewById(android.R.id.text1))
+                        .setText(item.first);
 
-                imageView.setImageResource(item.getIcon());
+                ((ImageView) view.findViewById(android.R.id.icon))
+                        .setImageResource(item.second);
 
                 return view;
             }
-        });
+        };
 
-        dialogFragment.show(fragmentManager, "dialog");
+        AlertDialog.Builder builder = new AlertDialog.Builder(
+                new ContextThemeWrapper(this, android.R.style.Theme_Material_Light_Dialog))
+                .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        VideoPickerActivity.this.finish();
+                    }
+                })
+                .setAdapter(adapter, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                // Pick from gallery
+                                pickFile();
+                                break;
+                            case 1:
+                                recordVideo();
+                                break;
+                        }
+                    }
+                });
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            // TODO2 Close activity when dialog is dismissed on older devices
+            builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    VideoPickerActivity.this.finish();
+                }
+            });
+        }
+
+        builder.show();
 
         return true;
     }
