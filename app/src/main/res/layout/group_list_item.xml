@@ -2,15 +2,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient_background">
+    android:background="@color/light_gray_2">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="right"
-        android:background="#30000000"
+        android:background="#fff"
         android:padding="10dp"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="1dp">
 
         <ImageView
             android:layout_width="64dp"
@@ -33,26 +33,15 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="40dp" />
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/imageView3"
-            android:src="@drawable/ic_arrow_forward_black_36dp"
-            android:backgroundTintMode="screen"
-            android:layout_centerVertical="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:alpha="0.3"/>
-
     </RelativeLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="right"
-        android:background="#30000000"
+        android:background="#fff"
         android:padding="10dp"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="1dp">
 
         <ImageView
             android:layout_width="64dp"
@@ -75,26 +64,15 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="40dp" />
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/imageView3"
-            android:src="@drawable/ic_arrow_forward_black_36dp"
-            android:backgroundTintMode="screen"
-            android:layout_centerVertical="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:alpha="0.3"/>
-
     </RelativeLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="right"
-        android:background="#30000000"
+        android:background="#fff"
         android:padding="10dp"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="1dp">
 
         <ImageView
             android:layout_width="64dp"
@@ -117,16 +95,98 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="40dp" />
 
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:background="#fff"
+        android:padding="10dp"
+        android:layout_marginTop="1dp">
+
         <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:id="@+id/imageView2"
+            android:src="@drawable/livre"
+            android:adjustViewBounds="false"
+            android:cropToPadding="false"
+            android:scaleType="fitXY"
+            android:layout_alignParentEnd="false" />
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/imageView3"
-            android:src="@drawable/ic_arrow_forward_black_36dp"
-            android:backgroundTintMode="screen"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Hackathon de Gênero e Cidadania"
+            android:id="@+id/textView"
             android:layout_centerVertical="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:alpha="0.3"/>
+            android:layout_toRightOf="@+id/imageView2"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="40dp" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:background="#fff"
+        android:padding="10dp"
+        android:layout_marginTop="1dp">
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:id="@+id/imageView2"
+            android:src="@drawable/hackathon"
+            android:adjustViewBounds="false"
+            android:cropToPadding="false"
+            android:scaleType="fitXY"
+            android:layout_alignParentEnd="false" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Hackathon de Gênero e Cidadania"
+            android:id="@+id/textView"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/imageView2"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="40dp" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:background="#fff"
+        android:padding="10dp"
+        android:layout_marginTop="1dp">
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:id="@+id/imageView2"
+            android:src="@drawable/livre"
+            android:adjustViewBounds="false"
+            android:cropToPadding="false"
+            android:scaleType="fitXY"
+            android:layout_alignParentEnd="false" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Hackathon de Gênero e Cidadania"
+            android:id="@+id/textView"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/imageView2"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="40dp" />
 
     </RelativeLayout>
 
