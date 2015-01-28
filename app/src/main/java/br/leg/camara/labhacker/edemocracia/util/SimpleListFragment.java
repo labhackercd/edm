@@ -23,7 +23,7 @@ import java.util.List;
  *
  * @param <T extends SimpleArrayAdapter.Identifiable>
  */
-public abstract class SimpleListFragment<T extends SimpleArrayAdapter.Identifiable> extends ListFragment {
+public abstract class SimpleListFragment<T extends Identifiable> extends ListFragment {
 
     private RefreshListTask refreshListTask;
 

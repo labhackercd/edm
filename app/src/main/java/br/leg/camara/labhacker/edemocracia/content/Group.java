@@ -3,12 +3,12 @@ package br.leg.camara.labhacker.edemocracia.content;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import br.leg.camara.labhacker.edemocracia.util.SimpleArrayAdapter;
+import br.leg.camara.labhacker.edemocracia.util.Identifiable;
 import br.leg.camara.labhacker.edemocracia.util.GsonParcelable;
 import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
 
-public class Group extends GsonParcelable implements SimpleArrayAdapter.Identifiable {
+public class Group extends GsonParcelable implements Identifiable {
 
     private String friendlyURL;
     private long classPK;

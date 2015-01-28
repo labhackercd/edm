@@ -5,11 +5,11 @@ import org.json.JSONObject;
 
 import java.util.Date;
 
-import br.leg.camara.labhacker.edemocracia.util.SimpleArrayAdapter;
+import br.leg.camara.labhacker.edemocracia.util.Identifiable;
 import br.leg.camara.labhacker.edemocracia.util.GsonParcelable;
 import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
-public class Message extends GsonParcelable implements SimpleArrayAdapter.Identifiable {
+public class Message extends GsonParcelable implements Identifiable {
 
     private int status;
     private boolean attachments;

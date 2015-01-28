@@ -6,10 +6,10 @@ import org.json.JSONObject;
 import java.util.Date;
 
 import br.leg.camara.labhacker.edemocracia.util.GsonParcelable;
+import br.leg.camara.labhacker.edemocracia.util.Identifiable;
 import br.leg.camara.labhacker.edemocracia.util.JSONReader;
-import br.leg.camara.labhacker.edemocracia.util.SimpleArrayAdapter;
 
-public class Category extends GsonParcelable implements SimpleArrayAdapter.Identifiable {
+public class Category extends GsonParcelable implements Identifiable {
 
     private String userName;
     private String description;
