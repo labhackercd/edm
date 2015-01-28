@@ -1,40 +1,33 @@
-package br.leg.camara.labhacker.edemocracia;
+package br.leg.camara.labhacker.edemocracia.util;
 
-import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.ListFragment;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ListAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import br.leg.camara.labhacker.edemocracia.content.Content;
-
 
 /**
- * A {@link ListFragment} with a progress bar that is displayed while loading items.
+ * A {@link ListFragment} that loads its items inside an AsyncTask. It displays a progress
+ * indicator while loading items.
  *
  * To use it, implement the fetchItems method.
  *
  * It's possible to use specific ListAdapters by overriding the createAdapter method.
  *
- * @param <T extends Content>
+ * @param <T extends SimpleArrayAdapter.Identifiable>
  */
-public abstract class ContentListFragment<T extends Content> extends ListFragment {
+public abstract class SimpleListFragment<T extends SimpleArrayAdapter.Identifiable> extends ListFragment {
 
     private RefreshListTask refreshListTask;
 
-    public ContentListFragment() {
+    public SimpleListFragment() {
         // Required empty constructor
     }
 
@@ -48,7 +41,7 @@ public abstract class ContentListFragment<T extends Content> extends ListFragmen
 
     @NonNull
     protected ListAdapter createAdapter(Context context, List<T> items) {
-        return new ContentArrayAdapter<>(context, items);
+        return new SimpleArrayAdapter<>(context, items);
     }
 
     private void refreshList() {
@@ -100,7 +93,7 @@ public abstract class ContentListFragment<T extends Content> extends ListFragmen
 
             setListItems(items);
 
-            if (ContentListFragment.this.getView() != null) {
+            if (SimpleListFragment.this.getView() != null) {
                 setListShown(true);
             }
         }
@@ -111,7 +104,7 @@ public abstract class ContentListFragment<T extends Content> extends ListFragmen
 
             setListItems(null);
 
-            if (ContentListFragment.this.getView() != null) {
+            if (SimpleListFragment.this.getView() != null) {
                 setListShown(true);
             }
         }

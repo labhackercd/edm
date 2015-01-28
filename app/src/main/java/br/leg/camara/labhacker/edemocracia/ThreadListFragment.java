@@ -12,6 +12,7 @@ import org.json.JSONArray;
 
 import java.util.List;
 
+import br.leg.camara.labhacker.edemocracia.util.SimpleListFragment;
 import br.leg.camara.labhacker.edemocracia.content.Group;
 import br.leg.camara.labhacker.edemocracia.content.Message;
 import br.leg.camara.labhacker.edemocracia.util.EDMBatchSession;
@@ -20,7 +21,7 @@ import br.leg.camara.labhacker.edemocracia.content.Thread;
 import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
 
-public class ThreadListFragment extends ContentListFragment<Thread> {
+public class ThreadListFragment extends SimpleListFragment<Thread> {
 
     public static String ARG_PARENT = "parent";
 

@@ -17,10 +17,11 @@ import java.util.List;
 
 import br.leg.camara.labhacker.edemocracia.content.Message;
 import br.leg.camara.labhacker.edemocracia.content.Thread;
+import br.leg.camara.labhacker.edemocracia.util.SimpleListFragment;
 import br.leg.camara.labhacker.edemocracia.util.EDMSession;
 import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
-public class MessageListFragment extends ContentListFragment<Message> {
+public class MessageListFragment extends SimpleListFragment<Message> {
 
     public static String ARG_THREAD = "thread";
 

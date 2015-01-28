@@ -1,14 +1,14 @@
 package br.leg.camara.labhacker.edemocracia.content;
 
-import android.support.annotation.NonNull;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import br.leg.camara.labhacker.edemocracia.util.SimpleArrayAdapter;
+import br.leg.camara.labhacker.edemocracia.util.GsonParcelable;
 import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
 
-public class Group extends Content {
+public class Group extends GsonParcelable implements SimpleArrayAdapter.Identifiable {
 
     private String friendlyURL;
     private long classPK;

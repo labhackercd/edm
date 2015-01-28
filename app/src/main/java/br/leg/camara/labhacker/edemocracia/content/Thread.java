@@ -5,9 +5,11 @@ import org.json.JSONObject;
 
 import java.util.Date;
 
+import br.leg.camara.labhacker.edemocracia.util.SimpleArrayAdapter;
+import br.leg.camara.labhacker.edemocracia.util.GsonParcelable;
 import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
-public class Thread extends Content {
+public class Thread extends GsonParcelable implements SimpleArrayAdapter.Identifiable {
 
     private int status;
     private int viewCount;

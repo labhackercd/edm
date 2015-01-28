@@ -1,32 +1,27 @@
 package br.leg.camara.labhacker.edemocracia;
 
 import android.app.Activity;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.liferay.mobile.android.v62.group.GroupService;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import br.leg.camara.labhacker.edemocracia.content.Group;
+import br.leg.camara.labhacker.edemocracia.util.SimpleListFragment;
 import br.leg.camara.labhacker.edemocracia.util.EDMSession;
 import br.leg.camara.labhacker.edemocracia.util.JSONReader;
 
 
-public class GroupListFragment extends ContentListFragment<Group> {
+public class GroupListFragment extends SimpleListFragment<Group> {
 
     private OnGroupSelectedListener listener;
 
