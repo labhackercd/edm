@@ -162,7 +162,7 @@ public class VideoPickerActivity extends Activity {
             }
         };
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(
+        new AlertDialog.Builder(
                 new ContextThemeWrapper(this, android.R.style.Theme_Material_Light_Dialog))
                 .setOnCancelListener(new DialogInterface.OnCancelListener() {
                     @Override
@@ -183,19 +183,8 @@ public class VideoPickerActivity extends Activity {
                                 break;
                         }
                     }
-                });
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            // TODO2 Close activity when dialog is dismissed on older devices
-            builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialog) {
-                    VideoPickerActivity.this.finish();
-                }
-            });
-        }
-
-        builder.show();
+                })
+                .show();
 
         return true;
     }
