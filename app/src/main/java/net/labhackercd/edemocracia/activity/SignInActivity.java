@@ -261,7 +261,7 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
             } catch (UnknownHostException u)
             {
                 Log.d(getClass().getSimpleName(), "No Connection" + u);
-                result_code = R.string.connection;
+                result_code = R.string.connection_failure;
             } catch (ServerException s)
             {
                 Log.d(getClass().getSimpleName(), s.toString());
