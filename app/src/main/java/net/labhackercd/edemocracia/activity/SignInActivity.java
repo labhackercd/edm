@@ -33,7 +33,6 @@ import com.liferay.mobile.android.auth.basic.BasicAuthentication;
 import com.liferay.mobile.android.exception.ServerException;
 import com.liferay.mobile.android.v62.group.GroupService;
 
-import net.labhackercd.edemocracia.content.CodeError;
 import net.labhackercd.edemocracia.util.EDMSession;
 
 import org.json.JSONArray;
@@ -258,25 +257,25 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
             try {
                 groups = groupService.getUserSites();
                 companyId = groups.getJSONObject(0).getLong("companyId");
-                result_code = CodeError.SUCCESS_CODE;
+                result_code = R.string.success;
             } catch (UnknownHostException u)
             {
                 Log.d(getClass().getSimpleName(), "No Connection" + u);
-                result_code = CodeError.CONNECTION_FAILURE_CODE;
+                result_code = R.string.connection;
             } catch (ServerException s)
             {
                 Log.d(getClass().getSimpleName(), s.toString());
-                result_code = CodeError.AUTHENTICATION_ERROR_CODE;
+                result_code = R.string.invalid_credentials;
             }
 
             catch (JSONException e) {
                 // XXX I do not think that liferay will send a wrong answer, so i'll threat as
                 // generic error
                 e.printStackTrace();
-                result_code = CodeError.GENERIC_ERROR_CODE;
+                result_code = R.string.generic_error;
             } catch (Exception e) {
                 // XXX THIS NEVER GOING TO HAPPEN, BUT LIFERAY ASSIGNS IT WITH GENERIC EXCEPTION
-                result_code = CodeError.GENERIC_ERROR_CODE;
+                result_code = R.string.generic_error;
             }
 
             session.setCompanyId(companyId);
@@ -295,20 +294,20 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
 
             switch (success)
             {
-                case CodeError.SUCCESS_CODE:
+                case R.string.success:
                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
                    finish();
                    break;
 
-                case CodeError.CONNECTION_FAILURE_CODE:
-                    callAlertDialog(R.string.connection);
+                case R.string.connection_failure:
+                    callAlertDialog(R.string.connection_failure);
                     break;
 
-                case CodeError.AUTHENTICATION_ERROR_CODE:
-                    callAlertDialog(R.string.credentials);
+                case R.string.invalid_credentials:
+                    callAlertDialog(R.string.invalid_credentials);
                     break;
 
-                case CodeError.GENERIC_ERROR_CODE:
+                case R.string.generic_error:
                     callAlertDialog(R.string.generic_error);
                     break;
             }
