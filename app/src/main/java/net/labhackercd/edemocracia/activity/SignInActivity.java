@@ -11,7 +11,6 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -31,16 +30,21 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.liferay.mobile.android.auth.basic.BasicAuthentication;
+import com.liferay.mobile.android.exception.ServerException;
 import com.liferay.mobile.android.v62.group.GroupService;
 
-import org.json.JSONArray;
+import net.labhackercd.edemocracia.content.CodeError;
+import net.labhackercd.edemocracia.util.EDMSession;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.application.EDMApplication;
-import net.labhackercd.edemocracia.util.EDMSession;
 
 import javax.inject.Inject;
 
@@ -227,17 +231,23 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
      * Represents an asynchronous login/registration task used to createSession
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    public class UserLoginTask extends AsyncTask<Void, Void, Integer> {
+
+
         private final String email;
         private final String password;
+
+
 
         UserLoginTask(String email, String password) {
             this.email = email;
             this.password = password;
         }
 
+
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected Integer doInBackground(Void... params) {
+            int result_code = 0;
             session.setAuthentication(new BasicAuthentication(email, password));
 
             GroupService groupService = new GroupService(session);
@@ -248,12 +258,25 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
             try {
                 groups = groupService.getUserSites();
                 companyId = groups.getJSONObject(0).getLong("companyId");
-            } catch (Exception e) {
-                Log.d(getClass().getSimpleName(), "Failed to authenticate: " + e);
+                result_code = CodeError.SUCCESS_CODE;
+            } catch (UnknownHostException u)
+            {
+                Log.d(getClass().getSimpleName(), "No Connection" + u);
+                result_code = CodeError.CONNECTION_FAILURE_CODE;
+            } catch (ServerException s)
+            {
+                Log.d(getClass().getSimpleName(), s.toString());
+                result_code = CodeError.AUTHENTICATION_ERROR_CODE;
             }
 
-            if (companyId < 0) {
-                return false;
+            catch (JSONException e) {
+                // XXX I do not think that liferay will send a wrong answer, so i'll threat as
+                // generic error
+                e.printStackTrace();
+                result_code = CodeError.GENERIC_ERROR_CODE;
+            } catch (Exception e) {
+                // XXX THIS NEVER GOING TO HAPPEN, BUT LIFERAY ASSIGNS IT WITH GENERIC EXCEPTION
+                result_code = CodeError.GENERIC_ERROR_CODE;
             }
 
             session.setCompanyId(companyId);
@@ -261,31 +284,49 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
             // Store session for future uses
             ((EDMApplication) getApplication()).saveEDMSession(session);
 
-            return true;
+            return result_code;
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(final Integer success) {
             authenticationTask = null;
 
             showProgress(false);
 
-            if (success) {
-                startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                finish();
-            } else {
-                new AlertDialog.Builder(new ContextThemeWrapper(
-                        SignInActivity.this, android.R.style.Theme_Material_Light_Dialog))
-                        .setMessage(R.string.error_invalid_credentials)
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
-                        .create()
-                        .show();
+            switch (success)
+            {
+                case CodeError.SUCCESS_CODE:
+                   startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                   finish();
+                   break;
+
+                case CodeError.CONNECTION_FAILURE_CODE:
+                    callAlertDialog(R.string.connection);
+                    break;
+
+                case CodeError.AUTHENTICATION_ERROR_CODE:
+                    callAlertDialog(R.string.credentials);
+                    break;
+
+                case CodeError.GENERIC_ERROR_CODE:
+                    callAlertDialog(R.string.generic_error);
+                    break;
             }
+
+        }
+
+        private void callAlertDialog(Integer message) {
+            new AlertDialog.Builder(new ContextThemeWrapper(
+                    SignInActivity.this, android.R.style.Theme_Material_Light_Dialog))
+                    .setMessage(message)
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .create()
+                    .show();
         }
 
         @Override
