@@ -246,7 +246,7 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
 
         @Override
         protected Integer doInBackground(Void... params) {
-            int result_code = 0;
+            int resultCode = 0;
             session.setAuthentication(new BasicAuthentication(email, password));
 
             GroupService groupService = new GroupService(session);
@@ -257,25 +257,25 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
             try {
                 groups = groupService.getUserSites();
                 companyId = groups.getJSONObject(0).getLong("companyId");
-                result_code = R.string.success;
+                resultCode = R.string.success;
             } catch (UnknownHostException u)
             {
                 Log.d(getClass().getSimpleName(), "No Connection" + u);
-                result_code = R.string.connection_failure;
+                resultCode = R.string.connection_failure;
             } catch (ServerException s)
             {
                 Log.d(getClass().getSimpleName(), s.toString());
-                result_code = R.string.invalid_credentials;
+                resultCode = R.string.invalid_credentials;
             }
 
             catch (JSONException e) {
                 // XXX I do not think that liferay will send a wrong answer, so i'll threat as
                 // generic error
                 e.printStackTrace();
-                result_code = R.string.generic_error;
+                resultCode = R.string.generic_error;
             } catch (Exception e) {
                 // XXX THIS NEVER GOING TO HAPPEN, BUT LIFERAY ASSIGNS IT WITH GENERIC EXCEPTION
-                result_code = R.string.generic_error;
+                resultCode = R.string.generic_error;
             }
 
             session.setCompanyId(companyId);
@@ -283,7 +283,7 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
             // Store session for future uses
             ((EDMApplication) getApplication()).saveEDMSession(session);
 
-            return result_code;
+            return resultCode;
         }
 
         @Override
