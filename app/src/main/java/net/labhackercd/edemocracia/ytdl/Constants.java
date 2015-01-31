@@ -29,6 +29,6 @@ public class Constants {
     public static final String ACCOUNT_KEY = "ACCOUNT";
     public static final String YOUTUBE_WATCH_URL_PREFIX = "watch?v=";
 
-    public static final String REQUEST_AUTHORIZATION_INTENT = "br.leg.camara.labhacker.edemocracia.RequestAuth";
-    public static final String REQUEST_AUTHORIZATION_INTENT_PARAM = "br.leg.camara.labhacker.edemocracia.RequestAuth.param";
+    public static final String REQUEST_AUTHORIZATION_INTENT = "net.labhackercd.edemocracia.RequestAuth";
+    public static final String REQUEST_AUTHORIZATION_INTENT_PARAM = "net.labhackercd.edemocracia.RequestAuth.param";
 }

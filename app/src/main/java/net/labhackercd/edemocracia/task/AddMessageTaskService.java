@@ -11,12 +11,14 @@ import javax.inject.Inject;
 
 import net.labhackercd.edemocracia.application.EDMApplication;
 import net.labhackercd.edemocracia.content.Message;
+import net.labhackercd.edemocracia.util.EDMSession;
 
 public class AddMessageTaskService extends Service implements AddMessageTask.Callback {
     private static final String TAG = AddMessageTaskService.class.getSimpleName();
 
     @Inject Bus bus;
     @Inject AddMessageTaskQueue queue;
+    @Inject EDMSession session;
 
     private boolean running;
 
@@ -63,7 +65,7 @@ public class AddMessageTaskService extends Service implements AddMessageTask.Cal
 
         if (task != null) {
             running = true;
-            task.execute(getApplication(), this);
+            task.execute(session, this);
         } else {
             Log.i(TAG, "Stopping service");
             stopSelf();

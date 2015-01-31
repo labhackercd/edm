@@ -19,6 +19,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import net.labhackercd.edemocracia.activity.SessionProvider;
 import net.labhackercd.edemocracia.content.Category;
 import net.labhackercd.edemocracia.content.Forum;
 import net.labhackercd.edemocracia.content.Group;
@@ -95,9 +96,7 @@ public class ForumListFragment extends SimpleListFragment<ForumListFragment.Item
 
     @Override
     protected List<ItemWrapper> fetchItems() throws Exception {
-        EDMSession session = EDMSession.get(getActivity().getApplicationContext());
-
-        assert session != null;
+        EDMSession session = ((SessionProvider) getActivity()).getSession();
 
         EDMBatchSession batchSession = new EDMBatchSession(session);
 

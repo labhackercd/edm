@@ -16,6 +16,7 @@ import org.json.JSONArray;
 import java.util.List;
 
 import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.activity.SessionProvider;
 import net.labhackercd.edemocracia.content.Message;
 import net.labhackercd.edemocracia.content.Thread;
 import net.labhackercd.edemocracia.util.SimpleListFragment;
@@ -23,11 +24,8 @@ import net.labhackercd.edemocracia.util.EDMSession;
 import net.labhackercd.edemocracia.util.JSONReader;
 
 public class MessageListFragment extends SimpleListFragment<Message> {
-
     public static String ARG_THREAD = "thread";
-
     private Thread thread;
-
     private OnMessageSelectedListener listener;
 
     public static MessageListFragment newInstance(Thread thread) {
@@ -112,10 +110,10 @@ public class MessageListFragment extends SimpleListFragment<Message> {
 
     @Override
     protected List<Message> fetchItems() throws Exception {
-        EDMSession session = EDMSession.get(getActivity().getApplicationContext());
+        EDMSession session = ((SessionProvider) getActivity()).getSession();
 
-        JSONArray messages = new MBMessageService(session).getThreadMessages(
-                thread.getGroupId(), 0, thread.getThreadId(), 0, -1, -1);
+        JSONArray messages = new MBMessageService(session)
+                .getThreadMessages(thread.getGroupId(), 0, thread.getThreadId(), 0, -1, -1);
 
         return JSONReader.fromJSON(messages, Message.JSON_READER);
     }

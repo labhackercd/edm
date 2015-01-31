@@ -15,11 +15,11 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import net.labhackercd.edemocracia.activity.SessionProvider;
 import net.labhackercd.edemocracia.content.Group;
-import net.labhackercd.edemocracia.util.SimpleListFragment;
 import net.labhackercd.edemocracia.util.EDMSession;
+import net.labhackercd.edemocracia.util.SimpleListFragment;
 import net.labhackercd.edemocracia.util.JSONReader;
-
 
 public class GroupListFragment extends SimpleListFragment<Group> {
 
@@ -53,9 +53,7 @@ public class GroupListFragment extends SimpleListFragment<Group> {
 
     @Override
     protected List<Group> fetchItems() throws Exception {
-        EDMSession session = EDMSession.get(getActivity().getApplicationContext());
-
-        assert session != null;
+        EDMSession session = ((SessionProvider) getActivity()).getSession();
 
         GroupService groupService = new GroupService(session);
 

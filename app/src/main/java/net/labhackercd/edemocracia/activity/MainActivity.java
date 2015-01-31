@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -32,10 +31,12 @@ import net.labhackercd.edemocracia.task.AddMessageTask;
 import net.labhackercd.edemocracia.task.AddMessageTaskQueue;
 import net.labhackercd.edemocracia.task.VideoUploadTask;
 import net.labhackercd.edemocracia.task.VideoUploadTaskQueue;
+import net.labhackercd.edemocracia.util.EDMSession;
 import net.labhackercd.edemocracia.ytdl.Constants;
 
-public class MainActivity extends Activity
-        implements GroupListFragment.OnGroupSelectedListener,
+public class MainActivity extends Activity implements
+        SessionProvider,
+        GroupListFragment.OnGroupSelectedListener,
         ForumListFragment.OnThreadSelectedListener,
         MessageListFragment.OnMessageSelectedListener {
 
@@ -45,6 +46,8 @@ public class MainActivity extends Activity
 
     @Inject Bus bus;
 
+    @Inject EDMSession session;
+
     private UploadBroadcastReceiver broadcastReceiver;
 
     @Override
@@ -52,8 +55,6 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
 
         ((EDMApplication) getApplication()).inject(this);
-
-        Log.i(getClass().getSimpleName(), addMessageTaskQueue + ":" + bus);
 
         setContentView(R.layout.activity_main);
 
@@ -133,7 +134,7 @@ public class MainActivity extends Activity
 
     @Override
     public void onMessageSelect(Message message) {
-        Log.v(getClass().getSimpleName(), "Message selected: " + message);
+        // NOOP
     }
 
     @Subscribe
@@ -158,11 +159,15 @@ public class MainActivity extends Activity
         videoUploadTaskQueue.add(task);
     }
 
+    @Override
+    public EDMSession getSession() {
+        return session;
+    }
+
     private class UploadBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(Constants.REQUEST_AUTHORIZATION_INTENT)) {
-                Log.d(MainActivity.class.getClass().getSimpleName(), "Request auth received - executing the intent");
                 Intent toRun = intent
                         .getParcelableExtra(Constants.REQUEST_AUTHORIZATION_INTENT_PARAM);
                 startActivityForResult(toRun, VideoPickerActivity.REQUEST_AUTHORIZATION);

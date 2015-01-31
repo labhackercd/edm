@@ -1,6 +1,5 @@
 package net.labhackercd.edemocracia.task;
 
-import android.app.Application;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -30,15 +29,11 @@ public class AddMessageTask implements Task<AddMessageTask.Callback> {
         execute(null, callback);
     }
 
-    public void execute(final Application application, final Callback callback) {
+    public void execute(final EDMSession session, final Callback callback) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    final EDMSession session = EDMSession.get(application);
-
-                    assert session != null;
-
                     JSONObject serviceContextJson = new JSONObject();
                     serviceContextJson.put("addGuestPermissions", true);
 

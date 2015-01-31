@@ -2,24 +2,33 @@ package net.labhackercd.edemocracia.application;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.liferay.mobile.android.auth.basic.BasicAuthentication;
 import com.squareup.otto.Bus;
+
+import dagger.ObjectGraph;
+import dagger.Provides;
 
 import javax.inject.Singleton;
 
 import net.labhackercd.edemocracia.activity.MainActivity;
+import net.labhackercd.edemocracia.activity.SignInActivity;
+import net.labhackercd.edemocracia.activity.SplashScreenActivity;
+import net.labhackercd.edemocracia.task.AddMessageTaskQueue;
+import net.labhackercd.edemocracia.task.AddMessageTaskService;
 import net.labhackercd.edemocracia.task.VideoUploadTaskQueue;
 import net.labhackercd.edemocracia.task.VideoUploadTaskService;
-import dagger.ObjectGraph;
-import dagger.Provides;
-
-import net.labhackercd.edemocracia.task.AddMessageTaskService;
-import net.labhackercd.edemocracia.task.AddMessageTaskQueue;
+import net.labhackercd.edemocracia.util.EDMSession;
 
 public class EDMApplication extends Application {
     private ObjectGraph objectGraph;
+
+    private static final String SHARED_PREFERENCES = "net.labhackercd.EDMApplication";
+    private static final String CREDENTIALS_KEY = "credentials";
+    private static final String COMPANY_ID_KEY = "compnayId";
 
     @Override
     public void onCreate() {
@@ -31,11 +40,35 @@ public class EDMApplication extends Application {
         objectGraph.inject(object);
     }
 
+    public void saveEDMSession(EDMSession session) {
+        SharedPreferences.Editor editor = getApplicationContext()
+                .getSharedPreferences(SHARED_PREFERENCES, 0).edit();
+
+        editor.putString(CREDENTIALS_KEY, new Gson().toJson(session.getAuthentication()));
+        editor.putLong(COMPANY_ID_KEY, session.getCompanyId());
+
+        editor.apply();
+    }
+
+    private EDMSession loadEDMSession() {
+        SharedPreferences sharedPreferences = getApplicationContext()
+                .getSharedPreferences(SHARED_PREFERENCES, 0);
+
+        String json = sharedPreferences.getString(CREDENTIALS_KEY, "null");
+
+        long companyId = sharedPreferences.getLong(COMPANY_ID_KEY, -1);
+        BasicAuthentication credentials = new Gson().fromJson(json, BasicAuthentication.class);
+
+        return new EDMSession(credentials, companyId);
+    }
+
     @dagger.Module(
             injects = {
-                    MainActivity.class,
                     AddMessageTaskService.class,
-                    VideoUploadTaskService.class
+                    VideoUploadTaskService.class,
+                    MainActivity.class,
+                    SignInActivity.class,
+                    SplashScreenActivity.class
             }
     )
     static class Module {
@@ -71,6 +104,19 @@ public class EDMApplication extends Application {
         @SuppressWarnings("UnusedDeclaration")
         Gson provideGson() {
             return new GsonBuilder().create();
+        }
+
+        @Provides
+        @Singleton
+        @SuppressWarnings("UnusedDeclaration")
+        EDMSession provideEDMSession() {
+            EDMSession session = ((EDMApplication) applicationContext).loadEDMSession();
+
+            if (session == null) {
+                session = new EDMSession();
+            }
+
+            return session;
         }
     }
 }

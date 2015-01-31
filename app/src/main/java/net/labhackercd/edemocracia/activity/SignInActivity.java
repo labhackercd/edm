@@ -30,9 +30,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.liferay.mobile.android.auth.Authentication;
 import com.liferay.mobile.android.auth.basic.BasicAuthentication;
-import com.liferay.mobile.android.service.Session;
 import com.liferay.mobile.android.v62.group.GroupService;
 
 import org.json.JSONArray;
@@ -41,11 +39,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.util.EDMAuthentication;
+import net.labhackercd.edemocracia.application.EDMApplication;
 import net.labhackercd.edemocracia.util.EDMSession;
+
+import javax.inject.Inject;
 
 
 public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> {
+
+    @Inject EDMSession session;
 
     private UserLoginTask authenticationTask = null;
 
@@ -58,6 +60,8 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ((EDMApplication) getApplication()).inject(this);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 0);
@@ -234,7 +238,7 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            Session session = new EDMSession(new BasicAuthentication(email, password));
+            session.setAuthentication(new BasicAuthentication(email, password));
 
             GroupService groupService = new GroupService(session);
 
@@ -252,10 +256,10 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
                 return false;
             }
 
-            // The user is authenticated. Let's save his session in the application context.
-            Authentication credentials = new EDMAuthentication(email, password, companyId);
+            session.setCompanyId(companyId);
 
-            new EDMSession(credentials).bind(getApplicationContext());
+            // Store session for future uses
+            ((EDMApplication) getApplication()).saveEDMSession(session);
 
             return true;
         }
