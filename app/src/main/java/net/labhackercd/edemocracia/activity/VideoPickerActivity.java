@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia;
+package net.labhackercd.edemocracia.activity;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
@@ -29,6 +29,7 @@ import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.List;
 
+import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.ytdl.Auth;
 
 

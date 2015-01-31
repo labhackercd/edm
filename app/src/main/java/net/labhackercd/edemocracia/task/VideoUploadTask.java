@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.tasks;
+package net.labhackercd.edemocracia.task;
 
 import android.content.ContentResolver;
 import android.content.Context;

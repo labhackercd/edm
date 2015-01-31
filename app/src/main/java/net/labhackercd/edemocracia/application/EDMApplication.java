@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia;
+package net.labhackercd.edemocracia.application;
 
 import android.app.Application;
 import android.content.Context;
@@ -9,13 +9,14 @@ import com.squareup.otto.Bus;
 
 import javax.inject.Singleton;
 
-import net.labhackercd.edemocracia.tasks.VideoUploadTaskQueue;
-import net.labhackercd.edemocracia.tasks.VideoUploadTaskService;
+import net.labhackercd.edemocracia.activity.MainActivity;
+import net.labhackercd.edemocracia.task.VideoUploadTaskQueue;
+import net.labhackercd.edemocracia.task.VideoUploadTaskService;
 import dagger.ObjectGraph;
 import dagger.Provides;
 
-import net.labhackercd.edemocracia.tasks.AddMessageTaskService;
-import net.labhackercd.edemocracia.tasks.AddMessageTaskQueue;
+import net.labhackercd.edemocracia.task.AddMessageTaskService;
+import net.labhackercd.edemocracia.task.AddMessageTaskQueue;
 
 public class EDMApplication extends Application {
     private ObjectGraph objectGraph;

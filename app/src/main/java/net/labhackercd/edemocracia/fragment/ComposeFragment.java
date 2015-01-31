@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia;
+package net.labhackercd.edemocracia.fragment;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
@@ -26,10 +26,13 @@ import com.google.common.base.Splitter;
 import java.io.FileNotFoundException;
 import java.util.List;
 
+import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.activity.MainActivity;
+import net.labhackercd.edemocracia.activity.VideoPickerActivity;
 import net.labhackercd.edemocracia.content.Message;
 import net.labhackercd.edemocracia.content.Thread;
-import net.labhackercd.edemocracia.tasks.AddMessageTask;
-import net.labhackercd.edemocracia.tasks.VideoUploadTask;
+import net.labhackercd.edemocracia.task.AddMessageTask;
+import net.labhackercd.edemocracia.task.VideoUploadTask;
 
 
 public class ComposeFragment extends Fragment {
@@ -222,10 +225,9 @@ public class ComposeFragment extends Fragment {
         assert activity != null;
 
         if (attachedVideoUri == null) {
-            activity.addMessageTaskQueue.add(new AddMessageTask(message));
+            activity.addAddMessageTask(new AddMessageTask(message));
         } else {
-            activity.videoUploadTaskQueue.add(
-                    new VideoUploadTask(attachedVideoUri, videoAccount, message));
+            activity.addVideoUploadTask(new VideoUploadTask(attachedVideoUri, videoAccount, message));
         }
 
         activity.getFragmentManager().popBackStack();

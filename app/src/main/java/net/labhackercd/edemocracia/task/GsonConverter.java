@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.tasks;
+package net.labhackercd.edemocracia.task;
 
 import com.google.gson.Gson;
 import com.squareup.tape.FileObjectQueue;

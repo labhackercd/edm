@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia;
+package net.labhackercd.edemocracia.fragment;
 
 import android.app.Activity;
 import android.view.View;

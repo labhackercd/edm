@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia;
+package net.labhackercd.edemocracia.fragment;
 
 import android.app.Activity;
 import android.app.FragmentTransaction;
@@ -15,6 +15,7 @@ import org.json.JSONArray;
 
 import java.util.List;
 
+import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.content.Message;
 import net.labhackercd.edemocracia.content.Thread;
 import net.labhackercd.edemocracia.util.SimpleListFragment;

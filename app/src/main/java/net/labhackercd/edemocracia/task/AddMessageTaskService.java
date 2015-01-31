@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.tasks;
+package net.labhackercd.edemocracia.task;
 
 import android.app.Service;
 import android.content.Intent;
@@ -9,7 +9,7 @@ import com.squareup.otto.Bus;
 
 import javax.inject.Inject;
 
-import net.labhackercd.edemocracia.EDMApplication;
+import net.labhackercd.edemocracia.application.EDMApplication;
 import net.labhackercd.edemocracia.content.Message;
 
 public class AddMessageTaskService extends Service implements AddMessageTask.Callback {

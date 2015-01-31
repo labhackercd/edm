@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia;
+package net.labhackercd.edemocracia.activity;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -40,6 +40,7 @@ import org.json.JSONArray;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.util.EDMAuthentication;
 import net.labhackercd.edemocracia.util.EDMSession;
 

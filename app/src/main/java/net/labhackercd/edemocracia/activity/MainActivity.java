@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia;
+package net.labhackercd.edemocracia.activity;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
@@ -19,18 +19,25 @@ import com.squareup.otto.Subscribe;
 
 import javax.inject.Inject;
 
+import net.labhackercd.edemocracia.application.EDMApplication;
+import net.labhackercd.edemocracia.fragment.ForumListFragment;
+import net.labhackercd.edemocracia.fragment.GroupListFragment;
+import net.labhackercd.edemocracia.fragment.MessageListFragment;
+import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.content.*;
 import net.labhackercd.edemocracia.content.Thread;
-import net.labhackercd.edemocracia.tasks.AddMessageFailureEvent;
-import net.labhackercd.edemocracia.tasks.AddMessageSuccessEvent;
-import net.labhackercd.edemocracia.tasks.AddMessageTaskQueue;
-import net.labhackercd.edemocracia.tasks.VideoUploadTaskQueue;
+import net.labhackercd.edemocracia.task.AddMessageFailureEvent;
+import net.labhackercd.edemocracia.task.AddMessageSuccessEvent;
+import net.labhackercd.edemocracia.task.AddMessageTask;
+import net.labhackercd.edemocracia.task.AddMessageTaskQueue;
+import net.labhackercd.edemocracia.task.VideoUploadTask;
+import net.labhackercd.edemocracia.task.VideoUploadTaskQueue;
 import net.labhackercd.edemocracia.ytdl.Constants;
 
 public class MainActivity extends Activity
         implements GroupListFragment.OnGroupSelectedListener,
-                   ForumListFragment.OnThreadSelectedListener,
-                   MessageListFragment.OnMessageSelectedListener {
+        ForumListFragment.OnThreadSelectedListener,
+        MessageListFragment.OnMessageSelectedListener {
 
     // NOTE: Injection starts queue processing!
     @Inject AddMessageTaskQueue addMessageTaskQueue;
@@ -141,6 +148,14 @@ public class MainActivity extends Activity
         // TODO FIXME Should we add the message to the queue again?
         // Or start the queue service again? What should we do!?
         Toast.makeText(this, "Failed to submit message", Toast.LENGTH_SHORT).show();
+    }
+
+    public void addAddMessageTask(AddMessageTask task) {
+        addMessageTaskQueue.add(task);
+    }
+
+    public void addVideoUploadTask(VideoUploadTask task) {
+        videoUploadTaskQueue.add(task);
     }
 
     private class UploadBroadcastReceiver extends BroadcastReceiver {

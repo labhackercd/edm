@@ -1,10 +1,13 @@
-package net.labhackercd.edemocracia;
+package net.labhackercd.edemocracia.activity;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.activity.MainActivity;
+import net.labhackercd.edemocracia.activity.SignInActivity;
 import net.labhackercd.edemocracia.util.EDMSession;
 
 

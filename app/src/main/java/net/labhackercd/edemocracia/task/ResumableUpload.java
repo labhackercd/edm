@@ -1,7 +1,7 @@
 /**
  * Created by baufaker on 22/01/15.
  */
-package net.labhackercd.edemocracia.tasks;
+package net.labhackercd.edemocracia.task;
 
 import android.app.NotificationManager;
 import android.content.Context;
