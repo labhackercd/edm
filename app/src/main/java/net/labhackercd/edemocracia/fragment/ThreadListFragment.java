@@ -1,7 +1,9 @@
 package net.labhackercd.edemocracia.fragment;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.ListView;
 
@@ -17,8 +19,6 @@ import org.json.JSONArray;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import net.labhackercd.edemocracia.activity.SessionProvider;
 import net.labhackercd.edemocracia.content.Category;
 import net.labhackercd.edemocracia.content.Forum;
@@ -27,19 +27,18 @@ import net.labhackercd.edemocracia.content.Message;
 import net.labhackercd.edemocracia.content.Thread;
 import net.labhackercd.edemocracia.util.EDMBatchSession;
 import net.labhackercd.edemocracia.util.EDMSession;
-import net.labhackercd.edemocracia.util.Identifiable;
 import net.labhackercd.edemocracia.util.JSONReader;
 import net.labhackercd.edemocracia.util.SimpleListFragment;
 
-public class ForumListFragment extends SimpleListFragment<ForumListFragment.ItemWrapper> {
+public class ThreadListFragment extends SimpleListFragment<ThreadItem> {
 
     public static String ARG_PARENT = "parent";
 
     private Forum forum;
     private OnThreadSelectedListener listener;
 
-    public static ForumListFragment newInstance(Forum forum) {
-        ForumListFragment fragment = new ForumListFragment();
+    public static ThreadListFragment newInstance(Forum forum) {
+        ThreadListFragment fragment = new ThreadListFragment();
 
         Bundle args = new Bundle();
         args.putParcelable(ARG_PARENT, forum);
@@ -79,12 +78,18 @@ public class ForumListFragment extends SimpleListFragment<ForumListFragment.Item
         listener = null;
     }
 
+    @NonNull
+    @Override
+    protected android.widget.ListAdapter createAdapter(Context context, List<ThreadItem> items) {
+        return new ThreadListAdapter(context, items);
+    }
+
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
 
         if (listener != null) {
-            ItemWrapper item = (ItemWrapper) getListAdapter().getItem(position);
+            ThreadItem item = (ThreadItem) getListAdapter().getItem(position);
 
             if (item.getForum() == null) {
                 listener.onThreadSelected(item.getThread());
@@ -95,7 +100,7 @@ public class ForumListFragment extends SimpleListFragment<ForumListFragment.Item
     }
 
     @Override
-    protected List<ItemWrapper> fetchItems() throws Exception {
+    protected List<ThreadItem> fetchItems() throws Exception {
         EDMSession session = ((SessionProvider) getActivity()).getSession();
 
         EDMBatchSession batchSession = new EDMBatchSession(session);
@@ -131,17 +136,17 @@ public class ForumListFragment extends SimpleListFragment<ForumListFragment.Item
 
         List<Category> categories = JSONReader.fromJSON(jsonCategories, Category.JSON_READER);
 
-        Iterable<ItemWrapper> ithreads = Collections2.transform(threads, new Function<Thread, ItemWrapper>() {
+        Iterable<ThreadItem> ithreads = Collections2.transform(threads, new Function<Thread, ThreadItem>() {
             @Override
-            public ItemWrapper apply(Thread thread) {
-                return new ItemWrapper(thread);
+            public ThreadItem apply(Thread thread) {
+                return new ThreadItem(thread);
             }
         });
 
-        Iterable<ItemWrapper> icategories = Collections2.transform(categories, new Function<Category, ItemWrapper>() {
+        Iterable<ThreadItem> icategories = Collections2.transform(categories, new Function<Category, ThreadItem>() {
             @Override
-            public ItemWrapper apply(Category category) {
-                return new ItemWrapper(category);
+            public ThreadItem apply(Category category) {
+                return new ThreadItem(category);
             }
         });
 
@@ -153,51 +158,4 @@ public class ForumListFragment extends SimpleListFragment<ForumListFragment.Item
         public void onThreadSelected(Thread thread);
     }
 
-    protected class ItemWrapper implements Identifiable {
-        private final Thread thread;
-        private final Category category;
-
-        public ItemWrapper(Thread thread) {
-            this.thread = thread;
-            this.category = null;
-        }
-
-        public ItemWrapper(Category category) {
-            this.thread = null;
-            this.category = category;
-        }
-
-        @Nullable
-        public Forum getForum() {
-            if (this.category != null) {
-                return this.category;
-            }
-            return null;
-        }
-
-        @Nullable
-        public Thread getThread() {
-            return this.thread;
-        }
-
-        @Override
-        public long getId() {
-            Thread thread = getThread();
-            if (thread != null) {
-                return getThread().getId();
-            } else {
-                return this.category.getId();
-            }
-        }
-
-        @Override
-        public String toString() {
-            Thread thread = getThread();
-            if (thread != null) {
-                return "[t] " + thread.toString();
-            } else {
-                return "[c] " + this.category.toString();
-            }
-        }
-    }
 }

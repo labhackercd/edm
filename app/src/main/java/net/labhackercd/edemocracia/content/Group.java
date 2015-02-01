@@ -101,6 +101,10 @@ public class Group extends GsonParcelable implements Forum, Identifiable {
         return getName();
     }
 
+    public Uri getIconUri() {
+        return Uri.parse(EDMSession.SERVICE_URL + "/documents/" + getGroupId() + "/0/icone");
+    }
+
     public static final JSONReader<Group> JSON_READER = new JSONReader<Group>() {
         @Override
         public Group fromJSON(JSONObject json) throws JSONException {
@@ -124,8 +128,4 @@ public class Group extends GsonParcelable implements Forum, Identifiable {
             return instance;
         }
     };
-
-    public Uri getIconUri() {
-        return Uri.parse(EDMSession.SERVICE_URL + "/documents/" + getGroupId() + "/0/icone");
-    }
 }

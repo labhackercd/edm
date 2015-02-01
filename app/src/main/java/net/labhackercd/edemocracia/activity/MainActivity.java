@@ -19,7 +19,7 @@ import com.squareup.otto.Subscribe;
 import javax.inject.Inject;
 
 import net.labhackercd.edemocracia.application.EDMApplication;
-import net.labhackercd.edemocracia.fragment.ForumListFragment;
+import net.labhackercd.edemocracia.fragment.ThreadListFragment;
 import net.labhackercd.edemocracia.fragment.GroupListFragment;
 import net.labhackercd.edemocracia.fragment.MessageListFragment;
 import net.labhackercd.edemocracia.R;
@@ -37,7 +37,7 @@ import net.labhackercd.edemocracia.ytdl.Constants;
 public class MainActivity extends Activity implements
         SessionProvider,
         GroupListFragment.OnGroupSelectedListener,
-        ForumListFragment.OnThreadSelectedListener,
+        ThreadListFragment.OnThreadSelectedListener,
         MessageListFragment.OnMessageSelectedListener {
 
     // NOTE: Injection starts queue processing!
@@ -110,7 +110,7 @@ public class MainActivity extends Activity implements
 
     @Override
     public void onForumSelected(Forum forum) {
-        ForumListFragment fragment = ForumListFragment.newInstance(forum);
+        ThreadListFragment fragment = ThreadListFragment.newInstance(forum);
 
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.replace(R.id.container, fragment);

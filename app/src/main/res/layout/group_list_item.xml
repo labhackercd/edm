@@ -29,6 +29,7 @@
         android:layout_marginEnd="?android:attr/listPreferredItemPaddingEnd"
         android:layout_marginRight="?android:attr/listPreferredItemPaddingRight"
         android:duplicateParentState="true"
-        android:textStyle="bold" />
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        />
 
 </LinearLayout>

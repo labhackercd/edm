@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@android:id/icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="8dip"
+        android:layout_marginRight="-8dip"
+        android:layout_marginBottom="8dip"
+        android:layout_marginLeft="8dip"
+        android:scaleType="fitCenter"
+        android:contentDescription="@string/group_logo_caption"
+        android:duplicateParentState="true" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dip"
+        android:layout_marginBottom="8dip"
+        android:layout_marginLeft="?android:attr/listPreferredItemPaddingLeft"
+        android:layout_marginRight="?android:attr/listPreferredItemPaddingRight">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="bottom">
+
+                    <!-- FIXME There's still a problem with long titles hiding the counter. -->
+
+                    <TextView
+                        android:id="@android:id/text1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:singleLine="true" />
+
+                    <TextView
+                        android:id="@+id/itemCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="?android:attr/listPreferredItemPaddingLeft"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:singleLine="true" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="?android:attr/listPreferredItemPaddingLeft"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:layout_marginBottom="1sp"
+                    android:layout_gravity="bottom" />
+            </LinearLayout>
+
+        <TextView
+            android:id="@android:id/text2"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:singleLine="true" />
+    </LinearLayout>
+
+
+</LinearLayout>

@@ -1,10 +1,13 @@
 package net.labhackercd.edemocracia.content;
 
+import android.net.Uri;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
 
+import net.labhackercd.edemocracia.util.EDMSession;
 import net.labhackercd.edemocracia.util.GsonParcelable;
 import net.labhackercd.edemocracia.util.Identifiable;
 import net.labhackercd.edemocracia.util.JSONReader;
@@ -96,6 +99,10 @@ public class Category extends GsonParcelable implements Forum, Identifiable {
     @Override
     public String toString() {
         return getName();
+    }
+
+    public Uri getIconUri() {
+        return Uri.parse(EDMSession.SERVICE_URL + "/image/user_male_portrait?img_id=" + getUserId());
     }
 
     public static final JSONReader<Category> JSON_READER = new JSONReader<Category>() {

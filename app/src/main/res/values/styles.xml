@@ -2,6 +2,7 @@
 <resources>
     <style name="GreenTheme">
         <item name="android:actionBarStyle">@style/GreenActionBarTheme</item>
+        <item name="textAppearanceReallySmall">@style/GreenTheme.TextAppearance.ReallySmall</item>
     </style>
 
     <style name="GreenActionBarTheme"
@@ -13,5 +14,9 @@
         parent="GreenTheme">
         <item name="android:windowActionBar">false</item>
         <item name ="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="GreenTheme.TextAppearance.ReallySmall" parent="@android:style/TextAppearance.Small">
+        <item name="android:textSize">@dimen/text_size_really_small</item>
     </style>
 </resources>
