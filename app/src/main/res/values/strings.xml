@@ -24,5 +24,6 @@
     <string name="compose">Compose message...</string>
     <string name="subject">Subject</string>
     <string name="sending_message">Sending message...</string>
+    <string name="group_logo_caption">Group logo</string>
 
 </resources>

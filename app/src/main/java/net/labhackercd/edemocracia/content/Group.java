@@ -1,8 +1,11 @@
 package net.labhackercd.edemocracia.content;
 
+import android.net.Uri;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import net.labhackercd.edemocracia.util.EDMSession;
 import net.labhackercd.edemocracia.util.Identifiable;
 import net.labhackercd.edemocracia.util.GsonParcelable;
 import net.labhackercd.edemocracia.util.JSONReader;
@@ -24,6 +27,7 @@ public class Group extends GsonParcelable implements Forum, Identifiable {
     private int type;
     private long groupId;
     private String name;
+    private int iconUrl;
 
     public String getFriendlyURL() {
         return friendlyURL;
@@ -120,4 +124,8 @@ public class Group extends GsonParcelable implements Forum, Identifiable {
             return instance;
         }
     };
+
+    public Uri getIconUri() {
+        return Uri.parse(EDMSession.SERVICE_URL + "/documents/" + getGroupId() + "/0/icone");
+    }
 }

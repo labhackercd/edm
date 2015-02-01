@@ -12,7 +12,6 @@ import java.util.List;
  * @param <T extends SimpleArrayAdapter.Identifiable>
  */
 public class SimpleArrayAdapter<T extends Identifiable> extends ArrayAdapter<T> {
-
     public SimpleArrayAdapter(Context context, List<T> objects) {
         super(context, android.R.layout.simple_list_item_1, android.R.id.text1, objects);
     }

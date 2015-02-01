@@ -143,7 +143,7 @@ public class VideoPickerActivity extends Activity {
 
         ListAdapter adapter = new ArrayAdapter<Pair<String, Integer>>(
                 this,
-                R.layout.simple_list_item_with_icon,
+                R.layout.dialog_item_with_icon,
                 android.R.id.text1,
                 items) {
             @Override

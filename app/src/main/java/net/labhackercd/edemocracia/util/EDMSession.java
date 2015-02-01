@@ -8,7 +8,8 @@ import com.liferay.mobile.android.v62.group.GroupService;
 import java.lang.reflect.Field;
 
 public class EDMSession extends SessionImpl {
-    private static final String SERVICE_URL = "https://edemocracia.camara.gov.br";
+    public static final String SERVICE_URL = "https://edemocracia.camara.gov.br";
+
     private static boolean monkeyPatched = false;
 
     private long companyId;
