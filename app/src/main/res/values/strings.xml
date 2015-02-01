@@ -2,28 +2,24 @@
 <resources>
 
     <string name="app_name">edemocracia</string>
-    <string name="action_settings">Settings</string>
-    <string name="title_activity_group_list">Groups</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="reply">Reply</string>
-    <string name="send">Send</string>
+    <string name="subject">Subject</string>
+    <string name="compose">Compose message&#8230;</string>
+    <string name="group_logo_caption">Group logo</string>
     <string name="attach_video">Attach Video</string>
+    <string name="send">Send</string>
+    <string name="reply">Reply</string>
     <string name="record_video">Record video</string>
     <string name="pick_video">Choose from gallery</string>
+    <string name="youtube_upload">Youtube Upload</string>
+    <string name="youtube_upload_started">Youtube Upload Started</string>
     <string name="initiation_started">Video Initialized</string>
     <string name="initiation_completed">Initiation Completed</string>
     <string name="upload_in_progress">Upload in Progress</string>
-    <string name="yt_upload_completed">Upload Completed</string>
     <string name="upload_completed">Upload Completed</string>
-    <string name="youtube_upload">Youtube Upload</string>
-    <string name="youtube_upload_started">Youtube Upload Started</string>
     <string name="upload_not_started">Upload not Started</string>
     <string name="cant_access_play">Google Play Services is not avaible</string>
     <string name="please_try_again">Try Again</string>
-    <string name="yt_upload_failed">Upload on Youtube has been failed</string>
-    <string name="compose">Compose message...</string>
-    <string name="subject">Subject</string>
-    <string name="sending_message">Sending message...</string>
-    <string name="group_logo_caption">Group logo</string>
-
+    <string name="yt_upload_completed">Upload completed</string>
+    <string name="yt_upload_failed">Video upload failed</string>
+    <string name="sending_message">Sending message&#8230;</string>
 </resources>

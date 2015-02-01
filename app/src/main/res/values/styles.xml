@@ -1,22 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="GreenTheme">
-        <item name="android:actionBarStyle">@style/GreenActionBarTheme</item>
-        <item name="textAppearanceReallySmall">@style/GreenTheme.TextAppearance.ReallySmall</item>
-    </style>
-
-    <style name="GreenActionBarTheme"
-        parent="GreenTheme">
-        <item name="android:background">@color/dark_green</item>
-    </style>
-
-    <style name="NoActionBar"
-        parent="GreenTheme">
-        <item name="android:windowActionBar">false</item>
-        <item name ="android:windowNoTitle">true</item>
-    </style>
-
-    <style name="GreenTheme.TextAppearance.ReallySmall" parent="@android:style/TextAppearance.Small">
-        <item name="android:textSize">@dimen/text_size_really_small</item>
+    <style name="Widget" />
+    <style name="Widget.Divider">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">?android:attr/listDivider</item>
     </style>
 </resources>
