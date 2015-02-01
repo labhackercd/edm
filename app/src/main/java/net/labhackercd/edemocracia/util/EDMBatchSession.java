@@ -1,5 +1,7 @@
 package net.labhackercd.edemocracia.util;
 
+import android.os.AsyncTask;
+
 import com.liferay.mobile.android.http.HttpUtil;
 
 import org.json.JSONArray;
@@ -41,7 +43,7 @@ public class EDMBatchSession extends EDMSession {
     }
 
     @Override
-    public JSONArray upload(JSONObject command) throws Exception {
-        throw new RuntimeException("Can't batch upload requests");
+    public AsyncTask upload(JSONObject command) throws Exception {
+        throw new UnsupportedOperationException();
     }
 }

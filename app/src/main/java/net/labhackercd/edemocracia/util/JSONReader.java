@@ -49,7 +49,7 @@ public abstract class JSONReader<T> {
     public abstract T fromJSON(JSONObject json) throws JSONException;
 
     public static <T> List<T> fromJSON(JSONArray json, JSONReader<T> reader) throws JSONException {
-        List<T> list = new ArrayList<T>();
+        List<T> list = new ArrayList<>();
         for (int i = 0; i < json.length(); i++) {
             list.add(fromJSON(json.getJSONObject(i), reader));
         }

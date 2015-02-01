@@ -9,7 +9,7 @@ import java.util.List;
  * Simple convenience extension of {@link ArrayAdapter} which is easier to instantiate
  * (because it has less parameters) and uses Identifiable.getId() as id.
  *
- * @param <T extends SimpleArrayAdapter.Identifiable>
+ * @param <T>
  */
 public class SimpleArrayAdapter<T extends Identifiable> extends ArrayAdapter<T> {
     public SimpleArrayAdapter(Context context, List<T> objects) {

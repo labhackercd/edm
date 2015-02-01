@@ -33,6 +33,7 @@
             android:name=".activity.SignInActivity"
             android:label="@string/title_activity_sign_in"
             android:parentActivityName=".activity.SplashScreenActivity"
+            android:theme="@style/Theme.GreenTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateVisible" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

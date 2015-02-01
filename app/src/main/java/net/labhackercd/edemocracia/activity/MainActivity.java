@@ -1,14 +1,14 @@
 package net.labhackercd.edemocracia.activity;
 
-import android.app.ActionBar;
-import android.app.FragmentTransaction;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -34,7 +34,7 @@ import net.labhackercd.edemocracia.task.VideoUploadTaskQueue;
 import net.labhackercd.edemocracia.util.EDMSession;
 import net.labhackercd.edemocracia.ytdl.Constants;
 
-public class MainActivity extends Activity implements
+public class MainActivity extends ActionBarActivity implements
         SessionProvider,
         GroupListFragment.OnGroupSelectedListener,
         ThreadListFragment.OnThreadSelectedListener,
@@ -58,13 +58,13 @@ public class MainActivity extends Activity implements
 
         setContentView(R.layout.activity_main);
 
-        ActionBar actionBar = getActionBar();
+        ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(false);
         }
 
         if (savedInstanceState == null) {
-            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             GroupListFragment groupListFragment = new GroupListFragment();
             transaction.add(R.id.container, groupListFragment);
             transaction.commit();
@@ -112,7 +112,7 @@ public class MainActivity extends Activity implements
     public void onForumSelected(Forum forum) {
         ThreadListFragment fragment = ThreadListFragment.newInstance(forum);
 
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.container, fragment);
 
         transaction.addToBackStack(null);
@@ -124,7 +124,7 @@ public class MainActivity extends Activity implements
     public void onThreadSelected(Thread thread) {
         MessageListFragment fragment = MessageListFragment.newInstance(thread);
 
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.container, fragment);
 
         transaction.addToBackStack(null);

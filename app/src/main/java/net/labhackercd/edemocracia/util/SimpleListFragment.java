@@ -1,11 +1,11 @@
 package net.labhackercd.edemocracia.util;
 
-import android.app.ListFragment;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.widget.ListAdapter;
 
@@ -21,7 +21,7 @@ import java.util.List;
  *
  * It's possible to use specific ListAdapters by overriding the createAdapter method.
  *
- * @param <T extends SimpleArrayAdapter.Identifiable>
+ * @param <T>
  */
 public abstract class SimpleListFragment<T extends Identifiable> extends ListFragment {
 

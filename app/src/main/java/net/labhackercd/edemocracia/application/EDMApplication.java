@@ -1,8 +1,8 @@
 package net.labhackercd.edemocracia.application;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.multidex.MultiDexApplication;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -23,7 +23,7 @@ import net.labhackercd.edemocracia.task.VideoUploadTaskQueue;
 import net.labhackercd.edemocracia.task.VideoUploadTaskService;
 import net.labhackercd.edemocracia.util.EDMSession;
 
-public class EDMApplication extends Application {
+public class EDMApplication extends MultiDexApplication {
     private ObjectGraph objectGraph;
 
     private static final String SHARED_PREFERENCES = "net.labhackercd.EDMApplication";

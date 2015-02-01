@@ -61,10 +61,10 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ((EDMApplication) getApplication()).inject(this);
-
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 0);
+
+        ((EDMApplication) getApplication()).inject(this);
 
         setContentView(R.layout.activity_sign_in);
 

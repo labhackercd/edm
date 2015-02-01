@@ -1,6 +1,3 @@
-/**
- * Created by baufaker on 22/01/15.
- */
 package net.labhackercd.edemocracia.task;
 
 import android.app.NotificationManager;
@@ -224,8 +221,6 @@ public class ResumableUpload {
             Log.d(TAG, String.format("Selectable notification for video ID [%s] posted", videoId));
 
         } catch (MalformedURLException e) {
-            Log.e(TAG, e.getMessage());
-        } catch (IOException e) {
             Log.e(TAG, e.getMessage());
         }
     }

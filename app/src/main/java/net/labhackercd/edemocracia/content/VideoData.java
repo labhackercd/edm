@@ -35,7 +35,7 @@ public class VideoData {
         VideoSnippet mSnippet = mVideo.getSnippet();
         List<String> mTags = mSnippet.getTags();
         if (mTags == null) {
-            mTags = new ArrayList<String>(2);
+            mTags = new ArrayList<>(2);
         }
         mTags.addAll(tags);
         return mSnippet;

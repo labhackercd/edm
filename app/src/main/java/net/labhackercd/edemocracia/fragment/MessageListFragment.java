@@ -1,8 +1,8 @@
 package net.labhackercd.edemocracia.fragment;
 
 import android.app.Activity;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -87,7 +87,9 @@ public class MessageListFragment extends SimpleListFragment<Message> {
     private boolean onReplySelected() {
         ComposeFragment fragment = ComposeFragment.newInstance(thread);
 
-        FragmentTransaction transaction = getActivity().getFragmentManager().beginTransaction();
+        FragmentTransaction transaction = getActivity()
+                .getSupportFragmentManager()
+                .beginTransaction();
 
         transaction.replace(R.id.container, fragment);
 

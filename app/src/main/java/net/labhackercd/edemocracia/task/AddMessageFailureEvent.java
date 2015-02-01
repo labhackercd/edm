@@ -2,9 +2,6 @@ package net.labhackercd.edemocracia.task;
 
 import net.labhackercd.edemocracia.content.Message;
 
-/**
- * Created by dirley on 27/01/15.
- */
 public class AddMessageFailureEvent {
     private Message message;
     private Exception exception;

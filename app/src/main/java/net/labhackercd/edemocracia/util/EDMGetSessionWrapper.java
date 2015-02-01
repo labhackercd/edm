@@ -1,5 +1,7 @@
 package net.labhackercd.edemocracia.util;
 
+import android.os.AsyncTask;
+
 import com.google.common.base.CharMatcher;
 import com.liferay.mobile.android.auth.Authentication;
 import com.liferay.mobile.android.exception.ServerException;
@@ -112,8 +114,8 @@ public class EDMGetSessionWrapper implements Session {
     }
 
     @Override
-    public JSONArray upload(JSONObject command) throws Exception {
-        throw new RuntimeException("Not implemented");
+    public AsyncTask upload(JSONObject command) throws Exception {
+        throw new UnsupportedOperationException();
     }
 
     public static class CustomHttpUtil extends HttpUtil {

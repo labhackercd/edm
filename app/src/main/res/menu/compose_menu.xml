@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/attach_video"
               android:icon="@drawable/ic_videocam_white_36dp"
               android:title="@string/attach_video"
-              android:showAsAction="ifRoom"/>
+              app:showAsAction="ifRoom"/>
     <item android:id="@+id/send"
         android:icon="@drawable/ic_send_white_36dp"
         android:title="@string/send"
-        android:showAsAction="ifRoom"/>
+        app:showAsAction="ifRoom"/>
 </menu>
