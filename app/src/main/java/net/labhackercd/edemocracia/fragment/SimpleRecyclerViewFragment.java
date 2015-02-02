@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public abstract class SimpleRecycleViewFragment<T extends Identifiable> extends InjectableFragment {
+public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends InjectableFragment {
 
     private RefreshListTask refreshListTask;
     private RecyclerView recyclerView;

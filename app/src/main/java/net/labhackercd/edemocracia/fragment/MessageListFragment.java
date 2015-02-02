@@ -21,7 +21,7 @@ import net.labhackercd.edemocracia.content.Thread;
 import net.labhackercd.edemocracia.util.EDMSession;
 import net.labhackercd.edemocracia.util.JSONReader;
 
-public class MessageListFragment extends SimpleRecycleViewFragment<Message> {
+public class MessageListFragment extends SimpleRecyclerViewFragment<Message> {
     public static String ARG_THREAD = "thread";
 
     @Inject EDMSession session;

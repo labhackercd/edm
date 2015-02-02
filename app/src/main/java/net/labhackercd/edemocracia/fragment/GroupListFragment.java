@@ -18,7 +18,7 @@ import net.labhackercd.edemocracia.content.Group;
 import net.labhackercd.edemocracia.util.EDMSession;
 import net.labhackercd.edemocracia.util.JSONReader;
 
-public class GroupListFragment extends SimpleRecycleViewFragment<Group> {
+public class GroupListFragment extends SimpleRecyclerViewFragment<Group> {
 
     @Inject EDMSession session;
 
