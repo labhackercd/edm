@@ -2,8 +2,26 @@
 <resources>
     <style name="Theme" />
     <style name="Theme.GreenTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="colorPrimary">@color/primary_dark</item>
+        <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="android:colorBackground">@android:color/white</item>
+
+        <item name="android:textColorPrimary">@color/primary_dark_material_dark</item>
+        <!--
+        <item name="textColorSecondaryActivated">@color/secondary_text_activated_material_light</item>
+        <item name="android:textColorTertiary">@color/secondary_text_material_light</item>
+        <item name="android:textColorTertiaryInverse">@color/secondary_text_material_dark</item>
+        <item name="android:textColorPrimaryDisableOnly">@color/primary_text_disable_only_material_light</item>
+        <item name="android:textColorPrimaryInverseDisableOnly">@color/primary_text_disable_only_material_dark</item>
+        <item name="android:textColorHint">@color/hint_foreground_material_light</item>
+        <item name="android:textColorHintInverse">@color/hint_foreground_material_dark</item>
+        <item name="android:textColorHighlight">@color/highlighted_text_material_light</item>
+        <item name="android:textColorHighlightInverse">@color/highlighted_text_material_dark</item>
+        <item name="android:textColorLink">@color/link_text_material_light</item>
+        <item name="android:textColorLinkInverse">@color/link_text_material_dark</item>
+        <item name="android:textColorSearchUrl">@android:color/search_url_text_material_light</item>
+        <item name="android:textColorAlertDialogListItem">@color/primary_text_material_light</item>
+        -->
     </style>
 
     <style name="Theme.GreenTheme.NoActionBar">

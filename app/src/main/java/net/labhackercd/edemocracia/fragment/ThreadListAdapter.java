@@ -49,6 +49,7 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
         private final TextView bodyView;
         private final TextView countView;
         private final TextView dateView;
+        private final TextView userView;
 
         private ThreadItem item;
 
@@ -58,8 +59,9 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
             view.setOnClickListener(this);
 
             iconView = (ImageView) view.findViewById(android.R.id.icon);
-            titleView = (TextView) view.findViewById(android.R.id.text1);
-            bodyView = (TextView) view.findViewById(android.R.id.text2);
+            userView = (TextView) view.findViewById(android.R.id.text1);
+            titleView = (TextView) view.findViewById(android.R.id.text2);
+            bodyView = (TextView) view.findViewById(R.id.body);
             countView = (TextView) view.findViewById(R.id.itemCount);
             dateView = (TextView) view.findViewById(R.id.date);
         }
@@ -87,6 +89,9 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
                     .resize(100, 100)
                     .centerCrop()
                     .into(iconView);
+
+            // Fill the user name
+            userView.setText(item.getUserName());
 
             // Fill the main text view with the item title
             titleView.setText(item.toString());

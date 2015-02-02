@@ -107,4 +107,17 @@ class ThreadItem implements Identifiable {
         }
         return null;
     }
+
+    public String getUserName() {
+        if (thread != null) {
+            Message root = thread.getRootMessage();
+            if (root != null) {
+                return root.getUserName();
+            } else {
+                return "[User " + thread.getRootMessageUserId() + "]";
+            }
+        } else {
+            return category.getUserName();
+        }
+    }
 }

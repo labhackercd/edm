@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary_dark">#616F58</color>
+    <color name="white">@android:color/white</color>
+    <color name="black">@android:color/black</color>
+    <color name="transparent">@android:color/transparent</color>
     <color name="lime">#60A145</color>
+    <color name="primary">#616F58</color>
+    <color name="primary_dark">#4d5846</color>
 </resources>

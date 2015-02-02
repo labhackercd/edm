@@ -1,10 +1,13 @@
 package net.labhackercd.edemocracia.content;
 
+import android.net.Uri;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
 
+import net.labhackercd.edemocracia.util.EDMSession;
 import net.labhackercd.edemocracia.util.Identifiable;
 import net.labhackercd.edemocracia.util.GsonParcelable;
 import net.labhackercd.edemocracia.util.JSONReader;
@@ -172,6 +175,10 @@ public class Message extends GsonParcelable implements Identifiable {
     @Override
     public long getId() {
         return getMessageId();
+    }
+
+    public Uri getUserAvatarUri() {
+        return Uri.parse(EDMSession.SERVICE_URL + "/image/user_male_portrait?img_id=" + getUserId());
     }
 
     @Override

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
@@ -42,38 +43,59 @@
                     <!-- FIXME There's still a problem with long titles hiding the counter. -->
 
                     <TextView
+                        tools:text="Equipe e-Democracia"
                         android:id="@android:id/text1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:fontFamily="sans-serif-light"
                         android:singleLine="true" />
 
                     <TextView
+                        tools:text="2"
                         android:id="@+id/itemCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="?android:attr/listPreferredItemPaddingLeft"
+                        android:layout_marginLeft="5sp"
                         android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:textColor="?android:attr/textColorTertiary"
                         android:singleLine="true" />
 
                 </LinearLayout>
 
                 <TextView
+                    tools:text="21 de jan"
                     android:id="@+id/date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="?android:attr/listPreferredItemPaddingLeft"
                     android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:fontFamily="sans-serif-light"
                     android:layout_marginBottom="1sp"
                     android:layout_gravity="bottom" />
             </LinearLayout>
 
         <TextView
+            tools:text="O rato roeu a roupa do rei de Roma"
             android:id="@android:id/text2"
-            android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="?android:attr/textColorPrimary"
+            android:fontFamily="sans-serif-light"
+            android:singleLine="true" />
+
+        <TextView
+            tools:text="O rato foi condenado a morte por asfixia bla bla bla"
+            android:id="@+id/body"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
+            android:fontFamily="sans-serif-light"
             android:singleLine="true" />
+
     </LinearLayout>
 
 

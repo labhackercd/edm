@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="?android:attr/listPreferredItemPaddingRight"
+        android:layout_marginLeft="?android:attr/listPreferredItemPaddingLeft"
+        android:layout_marginRight="?android:attr/listPreferredItemPaddingRight"
+        >
+
+        <ImageView
+            android:id="@android:id/icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_vertical"
+            android:scaleType="fitCenter"
+            android:duplicateParentState="true"
+            />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8sp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <TextView
+                    tools:text="Equipe e-Democracia"
+                    android:id="@android:id/text1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:singleLine="true" />
+
+                <TextView
+                    tools:text="O rato roeu a roupa do rei de Roma"
+                    android:id="@android:id/text2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:singleLine="true" />
+
+
+                <TextView
+                    tools:text="7 horas atrás"
+                    android:id="@+id/date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8sp"
+                android:id="@+id/reply"
+                android:src="@drawable/ic_close_black_24dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <TextView
+        tools:text="O rato foi condenado a morte por asfixia, não sei o que lá e pá e tal. "
+        android:id="@+id/body"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="?android:attr/textColorPrimary"
+        android:layout_marginTop="8sp"
+        android:layout_marginLeft="?android:attr/listPreferredItemPaddingLeft"
+        android:layout_marginRight="?android:attr/listPreferredItemPaddingRight"
+        android:layout_marginBottom="?android:attr/listPreferredItemPaddingLeft"
+        />
+
+</LinearLayout>

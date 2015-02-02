@@ -5,11 +5,15 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.content.Message;
 
+import java.text.DateFormat;
 import java.util.List;
 
 public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, MessageListAdapter.ViewHolder> {
@@ -24,7 +28,7 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.group_list_item, viewGroup, false);
+                .inflate(R.layout.message_list_item, viewGroup, false);
         return new ViewHolder(view);
     }
 
@@ -35,22 +39,43 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private Message message;
+        private final TextView bodyView;
+        private final TextView userView;
+        private final TextView subjectView;
+        private final TextView dateView;
+        private final ImageView iconView;
 
-        private final TextView textView;
+        private Message message;
 
         public ViewHolder(View view) {
             super(view);
 
             view.setOnClickListener(this);
 
-            textView = (TextView) view.findViewById(android.R.id.text1);
+            bodyView = (TextView) view.findViewById(R.id.body);
+            userView = (TextView) view.findViewById(android.R.id.text1);
+            subjectView = (TextView) view.findViewById(android.R.id.text2);
+            dateView = (TextView) view.findViewById(R.id.date);
+            iconView = (ImageView) view.findViewById(android.R.id.icon);
         }
 
         public void bindMessage(Message message) {
             this.message = message;
 
-            textView.setText(message.getBody());
+            bodyView.setText(message.getBody());
+            userView.setText(message.getUserName());
+            subjectView.setText(message.getSubject());
+
+            // Set the date
+            DateFormat dateFormat = DateFormat.getDateInstance();
+            dateView.setText(dateFormat.format(message.getCreateDate()));
+
+            // Fill the user avater image
+            Picasso.with(context)
+                    .load(message.getUserAvatarUri())
+                    .resize(100, 100)
+                    .centerCrop()
+                    .into(iconView);
         }
 
         @Override
