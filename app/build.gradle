@@ -45,15 +45,15 @@ dependencies {
     provided 'com.squareup.dagger:dagger-compiler:1.2.+'
     compile 'com.google.guava:guava-jdk5:17.+'
     compile 'com.google.code.gson:gson:2.3.+'
-    compile ('com.liferay.mobile:liferay-android-sdk:6.2.0.+') {
+    compile('com.liferay.mobile:liferay-android-sdk:6.2.0.+') {
         exclude module: 'httpclient'
     }
     compile 'com.google.android.gms:play-services:6.5.+'
-    compile ('com.google.api-client:google-api-client-android:1.19.+') {
+    compile('com.google.api-client:google-api-client-android:1.19.+') {
         exclude module: 'httpclient'
         exclude module: 'google-http-client'
     }
-    compile ('com.google.api-client:google-api-client-gson:1.19.+') {
+    compile('com.google.api-client:google-api-client-gson:1.19.+') {
         exclude module: 'google-api-client'
         exclude module: 'google-http-client'
     }
@@ -64,4 +64,5 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.4.+'
     compile 'com.android.support:multidex:1.0.+'
     compile 'com.android.support:appcompat-v7:21.0.+'
+    compile 'com.android.support:recyclerview-v7:21.0.+'
 }
