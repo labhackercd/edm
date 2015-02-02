@@ -30,8 +30,11 @@ public abstract class SimpleRecycleViewFragment<T extends Identifiable> extends 
         progressView = root.findViewById(R.id.progress_container);
         progressView.setVisibility(View.GONE);
 
+        Activity activity = getActivity();
+
         recyclerView = (RecyclerView) root.findViewById(android.R.id.list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.addItemDecoration(new SimpleRecyclerViewDivider(activity));
+        recyclerView.setLayoutManager(new LinearLayoutManager(activity));
 
         return root;
     }
