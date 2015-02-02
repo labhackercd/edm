@@ -25,7 +25,7 @@ public abstract class SimpleRecycleViewFragment<T extends Identifiable> extends 
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_simple_recycler_view, container, false);
+        View root = inflater.inflate(R.layout.simple_recycler_view, container, false);
 
         progressView = root.findViewById(R.id.progress_container);
         progressView.setVisibility(View.GONE);
