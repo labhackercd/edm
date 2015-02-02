@@ -16,15 +16,18 @@ import org.json.JSONArray;
 import java.util.List;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.activity.SessionProvider;
 import net.labhackercd.edemocracia.content.Message;
 import net.labhackercd.edemocracia.content.Thread;
-import net.labhackercd.edemocracia.util.SimpleListFragment;
 import net.labhackercd.edemocracia.util.EDMSession;
 import net.labhackercd.edemocracia.util.JSONReader;
 
+import javax.inject.Inject;
+
 public class MessageListFragment extends SimpleListFragment<Message> {
     public static String ARG_THREAD = "thread";
+
+    @Inject EDMSession session;
+
     private Thread thread;
     private OnMessageSelectedListener listener;
 
@@ -112,8 +115,6 @@ public class MessageListFragment extends SimpleListFragment<Message> {
 
     @Override
     protected List<Message> fetchItems() throws Exception {
-        EDMSession session = ((SessionProvider) getActivity()).getSession();
-
         JSONArray messages = new MBMessageService(session)
                 .getThreadMessages(thread.getGroupId(), 0, thread.getThreadId(), 0, -1, -1);
 

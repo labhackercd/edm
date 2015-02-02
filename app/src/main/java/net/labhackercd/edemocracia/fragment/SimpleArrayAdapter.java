@@ -1,7 +1,9 @@
-package net.labhackercd.edemocracia.util;
+package net.labhackercd.edemocracia.fragment;
 
 import android.content.Context;
 import android.widget.ArrayAdapter;
+
+import net.labhackercd.edemocracia.util.Identifiable;
 
 import java.util.List;
 

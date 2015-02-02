@@ -17,6 +17,9 @@ import javax.inject.Singleton;
 import net.labhackercd.edemocracia.activity.MainActivity;
 import net.labhackercd.edemocracia.activity.SignInActivity;
 import net.labhackercd.edemocracia.activity.SplashScreenActivity;
+import net.labhackercd.edemocracia.fragment.GroupListFragment;
+import net.labhackercd.edemocracia.fragment.MessageListFragment;
+import net.labhackercd.edemocracia.fragment.ThreadListFragment;
 import net.labhackercd.edemocracia.task.AddMessageTaskQueue;
 import net.labhackercd.edemocracia.task.AddMessageTaskService;
 import net.labhackercd.edemocracia.task.VideoUploadTaskQueue;
@@ -68,7 +71,10 @@ public class EDMApplication extends MultiDexApplication {
                     VideoUploadTaskService.class,
                     MainActivity.class,
                     SignInActivity.class,
-                    SplashScreenActivity.class
+                    SplashScreenActivity.class,
+                    GroupListFragment.class,
+                    ThreadListFragment.class,
+                    MessageListFragment.class
             }
     )
     static class Module {

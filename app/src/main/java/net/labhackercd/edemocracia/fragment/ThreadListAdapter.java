@@ -1,6 +1,8 @@
 package net.labhackercd.edemocracia.fragment;
 
 import android.content.Context;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,67 +12,111 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.util.SimpleArrayAdapter;
+import net.labhackercd.edemocracia.activity.MainActivity;
+import net.labhackercd.edemocracia.content.Forum;
+import net.labhackercd.edemocracia.util.EDMSession;
 
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
-public class ThreadListAdapter extends SimpleArrayAdapter<ThreadItem> {
-    public ThreadListAdapter(Context context, List<ThreadItem> objects) {
-        super(context, objects);
+
+public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, ThreadListAdapter.ViewHolder> {
+
+    private final Context context;
+
+    public ThreadListAdapter(Context context, List<ThreadItem> items) {
+        super(items);
+        this.context = context;
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        LayoutInflater inflater = (LayoutInflater) getContext()
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = LayoutInflater
+                .from(parent.getContext())
+                .inflate(R.layout.thread_list_item, parent, false);
+        return new ViewHolder(view);
+    }
 
-        View view = inflater.inflate(R.layout.thread_list_item, parent, false);
+    @Override
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        holder.bindThreadItem(getItem(position));
+    }
 
-        ThreadItem item = getItem(position);
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        // Fill the icon
-        ImageView iconView = (ImageView) view.findViewById(android.R.id.icon);
+        private final ImageView iconView;
+        private final TextView titleView;
+        private final TextView bodyView;
+        private final TextView countView;
+        private final TextView dateView;
 
-        Picasso.with(getContext())
-                .load(item.getIconUri())
-                .resize(100, 100)
-                .centerCrop()
-                .into(iconView);
+        private ThreadItem item;
 
-        // Fill the main text view with the item title
-        ((TextView) view.findViewById(android.R.id.text1))
-                .setText(item.toString());
+        public ViewHolder(View view) {
+            super(view);
 
-        // Fill the other text view with the item content, if available
-        String body = item.getBody();
-        if (body != null) {
-            ((TextView) view.findViewById(android.R.id.text2))
-                    .setText(body.replaceAll("\\n+", " "));
+            view.setOnClickListener(this);
+
+            iconView = (ImageView) view.findViewById(android.R.id.icon);
+            titleView = (TextView) view.findViewById(android.R.id.text1);
+            bodyView = (TextView) view.findViewById(android.R.id.text2);
+            countView = (TextView) view.findViewById(R.id.itemCount);
+            dateView = (TextView) view.findViewById(R.id.date);
         }
 
-        // Fill the item count field
-        int itemCount = item.getItemCount();
-        if (itemCount > 0) {
-            ((TextView) view.findViewById(R.id.itemCount))
-                    .setText(Integer.toString(itemCount));
+        @Override
+        public void onClick(View v) {
+            if (item != null) {
+                Forum forum = item.getForum();
+                if (forum != null) {
+                    LocalBroadcastManager.getInstance(context)
+                            .sendBroadcast(MainActivity.getIntent(context, forum));
+                } else {
+                    LocalBroadcastManager.getInstance(context)
+                            .sendBroadcast(MainActivity.getIntent(context, item.getThread()));
+                }
+            }
         }
 
-        // Fill the date view if any date is available
-        Date date = item.getLastPostDate();
-        if (date == null) {
-            date = item.getCreateDate();
-        }
-        if (date != null) {
-            // TODO format date to localized dd MMM (21 de jan)
-            DateFormat dateFormat = DateFormat
-                    .getDateInstance(DateFormat.DATE_FIELD | DateFormat.MONTH_FIELD);
+        public void bindThreadItem(ThreadItem item) {
+            this.item = item;
 
-            ((TextView) view.findViewById(R.id.date))
-                    .setText(dateFormat.format(date));
-        }
+            // Fill the icon
 
-        return view;
+            Picasso.with(context)
+                    .load(item.getIconUri())
+                    .resize(100, 100)
+                    .centerCrop()
+                    .into(iconView);
+
+            // Fill the main text view with the item title
+            titleView.setText(item.toString());
+
+            // Fill the other text view with the item content, if available
+            String body = item.getBody();
+            if (body != null) {
+                bodyView.setText(body.replaceAll("\\n+", " "));
+            }
+
+            // Fill the item count field
+            int itemCount = item.getItemCount();
+            if (itemCount > 0) {
+                countView.setText(Integer.toString(itemCount));
+            }
+
+            // Fill the date view if any date is available
+            Date date = item.getLastPostDate();
+            if (date == null) {
+                date = item.getCreateDate();
+            }
+            if (date != null) {
+                // TODO format date to localized dd MMM (21 de jan)
+                DateFormat dateFormat = DateFormat
+                        .getDateInstance(DateFormat.DATE_FIELD | DateFormat.MONTH_FIELD);
+
+                dateView.setText(dateFormat.format(date));
+            }
+        }
     }
 }

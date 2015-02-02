@@ -1,11 +1,11 @@
 package net.labhackercd.edemocracia.fragment;
 
-import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ListView;
+import android.view.ViewGroup;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
@@ -19,7 +19,8 @@ import org.json.JSONArray;
 
 import java.util.List;
 
-import net.labhackercd.edemocracia.activity.SessionProvider;
+import javax.inject.Inject;
+
 import net.labhackercd.edemocracia.content.Category;
 import net.labhackercd.edemocracia.content.Forum;
 import net.labhackercd.edemocracia.content.Group;
@@ -28,14 +29,14 @@ import net.labhackercd.edemocracia.content.Thread;
 import net.labhackercd.edemocracia.util.EDMBatchSession;
 import net.labhackercd.edemocracia.util.EDMSession;
 import net.labhackercd.edemocracia.util.JSONReader;
-import net.labhackercd.edemocracia.util.SimpleListFragment;
 
-public class ThreadListFragment extends SimpleListFragment<ThreadItem> {
+public class ThreadListFragment extends SimpleRecycleViewFragment<ThreadItem> {
 
     public static String ARG_PARENT = "parent";
 
+    @Inject EDMSession session;
+
     private Forum forum;
-    private OnThreadSelectedListener listener;
 
     public static ThreadListFragment newInstance(Forum forum) {
         ThreadListFragment fragment = new ThreadListFragment();
@@ -61,29 +62,7 @@ public class ThreadListFragment extends SimpleListFragment<ThreadItem> {
         }
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            listener = (OnThreadSelectedListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement " + OnThreadSelectedListener.class.getSimpleName());
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        listener = null;
-    }
-
-    @NonNull
-    @Override
-    protected android.widget.ListAdapter createAdapter(Context context, List<ThreadItem> items) {
-        return new ThreadListAdapter(context, items);
-    }
-
+/*
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
@@ -98,11 +77,15 @@ public class ThreadListFragment extends SimpleListFragment<ThreadItem> {
             }
         }
     }
+    */
 
     @Override
-    protected List<ThreadItem> fetchItems() throws Exception {
-        EDMSession session = ((SessionProvider) getActivity()).getSession();
+    protected RecyclerView.Adapter createAdapter(List<ThreadItem> items) {
+        return new ThreadListAdapter(getActivity(), items);
+    }
 
+    @Override
+    protected List<ThreadItem> blockingFetchItems() throws Exception {
         EDMBatchSession batchSession = new EDMBatchSession(session);
 
         MBThreadService threadService = new MBThreadService(batchSession);
@@ -152,10 +135,4 @@ public class ThreadListFragment extends SimpleListFragment<ThreadItem> {
 
         return Lists.newArrayList(Iterables.concat(icategories, ithreads));
     }
-
-    public interface OnThreadSelectedListener {
-        public void onForumSelected(Forum forum);
-        public void onThreadSelected(Thread thread);
-    }
-
 }

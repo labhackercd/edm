@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.util;
+package net.labhackercd.edemocracia.fragment;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -8,6 +8,9 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.widget.ListAdapter;
+
+import net.labhackercd.edemocracia.application.EDMApplication;
+import net.labhackercd.edemocracia.util.Identifiable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +37,9 @@ public abstract class SimpleListFragment<T extends Identifiable> extends ListFra
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        ((EDMApplication) getActivity().getApplication()).inject(this);
+
         refreshList();
     }
 
