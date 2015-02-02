@@ -14,7 +14,6 @@ import com.squareup.picasso.Picasso;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.activity.MainActivity;
 import net.labhackercd.edemocracia.content.Forum;
-import net.labhackercd.edemocracia.util.EDMSession;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -83,7 +82,6 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
             this.item = item;
 
             // Fill the icon
-
             Picasso.with(context)
                     .load(item.getIconUri())
                     .resize(100, 100)

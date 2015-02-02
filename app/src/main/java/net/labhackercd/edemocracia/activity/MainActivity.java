@@ -31,11 +31,9 @@ import net.labhackercd.edemocracia.task.AddMessageTask;
 import net.labhackercd.edemocracia.task.AddMessageTaskQueue;
 import net.labhackercd.edemocracia.task.VideoUploadTask;
 import net.labhackercd.edemocracia.task.VideoUploadTaskQueue;
-import net.labhackercd.edemocracia.util.EDMSession;
 import net.labhackercd.edemocracia.ytdl.Constants;
 
-public class MainActivity extends ActionBarActivity implements
-        MessageListFragment.OnMessageSelectedListener {
+public class MainActivity extends ActionBarActivity {
 
     public static final String SHOW_GROUP_INTENT = "net.labhackercd.edemocracia.MainActivity.ShowGroup";
     public static final String SHOW_GROUP_INTENT_PARAM = "net.labhackercd.edemocracia.MainActivity.ShowGroup.group";
@@ -48,8 +46,6 @@ public class MainActivity extends ActionBarActivity implements
     @Inject VideoUploadTaskQueue videoUploadTaskQueue;
 
     @Inject Bus bus;
-
-    @Inject EDMSession session;
 
     private UploadBroadcastReceiver uploadBroadcastReceiver;
     private ShowGroupBroadcastReceiver showGroupBroadcastReceiver;
@@ -141,11 +137,6 @@ public class MainActivity extends ActionBarActivity implements
         transaction.addToBackStack(null);
 
         transaction.commit();
-    }
-
-    @Override
-    public void onMessageSelect(Message message) {
-        // NOOP
     }
 
     @Subscribe

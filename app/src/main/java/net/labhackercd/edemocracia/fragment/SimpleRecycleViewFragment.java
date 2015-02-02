@@ -1,17 +1,16 @@
 package net.labhackercd.edemocracia.fragment;
 
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.application.EDMApplication;
 import net.labhackercd.edemocracia.util.Identifiable;
 
 import java.util.ArrayList;

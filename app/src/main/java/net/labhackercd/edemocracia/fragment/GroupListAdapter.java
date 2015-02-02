@@ -1,7 +1,6 @@
 package net.labhackercd.edemocracia.fragment;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
