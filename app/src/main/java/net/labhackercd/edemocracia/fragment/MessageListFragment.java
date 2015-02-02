@@ -91,7 +91,7 @@ public class MessageListFragment extends SimpleRecyclerViewFragment<Message> {
     @Override
     protected List<Message> blockingFetchItems() throws Exception {
         JSONArray messages = new MBMessageService(session)
-                .getThreadMessages(thread.getGroupId(), 0, thread.getThreadId(), 0, -1, -1);
+                .getThreadMessages(thread.getGroupId(), thread.getCategoryId(), thread.getThreadId(), 0, -1, -1);
 
         return JSONReader.fromJSON(messages, Message.JSON_READER);
     }
