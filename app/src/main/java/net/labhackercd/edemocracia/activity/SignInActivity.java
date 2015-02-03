@@ -1,31 +1,20 @@
 package net.labhackercd.edemocracia.activity;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.LoaderManager.LoaderCallbacks;
-import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -36,73 +25,64 @@ import com.liferay.mobile.android.v62.group.GroupService;
 import net.labhackercd.edemocracia.util.EDMSession;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+
+import javax.inject.Inject;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import butterknife.OnClick;
+import butterknife.OnEditorAction;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.application.EDMApplication;
 
-import javax.inject.Inject;
 
+public class SignInActivity extends Activity {
 
-public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> {
+    private static final String TAG = SignInActivity.class.getSimpleName();
 
     @Inject EDMSession session;
 
+    @InjectView(R.id.email) AutoCompleteTextView emailView;
+    @InjectView(R.id.password) EditText passwordView;
+    @InjectView(R.id.login_form) View loginFormView;
+    @InjectView(android.R.id.progress) View progressView;
+
     private UserLoginTask authenticationTask = null;
-
-    private EditText passwordView;
-    private AutoCompleteTextView emailView;
-
-    private View progressView;
-    private View loginFormView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        ((EDMApplication) getApplication()).inject(this);
+
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 0);
 
-        ((EDMApplication) getApplication()).inject(this);
-
         setContentView(R.layout.activity_sign_in);
 
-        emailView = (AutoCompleteTextView) findViewById(R.id.email);
-        populateAutoComplete();
+        ButterKnife.inject(this);
 
-        passwordView = (EditText) findViewById(R.id.password);
-        passwordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-            if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                attemptLogin();
-                return true;
-            }
-
-            return false;
-            }
-        });
-
-        Button signInButton = (Button) findViewById(R.id.email_sign_in_button);
-        signInButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptLogin();
-            }
-        });
-
-        loginFormView = findViewById(R.id.login_form);
-        progressView = findViewById(android.R.id.progress);
-
+        // progress view shouldn't be visible at startup
         progressView.setVisibility(View.GONE);
     }
 
-    private void populateAutoComplete() {
-        getLoaderManager().initLoader(0, null, this);
+    @OnEditorAction(R.id.password)
+    @SuppressWarnings("UnusedDeclaration")
+    public boolean onPasswordEditorAction(TextView view, int id, KeyEvent event) {
+        if (id == R.id.login || id == EditorInfo.IME_NULL) {
+            attemptLogin();
+            return true;
+        }
+        return false;
+    }
+
+    @OnClick(R.id.email_sign_in_button)
+    @SuppressWarnings("UnusedDeclaration")
+    public void onSignInButtonClick(View view) {
+        attemptLogin();
     }
 
     public void attemptLogin() {
@@ -152,19 +132,7 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
         }
     }
 
-    private boolean isEmailValid(String email) {
-        // XXX Everything else would be wrong. It's very, very hard to check the
-        // validity of e-mail addresses.
-        return email.contains("@");
-    }
-
-    private boolean isPasswordValid(String password) {
-        // Everything is possible!
-        return true;
-    }
-
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    public void showProgress(final boolean show) {
+    protected void showProgress(final boolean show) {
         loginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         progressView.setVisibility(show ? View.VISIBLE : View.GONE);
 
@@ -175,160 +143,99 @@ public class SignInActivity extends Activity implements LoaderCallbacks<Cursor> 
         }
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return new CursorLoader(this,
-                // Retrieve data rows for the device user's 'profile' contact.
-                Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI,
-                        ContactsContract.Contacts.Data.CONTENT_DIRECTORY), ProfileQuery.PROJECTION,
-
-                // Select only email addresses.
-                ContactsContract.Contacts.Data.MIMETYPE +
-                        " = ?", new String[]{ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE},
-
-                // Show primary email addresses first. Note that there won't be
-                // a primary email address if the user hasn't specified one.
-                ContactsContract.Contacts.Data.IS_PRIMARY + " DESC");
+    private boolean isEmailValid(String email) {
+        // We won't bother users with stupid email checks.
+        return email.contains("@");
     }
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        List<String> emails = new ArrayList<>();
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            emails.add(cursor.getString(ProfileQuery.ADDRESS));
-            cursor.moveToNext();
-        }
-        addEmailsToAutoComplete(emails);
+    private boolean isPasswordValid(String password) {
+        // Just let the users do whatever they want.
+        return true;
     }
 
-    @Override
-    public void onLoaderReset(Loader<Cursor> cursorLoader) {
-
-    }
-
-    private interface ProfileQuery {
-        String[] PROJECTION = {
-                ContactsContract.CommonDataKinds.Email.ADDRESS,
-                ContactsContract.CommonDataKinds.Email.IS_PRIMARY,
-        };
-
-        int ADDRESS = 0;
-        int IS_PRIMARY = 1;
-    }
-
-
-    private void addEmailsToAutoComplete(List<String> emailAddressCollection) {
-        //Create adapter to tell the AutoCompleteTextView what to show in its dropdown list.
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(SignInActivity.this,
-                        android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
-        emailView.setAdapter(adapter);
-    }
-
-    /**
-     * Represents an asynchronous login/registration task used to createSession
-     * the user.
-     */
     public class UserLoginTask extends AsyncTask<Void, Void, Integer> {
-
 
         private final String email;
         private final String password;
 
-
-
-        UserLoginTask(String email, String password) {
+        public UserLoginTask(String email, String password) {
             this.email = email;
             this.password = password;
         }
 
-
         @Override
         protected Integer doInBackground(Void... params) {
-            int resultCode = 0;
+            // Prepare to test the supplied credentials
             session.setAuthentication(new BasicAuthentication(email, password));
 
             GroupService groupService = new GroupService(session);
 
+            int error = 0;
             long companyId = -1;
+            Exception exception = null;
 
-            JSONArray groups;
             try {
-                groups = groupService.getUserSites();
-                companyId = groups.getJSONObject(0).getLong("companyId");
-                resultCode = R.string.success;
-            } catch (UnknownHostException u)
-            {
-                Log.d(getClass().getSimpleName(), "No Connection" + u);
-                resultCode = R.string.connection_failure;
-            } catch (ServerException s)
-            {
-                Log.d(getClass().getSimpleName(), s.toString());
-                resultCode = R.string.invalid_credentials;
-            }
-
-            catch (JSONException e) {
-                // XXX I do not think that liferay will send a wrong answer, so i'll threat as
-                // generic error
-                e.printStackTrace();
-                resultCode = R.string.generic_error;
+                JSONArray userGroups = groupService.getUserSites();
+                companyId = userGroups.getJSONObject(0).getLong("companyId");
+            } catch (IOException e) {
+                // IOException are probably only caused by network problems
+                exception = e;
+                error = R.string.network_error_message;
+            } catch (ServerException e) {
+                String errorMessage = e.toString().toLowerCase();
+                // These are expected messages saying that the given credentials are invalid.
+                if (!errorMessage.matches("(please *sign|authenticated *access|principal *exception)")) {
+                    // Everything else is a real ServerError and should be logged.
+                    exception = e;
+                    error = R.string.server_error_message;
+                } else {
+                    error = R.string.invalid_credentials_message;
+                }
             } catch (Exception e) {
-                // XXX THIS NEVER GOING TO HAPPEN, BUT LIFERAY ASSIGNS IT WITH GENERIC EXCEPTION
-                resultCode = R.string.generic_error;
+                exception = e;
+                error = R.string.unknown_error_message;
             }
 
-            session.setCompanyId(companyId);
+            if (companyId < 0 || exception != null) {
+                Log.e(TAG, "Failed to authenticate user: " + (exception == null ? "Unknown error" : exception));
+            } else {
+                // Save the companyId
+                session.setCompanyId(companyId);
 
-            // Store session for future uses
-            ((EDMApplication) getApplication()).saveEDMSession(session);
+                // And persist the session for future uses.
+                ((EDMApplication) getApplication()).saveEDMSession(session);
+            }
 
-            return resultCode;
+            return error;
         }
 
         @Override
-        protected void onPostExecute(final Integer success) {
+        protected void onPostExecute(final Integer error) {
             authenticationTask = null;
 
             showProgress(false);
 
-            switch (success)
-            {
-                case R.string.success:
-                   startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                   finish();
-                   break;
+            AlertDialog.Builder dialogBuilder;
 
-                case R.string.connection_failure:
-                    callAlertDialog(R.string.connection_failure);
-                    break;
-
-                case R.string.invalid_credentials:
-                    callAlertDialog(R.string.invalid_credentials);
-                    break;
-
-                case R.string.generic_error:
-                    callAlertDialog(R.string.generic_error);
-                    break;
+            if (error != 0) {
+                new AlertDialog.Builder(SignInActivity.this)
+                        .setMessage(error)
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .create()
+                        .show();
+            } else {
+                // It's all good, present the user with the MainActivity.
+                startActivity(new Intent(SignInActivity.this, MainActivity.class));
+                finish();
             }
-
         }
-
-        private void callAlertDialog(Integer message) {
-            new AlertDialog.Builder(new ContextThemeWrapper(
-                    SignInActivity.this, android.R.style.Theme_Material_Light_Dialog))
-                    .setMessage(message)
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    })
-                    .create()
-                    .show();
-        }
-
         @Override
+
         protected void onCancelled() {
             authenticationTask = null;
             showProgress(false);
