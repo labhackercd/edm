@@ -16,23 +16,28 @@ import net.labhackercd.edemocracia.util.Identifiable;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+
 
 public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends InjectableFragment {
 
     private RefreshListTask refreshListTask;
-    private RecyclerView recyclerView;
-    private View progressView;
+
+    @InjectView(R.id.progress_container) View progressView;
+    @InjectView(android.R.id.list) RecyclerView recyclerView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.simple_recycler_view, container, false);
 
-        progressView = root.findViewById(R.id.progress_container);
+        ButterKnife.inject(this, root);
+
+        // Progress view starts hidden
         progressView.setVisibility(View.GONE);
 
         Activity activity = getActivity();
 
-        recyclerView = (RecyclerView) root.findViewById(android.R.id.list);
         recyclerView.addItemDecoration(new SimpleRecyclerViewDivider(activity));
         recyclerView.setLayoutManager(new LinearLayoutManager(activity));
 
@@ -43,6 +48,12 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         refreshList();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.reset(this);
     }
 
     protected void refreshList() {
@@ -56,12 +67,22 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
         recyclerView.setVisibility(visible ? View.GONE : View.VISIBLE);
     }
 
+    /**
+     * Synchronously fetch list items. This method is called inside an AsyncTask to refresh the list.
+     *
+     * If an exception is thrown, it'll be logged and silenced.
+     *
+     * @return List<T>
+     * @throws Exception
+     */
     protected abstract List<T> blockingFetchItems() throws Exception;
 
-    protected RecyclerView getRecyclerView() {
-        return recyclerView;
-    }
-
+    /**
+     * Create a RecyclerView adapter for the list.
+     *
+     * @param List<T> items
+     * @return RecyclerView.Adapter The adapter
+     */
     protected abstract RecyclerView.Adapter createAdapter(List<T> items);
 
     private class RefreshListTask extends AsyncTask<Void, Void, Boolean> {
@@ -95,9 +116,8 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
                 items = new ArrayList<>();
             }
 
-            RecyclerView view = getRecyclerView();
-            if (view != null) {
-                view.setAdapter(createAdapter(items));
+            if (recyclerView != null) {
+                recyclerView.setAdapter(createAdapter(items));
             }
 
             setProgressVisibility(false);

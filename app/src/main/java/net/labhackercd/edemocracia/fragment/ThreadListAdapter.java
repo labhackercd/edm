@@ -20,7 +20,8 @@ import org.joda.time.DateTime;
 
 import java.util.List;
 
-
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 
 public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, ThreadListAdapter.ViewHolder> {
 
@@ -46,26 +47,19 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private final ImageView iconView;
-        private final TextView titleView;
-        private final TextView bodyView;
-        private final TextView countView;
-        private final TextView dateView;
-        private final TextView userView;
+        @InjectView(android.R.id.icon) ImageView iconView;
+        @InjectView(android.R.id.text2) TextView titleView;
+        @InjectView(R.id.body) TextView bodyView;
+        @InjectView(R.id.itemCount) TextView countView;
+        @InjectView(R.id.date) TextView dateView;
+        @InjectView(android.R.id.text1) TextView userView;
 
         private ThreadItem item;
 
         public ViewHolder(View view) {
             super(view);
-
+            ButterKnife.inject(this, view);
             view.setOnClickListener(this);
-
-            iconView = (ImageView) view.findViewById(android.R.id.icon);
-            userView = (TextView) view.findViewById(android.R.id.text1);
-            titleView = (TextView) view.findViewById(android.R.id.text2);
-            bodyView = (TextView) view.findViewById(R.id.body);
-            countView = (TextView) view.findViewById(R.id.itemCount);
-            dateView = (TextView) view.findViewById(R.id.date);
         }
 
         @Override

@@ -16,8 +16,10 @@ import net.labhackercd.edemocracia.content.Message;
 
 import org.joda.time.DateTime;
 
-import java.text.DateFormat;
 import java.util.List;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 
 public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, MessageListAdapter.ViewHolder> {
 
@@ -42,24 +44,18 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private final TextView bodyView;
-        private final TextView userView;
-        private final TextView subjectView;
-        private final TextView dateView;
-        private final ImageView iconView;
+        @InjectView(R.id.body) TextView bodyView;
+        @InjectView(R.id.date) TextView dateView;
+        @InjectView(android.R.id.icon) ImageView iconView;
+        @InjectView(android.R.id.text1) TextView userView;
+        @InjectView(android.R.id.text2) TextView subjectView;
 
         private Message message;
 
         public ViewHolder(View view) {
             super(view);
-
+            ButterKnife.inject(this, view);
             view.setOnClickListener(this);
-
-            bodyView = (TextView) view.findViewById(R.id.body);
-            userView = (TextView) view.findViewById(android.R.id.text1);
-            subjectView = (TextView) view.findViewById(android.R.id.text2);
-            dateView = (TextView) view.findViewById(R.id.date);
-            iconView = (ImageView) view.findViewById(android.R.id.icon);
         }
 
         public void bindMessage(Message message) {
