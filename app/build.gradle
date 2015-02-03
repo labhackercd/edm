@@ -67,4 +67,5 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:21.0.+'
     compile 'joda-time:joda-time:2.7'
     compile 'com.ocpsoft:ocpsoft-pretty-time:1.0.7'
+    compile 'com.jakewharton:butterknife:6.1.0'
 }
