@@ -113,25 +113,15 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
 
             // Fill the date view if any date is available
             DateTime date = item.getLastPostDate();
+
             if (date == null) {
                 date = item.getCreateDate();
             }
 
-
-            // TODO format date to localized dd MMM (21 de jan)
-            dateView.setText(formatedDate(date));
-
+            if (date != null) {
+                PrettyTime formatter = new PrettyTime(context.getResources().getConfiguration().locale);
+                dateView.setText(formatter.format(date.toDate()));
+            }
         }
-
-        private String formatedDate(DateTime date) {
-
-            // Formatter with locale
-            PrettyTime formatter = new PrettyTime(context.getResources().getConfiguration().locale);
-
-            return formatter.format(date.toDate());
-
-        }
-
-
     }
 }

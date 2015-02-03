@@ -8,10 +8,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.ocpsoft.pretty.time.PrettyTime;
 import com.squareup.picasso.Picasso;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.content.Message;
+
+import org.joda.time.DateTime;
 
 import java.text.DateFormat;
 import java.util.List;
@@ -67,10 +70,14 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
             subjectView.setText(message.getSubject());
 
             // Set the date
-            DateFormat dateFormat = DateFormat.getDateInstance();
-            dateView.setText(dateFormat.format(message.getCreateDate()));
+            DateTime date = message.getCreateDate();
 
-            // Fill the user avater image
+            if (date != null) {
+                PrettyTime formatter = new PrettyTime(context.getResources().getConfiguration().locale);
+                dateView.setText(formatter.format(date.toDate()));
+            }
+
+            // Fill the user avatar image
             Picasso.with(context)
                     .load(message.getUserAvatarUri())
                     .resize(100, 100)
