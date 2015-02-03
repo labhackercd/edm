@@ -9,15 +9,17 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.ocpsoft.pretty.time.PrettyTime;
 import com.squareup.picasso.Picasso;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.activity.MainActivity;
 import net.labhackercd.edemocracia.content.Forum;
 
-import java.text.DateFormat;
-import java.util.Date;
+import org.joda.time.DateTime;
+
 import java.util.List;
+
 
 
 public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, ThreadListAdapter.ViewHolder> {
@@ -102,6 +104,7 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
                 bodyView.setText(body.replaceAll("\\n+", " "));
             }
 
+
             // Fill the item count field
             int itemCount = item.getItemCount();
             if (itemCount > 0) {
@@ -109,17 +112,26 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
             }
 
             // Fill the date view if any date is available
-            Date date = item.getLastPostDate();
+            DateTime date = item.getLastPostDate();
             if (date == null) {
                 date = item.getCreateDate();
             }
-            if (date != null) {
-                // TODO format date to localized dd MMM (21 de jan)
-                DateFormat dateFormat = DateFormat
-                        .getDateInstance(DateFormat.DATE_FIELD | DateFormat.MONTH_FIELD);
 
-                dateView.setText(dateFormat.format(date));
-            }
+
+            // TODO format date to localized dd MMM (21 de jan)
+            dateView.setText(formatedDate(date));
+
         }
+
+        private String formatedDate(DateTime date) {
+
+            // Formatter with locale
+            PrettyTime formatter = new PrettyTime(context.getResources().getConfiguration().locale);
+
+            return formatter.format(date.toDate());
+
+        }
+
+
     }
 }
