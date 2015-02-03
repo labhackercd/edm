@@ -1,5 +1,6 @@
 package net.labhackercd.edemocracia.content;
 
+import org.joda.time.DateTime;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,11 +21,11 @@ public class Message extends GsonParcelable implements Identifiable {
     private boolean answer;
     private String uuid;
     private long companyId;
-    private Date createDate;
+    private DateTime createDate;
     private String format;
     private double priority;
     private long statusByUserId;
-    private Date statusDate;
+    private DateTime statusDate;
     private long categoryId;
     private String body;
     private long classPK;
@@ -32,7 +33,7 @@ public class Message extends GsonParcelable implements Identifiable {
     private long classNameId;
     private long rootMessageId;
     private long parentMessageId;
-    private Date modifiedDate;
+    private DateTime modifiedDate;
     private boolean anonymous;
     private long groupId;
     private String userName;
@@ -101,7 +102,7 @@ public class Message extends GsonParcelable implements Identifiable {
         return companyId;
     }
 
-    public Date getCreateDate() {
+    public DateTime getCreateDate() {
         return createDate;
     }
 
@@ -117,7 +118,7 @@ public class Message extends GsonParcelable implements Identifiable {
         return statusByUserId;
     }
 
-    public Date getStatusDate() {
+    public DateTime getStatusDate() {
         return statusDate;
     }
 
@@ -149,7 +150,7 @@ public class Message extends GsonParcelable implements Identifiable {
         return parentMessageId;
     }
 
-    public Date getModifiedDate() {
+    public DateTime getModifiedDate() {
         return modifiedDate;
     }
 
@@ -193,11 +194,11 @@ public class Message extends GsonParcelable implements Identifiable {
             instance.answer = json.getBoolean("answer");
             instance.uuid = json.getString("uuid");
             instance.companyId = json.getLong("companyId");
-            instance.createDate = new Date(json.getLong("createDate"));
+            instance.createDate = new DateTime(json.getLong("createDate"));
             instance.format = json.getString("format");
             instance.priority = json.getDouble("priority");
             instance.statusByUserId = json.getLong("statusByUserId");
-            instance.statusDate = new Date(json.getLong("statusDate"));
+            instance.statusDate = new DateTime(json.getLong("statusDate"));
             instance.categoryId = json.getLong("categoryId");
             instance.body = json.getString("body");
             instance.classPK = json.getLong("classPK");
@@ -205,7 +206,7 @@ public class Message extends GsonParcelable implements Identifiable {
             instance.classNameId = json.getLong("classNameId");
             instance.rootMessageId = json.getLong("rootMessageId");
             instance.parentMessageId = json.getLong("parentMessageId");
-            instance.modifiedDate = new Date(json.getLong("modifiedDate"));
+            instance.modifiedDate = new DateTime(json.getLong("modifiedDate"));
             instance.anonymous = json.getBoolean("anonymous");
             instance.groupId = json.getLong("groupId");
             instance.userName = json.getString("userName");
