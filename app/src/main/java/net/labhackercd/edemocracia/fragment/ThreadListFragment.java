@@ -1,9 +1,11 @@
 package net.labhackercd.edemocracia.fragment;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -87,7 +89,9 @@ public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
         MBThreadService threadService = new MBThreadService(batchSession);
         MBCategoryService categoryService = new MBCategoryService(batchSession);
 
-        if (forum instanceof Group) {
+        boolean forumIsAGroup = forum instanceof Group;
+
+        if (forumIsAGroup) {
             threadService.getGroupThreads(forum.getGroupId(), -1, 0, -1, -1);
             categoryService.getCategories(forum.getGroupId());
         } else {
@@ -100,6 +104,26 @@ public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
         JSONArray jsonCategories = jsonResult.getJSONArray(1);
 
         List<Thread> threads = JSONReader.fromJSON(jsonThreads, Thread.JSON_READER);
+        List<Category> categories = JSONReader.fromJSON(jsonCategories, Category.JSON_READER);
+
+        if (forumIsAGroup) {
+            // Ignore threads and categories that don't belong to the given group. This is
+            // required because the webservice returns all the threads and categories inside a
+            // group, even the ones nested inside subcategories.
+            threads = Lists.newArrayList(Collections2.filter(threads, new Predicate<Thread>() {
+                @Override
+                public boolean apply(@Nullable Thread thread) {
+                    return thread != null && thread.getCategoryId() == 0;
+                }
+            }));
+
+            categories = Lists.newArrayList(Collections2.filter(categories, new Predicate<Category>() {
+                @Override
+                public boolean apply(@Nullable Category category) {
+                    return category != null && category.getParentCategoryId() == 0;
+                }
+            }));
+        }
 
         MBMessageService messageService = new MBMessageService(batchSession);
 
@@ -112,8 +136,6 @@ public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
         for (Message message : messages) {
             threads.get(messages.indexOf(message)).setRootMessage(message);
         }
-
-        List<Category> categories = JSONReader.fromJSON(jsonCategories, Category.JSON_READER);
 
         Iterable<ThreadItem> ithreads = Collections2.transform(threads, new Function<Thread, ThreadItem>() {
             @Override
