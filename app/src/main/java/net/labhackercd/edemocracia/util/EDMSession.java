@@ -3,7 +3,6 @@ package net.labhackercd.edemocracia.util;
 import com.liferay.mobile.android.auth.Authentication;
 import com.liferay.mobile.android.http.HttpUtil;
 import com.liferay.mobile.android.service.SessionImpl;
-import com.liferay.mobile.android.v62.group.GroupService;
 
 import java.lang.reflect.Field;
 
@@ -36,12 +35,6 @@ public class EDMSession extends SessionImpl {
 
     public void setCompanyId(long companyId) {
         this.companyId = companyId;
-    }
-
-    public boolean isAuthenticated() throws Exception {
-        return this.getAuthentication() != null
-                && this.getCompanyId() >= 0
-                && new GroupService(this).getUserSites().length() > 0;
     }
 
     /**
