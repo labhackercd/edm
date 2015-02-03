@@ -69,7 +69,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8sp"
                 android:id="@+id/reply"
-                android:src="@drawable/ic_close_black_24dp" />
+                android:src="@drawable/ic_reply_black_24dp"
+                android:alpha="0.7" />
         </LinearLayout>
 
     </LinearLayout>
