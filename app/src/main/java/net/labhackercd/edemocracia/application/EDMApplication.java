@@ -1,16 +1,15 @@
 package net.labhackercd.edemocracia.application;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.support.multidex.MultiDexApplication;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.liferay.mobile.android.auth.basic.BasicAuthentication;
-import com.squareup.otto.Bus;
 
 import dagger.ObjectGraph;
 import dagger.Provides;
+
+import de.greenrobot.event.EventBus;
 
 import javax.inject.Singleton;
 
@@ -70,22 +69,22 @@ public class EDMApplication extends MultiDexApplication {
         @Provides
         @Singleton
         @SuppressWarnings("UnusedDeclaration")
-        AddMessageTaskQueue provideAddMessageTaskQueue(Gson gson, Bus bus) {
-            return AddMessageTaskQueue.create(applicationContext, gson, bus);
+        AddMessageTaskQueue provideAddMessageTaskQueue(Gson gson, EventBus eventBus) {
+            return AddMessageTaskQueue.create(applicationContext, gson, eventBus);
         }
 
         @Provides
         @Singleton
         @SuppressWarnings("UnusedDeclaration")
-        VideoUploadTaskQueue provideVideoUploadTaskQueue(Gson gson, Bus bus) {
+        VideoUploadTaskQueue provideVideoUploadTaskQueue(Gson gson, EventBus eventBus) {
             return VideoUploadTaskQueue.create(applicationContext, gson);
         }
 
         @Provides
         @Singleton
         @SuppressWarnings("UnusedDeclaration")
-        Bus provideBus() {
-            return new Bus();
+        EventBus provideBus() {
+            return EventBus.getDefault();
         }
 
         @Provides

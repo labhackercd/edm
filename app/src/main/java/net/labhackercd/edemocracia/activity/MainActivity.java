@@ -12,9 +12,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.widget.Toast;
 
-import com.squareup.otto.Bus;
-import com.squareup.otto.Subscribe;
-
 import javax.inject.Inject;
 
 import net.labhackercd.edemocracia.application.EDMApplication;
@@ -24,13 +21,13 @@ import net.labhackercd.edemocracia.fragment.MessageListFragment;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.content.*;
 import net.labhackercd.edemocracia.content.Thread;
-import net.labhackercd.edemocracia.task.AddMessageFailureEvent;
-import net.labhackercd.edemocracia.task.AddMessageSuccessEvent;
 import net.labhackercd.edemocracia.task.AddMessageTask;
 import net.labhackercd.edemocracia.task.AddMessageTaskQueue;
 import net.labhackercd.edemocracia.task.VideoUploadTask;
 import net.labhackercd.edemocracia.task.VideoUploadTaskQueue;
 import net.labhackercd.edemocracia.ytdl.Constants;
+
+import de.greenrobot.event.EventBus;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -44,7 +41,7 @@ public class MainActivity extends ActionBarActivity {
     @Inject AddMessageTaskQueue addMessageTaskQueue;
     @Inject VideoUploadTaskQueue videoUploadTaskQueue;
 
-    @Inject Bus bus;
+    @Inject EventBus eventBus;
 
     private UploadBroadcastReceiver uploadBroadcastReceiver;
     private ShowGroupBroadcastReceiver showForumBroadcastReceiver;
@@ -74,7 +71,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onResume() {
         super.onResume();
 
-        bus.register(this);
+        eventBus.register(this);
 
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
 
@@ -100,19 +97,17 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        bus.unregister(this);
+        eventBus.unregister(this);
     }
 
 
-    @Subscribe
     @SuppressWarnings("UnusedDeclaration") // Used by the event bus
-    public void onAddMessageSuccess(AddMessageSuccessEvent event) {
+    public void onEventMainThread(AddMessageTask.Success event) {
         Toast.makeText(this, "Message submitted", Toast.LENGTH_SHORT).show();
     }
 
-    @Subscribe
     @SuppressWarnings("UnusedDeclaration") // Used by the event bus
-    public void onAddMessageFailure(AddMessageFailureEvent event) {
+    public void onEventMainThread(AddMessageTask.Failure event) {
         // TODO FIXME Should we add the message to the queue again?
         // Or start the queue service again? What should we do!?
         Toast.makeText(this, "Failed to submit message", Toast.LENGTH_SHORT).show();

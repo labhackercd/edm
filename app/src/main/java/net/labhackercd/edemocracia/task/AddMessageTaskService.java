@@ -5,18 +5,18 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.squareup.otto.Bus;
-
 import javax.inject.Inject;
 
 import net.labhackercd.edemocracia.application.EDMApplication;
 import net.labhackercd.edemocracia.content.Message;
 import net.labhackercd.edemocracia.liferay.session.EDMSession;
 
+import de.greenrobot.event.EventBus;
+
 public class AddMessageTaskService extends Service implements AddMessageTask.Callback {
     private static final String TAG = AddMessageTaskService.class.getSimpleName();
 
-    @Inject Bus bus;
+    @Inject EventBus eventBus;
     @Inject AddMessageTaskQueue queue;
     @Inject EDMSession session;
 
@@ -39,7 +39,7 @@ public class AddMessageTaskService extends Service implements AddMessageTask.Cal
     public void onSuccess(Message message) {
         running = false;
         queue.remove();
-        bus.post(new AddMessageSuccessEvent(message));
+        eventBus.post(new AddMessageTask.Success(message));
         executeNext();
     }
 
@@ -48,7 +48,7 @@ public class AddMessageTaskService extends Service implements AddMessageTask.Cal
         Log.e(TAG, "Failed to submit message: " + e.toString());
 
         running = false;
-        bus.post(new AddMessageFailureEvent(message, e));
+        eventBus.post(new AddMessageTask.Failure(message, e));
     }
 
     @Override

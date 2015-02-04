@@ -72,5 +72,35 @@ public class AddMessageTask implements Task<AddMessageTask.Callback> {
         void onSuccess(Message message);
         void onFailure(Message message, Exception exception);
     }
+
+    public static class Success {
+        private Message message;
+
+        public Success(Message message) {
+            this.message = message;
+        }
+
+        public Message getMessage() {
+            return message;
+        }
+    }
+
+    public static class Failure {
+        private Message message;
+        private Exception exception;
+
+        public Failure(Message message, Exception exception) {
+            this.message = message;
+            this.exception = exception;
+        }
+
+        public Message getMessage() {
+            return message;
+        }
+
+        public Exception getException() {
+            return exception;
+        }
+    }
 }
 

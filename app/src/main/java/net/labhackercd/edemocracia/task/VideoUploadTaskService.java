@@ -13,7 +13,6 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.youtube.YouTube;
 import com.google.common.collect.Lists;
-import com.squareup.otto.Bus;
 
 import javax.inject.Inject;
 
@@ -22,10 +21,12 @@ import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.content.Message;
 import net.labhackercd.edemocracia.ytdl.Auth;
 
+import de.greenrobot.event.EventBus;
+
 public class VideoUploadTaskService extends Service implements VideoUploadTask.Callback {
     private static final String TAG = VideoUploadTaskService.class.getSimpleName();
 
-    @Inject Bus bus;
+    @Inject EventBus eventBus;
     @Inject VideoUploadTaskQueue queue;
     @Inject AddMessageTaskQueue addMessageTaskQueue;
 
@@ -75,7 +76,7 @@ public class VideoUploadTaskService extends Service implements VideoUploadTask.C
         Log.e(TAG, "Failed to upload video: " + e);
 
         // Notify everyone that the message failed to be added
-        bus.post(new AddMessageFailureEvent(message, e));
+        eventBus.post(new AddMessageTask.Failure(message, e));
     }
 
     private void executeNext() {
