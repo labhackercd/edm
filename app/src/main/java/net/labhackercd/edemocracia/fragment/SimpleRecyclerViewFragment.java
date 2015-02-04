@@ -168,6 +168,13 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
                 Log.w(TAG, "Something went wrong while loading a list: " + e);
                 return -1;
             }
+
+            // I *think* that when the response is null it means that the list is empty.
+            // We should confirm this, but it's probably too hard to test.
+            if (items == null) {
+                items = new ArrayList<>();
+            }
+
             return 0;
         }
 
@@ -192,6 +199,8 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
                                 public void onClick(DialogInterface dialog, int which) {
                                     // TODO Redirect the user back to this same screen after sign in
                                     startActivity(new Intent(context, SignInActivity.class));
+
+                                    // TODO Actually clear the session
 
                                     dialog.dismiss();
                                     if (activity != null) {
@@ -233,6 +242,8 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
                     adapter = createAdapter(items);
                     recyclerView.setAdapter(adapter);
                 }
+
+                // TODO Show something when the list is empty
 
                 // Ensure that the progress is also not visible
                 setProgressVisibility(false);
