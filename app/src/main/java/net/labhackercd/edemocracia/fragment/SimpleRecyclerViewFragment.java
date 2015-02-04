@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.util.Identifiable;
@@ -132,7 +133,7 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
     protected abstract RecyclerView.Adapter createAdapter(List<T> items);
 
     private class RefreshListTask extends AsyncTask<Void, Void, Integer> {
-        private List<T> items;
+        private List<T> items = null;
 
         @Override
         protected void onPreExecute() {
@@ -168,36 +169,59 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
             refreshListTask = null;
 
             if (error != 0) {
-                // Hide everything...
-                progressView.setVisibility(View.GONE);
-                recyclerView.setVisibility(View.GONE);
-
-                // Disable the swipe-to-refresh gesture...
-                swipeRefreshLayout.setRefreshing(false);
-                swipeRefreshLayout.setEnabled(false);
-
-                // Show the error message
+                // Set the error message, if not yet present
                 int errorMessage = error;
                 if (errorMessage < 0) {
                     errorMessage = R.string.load_error_message;
                 }
 
-                errorMessageView.setText(errorMessage);
+                if (swipeRefreshLayout.isEnabled()) {
+                    // If it was loaded through the swipe-to-refresh gesture, we don't
+                    // need to do much. Just show a toast.
+                    swipeRefreshLayout.setRefreshing(false);
 
-                // Show the error message
-                errorContainerView.setVisibility(View.VISIBLE);
-            } else if (items != null) {
+                    // Show a toast with the error message.
+                    Toast.makeText(getActivity(), errorMessage, Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    // Hide everything...
+                    progressView.setVisibility(View.GONE);
+                    recyclerView.setVisibility(View.GONE);
+
+                    // Disable the swipe-to-refresh gesture...
+                    swipeRefreshLayout.setRefreshing(false);
+                    swipeRefreshLayout.setEnabled(false);
+
+                    errorMessageView.setText(errorMessage);
+
+                    // Show the error message
+                    errorContainerView.setVisibility(View.VISIBLE);
+                }
+            } else {
+                RecyclerView.Adapter adapter = null;
+
+                // Ensure that the error message is not visible
                 errorContainerView.setVisibility(View.GONE);
 
+                // Set the items
                 if (recyclerView != null) {
-                    recyclerView.setAdapter(createAdapter(items));
+                    if (items == null) {
+                        items = new ArrayList<>();
+                    }
+                    adapter = createAdapter(items);
+                    recyclerView.setAdapter(adapter);
                 }
 
+                // Ensure that the progress is also not visible
                 setProgressVisibility(false);
+
+                // Stop that the SwipeRefreshLayout refreshing animation
                 swipeRefreshLayout.setRefreshing(false);
 
-                // Enable swipe-to-refresh gesture
-                swipeRefreshLayout.setEnabled(true);
+                // Keep the swipe-to-refresh gesture enabled only if there are list items to display
+                if (adapter != null && adapter.getItemCount() > 0) {
+                    swipeRefreshLayout.setEnabled(true);
+                }
             }
         }
 
