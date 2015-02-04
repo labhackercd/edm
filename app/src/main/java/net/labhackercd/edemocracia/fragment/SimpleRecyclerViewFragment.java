@@ -229,10 +229,7 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
                 errorContainerView.setVisibility(View.GONE);
 
                 // Set the items
-                if (recyclerView != null) {
-                    if (items == null) {
-                        items = new ArrayList<>();
-                    }
+                if (recyclerView != null && items != null) {
                     adapter = createAdapter(items);
                     recyclerView.setAdapter(adapter);
                 }
