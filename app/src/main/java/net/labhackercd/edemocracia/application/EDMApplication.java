@@ -19,7 +19,9 @@ import net.labhackercd.edemocracia.activity.SignInActivity;
 import net.labhackercd.edemocracia.activity.SplashScreenActivity;
 import net.labhackercd.edemocracia.fragment.GroupListFragment;
 import net.labhackercd.edemocracia.fragment.MessageListFragment;
+import net.labhackercd.edemocracia.fragment.SimpleRecyclerViewFragment;
 import net.labhackercd.edemocracia.fragment.ThreadListFragment;
+import net.labhackercd.edemocracia.liferay.session.SessionManager;
 import net.labhackercd.edemocracia.task.AddMessageTaskQueue;
 import net.labhackercd.edemocracia.task.AddMessageTaskService;
 import net.labhackercd.edemocracia.task.VideoUploadTaskQueue;
@@ -43,28 +45,6 @@ public class EDMApplication extends MultiDexApplication {
         objectGraph.inject(object);
     }
 
-    public void saveEDMSession(EDMSession session) {
-        SharedPreferences.Editor editor = getApplicationContext()
-                .getSharedPreferences(SHARED_PREFERENCES, 0).edit();
-
-        editor.putString(CREDENTIALS_KEY, new Gson().toJson(session.getAuthentication()));
-        editor.putLong(COMPANY_ID_KEY, session.getCompanyId());
-
-        editor.apply();
-    }
-
-    private EDMSession loadEDMSession() {
-        SharedPreferences sharedPreferences = getApplicationContext()
-                .getSharedPreferences(SHARED_PREFERENCES, 0);
-
-        String json = sharedPreferences.getString(CREDENTIALS_KEY, "null");
-
-        long companyId = sharedPreferences.getLong(COMPANY_ID_KEY, -1);
-        BasicAuthentication credentials = new Gson().fromJson(json, BasicAuthentication.class);
-
-        return new EDMSession(credentials, companyId);
-    }
-
     @dagger.Module(
             injects = {
                     AddMessageTaskService.class,
@@ -74,13 +54,16 @@ public class EDMApplication extends MultiDexApplication {
                     SplashScreenActivity.class,
                     GroupListFragment.class,
                     ThreadListFragment.class,
-                    MessageListFragment.class
+                    MessageListFragment.class,
+                    SimpleRecyclerViewFragment.class
             }
     )
     static class Module {
+        private SessionManager sessionManager;
         private final Context applicationContext;
 
         Module(Context applicationContext) {
+            this.sessionManager = null;
             this.applicationContext = applicationContext;
         }
 
@@ -116,13 +99,23 @@ public class EDMApplication extends MultiDexApplication {
         @Singleton
         @SuppressWarnings("UnusedDeclaration")
         EDMSession provideEDMSession() {
-            EDMSession session = ((EDMApplication) applicationContext).loadEDMSession();
+            EDMSession session = provideSessionManager().load();
 
             if (session == null) {
                 session = new EDMSession();
             }
 
             return session;
+        }
+
+        @Provides
+        @Singleton
+        @SuppressWarnings("UnusedDeclaration")
+        SessionManager provideSessionManager() {
+            if (sessionManager == null) {
+                sessionManager = new SessionManager(applicationContext);
+            }
+            return sessionManager;
         }
     }
 }

@@ -21,11 +21,14 @@ import android.widget.Toast;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.activity.SignInActivity;
 import net.labhackercd.edemocracia.liferay.exception.AuthorizationException;
+import net.labhackercd.edemocracia.liferay.session.SessionManager;
 import net.labhackercd.edemocracia.util.Identifiable;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.inject.Inject;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -33,12 +36,12 @@ import butterknife.OnClick;
 
 
 public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends InjectableFragment {
-
     private static final String TAG = SimpleRecyclerViewFragment.class.getSimpleName();
 
     private RefreshListTask refreshListTask;
-
     private SwipeRefreshLayout swipeRefreshLayout;
+
+    @Inject SessionManager sessionManager;
 
     @InjectView(R.id.progress_container) View progressView;
     @InjectView(R.id.load_error_container) View errorContainerView;
@@ -197,17 +200,21 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
                             .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
+
+                                    // Clear the stored session
+                                    sessionManager.clear();
+
                                     // TODO Redirect the user back to this same screen after sign in
                                     startActivity(new Intent(context, SignInActivity.class));
 
-                                    // TODO Actually clear the session
-
                                     dialog.dismiss();
+
                                     if (activity != null) {
                                         activity.finish();
                                     }
                                 }
                             })
+                            .setMessage(errorMessage)
                             .create()
                             .show();
                 } else if (swipeRefreshLayout.isEnabled()) {

@@ -22,6 +22,7 @@ import com.liferay.mobile.android.auth.basic.BasicAuthentication;
 import com.liferay.mobile.android.exception.ServerException;
 import com.liferay.mobile.android.v62.group.GroupService;
 
+import net.labhackercd.edemocracia.liferay.exception.AuthorizationException;
 import net.labhackercd.edemocracia.liferay.session.EDMSession;
 
 import org.json.JSONArray;
@@ -37,6 +38,7 @@ import butterknife.OnEditorAction;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.application.EDMApplication;
+import net.labhackercd.edemocracia.liferay.session.SessionManager;
 
 
 public class SignInActivity extends Activity {
@@ -44,6 +46,7 @@ public class SignInActivity extends Activity {
     private static final String TAG = SignInActivity.class.getSimpleName();
 
     @Inject EDMSession session;
+    @Inject SessionManager sessionManager;
 
     @InjectView(R.id.email) AutoCompleteTextView emailView;
     @InjectView(R.id.password) EditText passwordView;
@@ -181,16 +184,9 @@ public class SignInActivity extends Activity {
                 // IOException are probably only caused by network problems
                 exception = e;
                 error = R.string.network_error_message;
-            } catch (ServerException e) {
-                String errorMessage = e.toString().toLowerCase();
-                // These are expected messages saying that the given credentials are invalid.
-                if (!errorMessage.matches("(please *sign|authenticated *access|principal *exception)")) {
-                    // Everything else is a real ServerError and should be logged.
-                    exception = e;
-                    error = R.string.server_error_message;
-                } else {
-                    error = R.string.invalid_credentials_message;
-                }
+            } catch (AuthorizationException e) {
+                exception = e;
+                error = R.string.invalid_credentials_message;
             } catch (Exception e) {
                 exception = e;
                 error = R.string.unknown_error_message;
@@ -203,7 +199,7 @@ public class SignInActivity extends Activity {
                 session.setCompanyId(companyId);
 
                 // And persist the session for future uses.
-                ((EDMApplication) getApplication()).saveEDMSession(session);
+                sessionManager.save(session);
             }
 
             return error;
