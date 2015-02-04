@@ -11,8 +11,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import net.labhackercd.edemocracia.content.Message;
-import net.labhackercd.edemocracia.util.EDMGetSessionWrapper;
-import net.labhackercd.edemocracia.util.EDMSession;
+import net.labhackercd.edemocracia.liferay.session.EDMGetSessionWrapper;
+import net.labhackercd.edemocracia.liferay.session.EDMSession;
 
 public class AddMessageTask implements Task<AddMessageTask.Callback> {
 

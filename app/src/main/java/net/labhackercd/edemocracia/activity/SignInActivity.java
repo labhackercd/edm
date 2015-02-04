@@ -22,7 +22,7 @@ import com.liferay.mobile.android.auth.basic.BasicAuthentication;
 import com.liferay.mobile.android.exception.ServerException;
 import com.liferay.mobile.android.v62.group.GroupService;
 
-import net.labhackercd.edemocracia.util.EDMSession;
+import net.labhackercd.edemocracia.liferay.session.EDMSession;
 
 import org.json.JSONArray;
 

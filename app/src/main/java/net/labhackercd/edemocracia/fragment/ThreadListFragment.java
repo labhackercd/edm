@@ -24,8 +24,8 @@ import net.labhackercd.edemocracia.content.Forum;
 import net.labhackercd.edemocracia.content.Group;
 import net.labhackercd.edemocracia.content.Message;
 import net.labhackercd.edemocracia.content.Thread;
-import net.labhackercd.edemocracia.util.EDMBatchSession;
-import net.labhackercd.edemocracia.util.EDMSession;
+import net.labhackercd.edemocracia.liferay.session.EDMBatchSession;
+import net.labhackercd.edemocracia.liferay.session.EDMSession;
 import net.labhackercd.edemocracia.util.JSONReader;
 
 public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {

@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.util;
+package net.labhackercd.edemocracia.liferay.session;
 
 import android.os.AsyncTask;
 
@@ -29,7 +29,11 @@ public class EDMBatchSession extends EDMSession {
             if (callback != null) {
                 throw new RuntimeException("Not implemented");
             } else {
-                return HttpUtil.post(this, commands);
+                try {
+                    return HttpUtil.post(this, commands);
+                } catch (Exception e) {
+                    throw tryAndSpecializeException(e);
+                }
             }
         } finally {
             this.commands = new ArrayList<>();

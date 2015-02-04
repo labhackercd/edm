@@ -6,9 +6,7 @@ import org.joda.time.DateTime;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Date;
-
-import net.labhackercd.edemocracia.util.EDMSession;
+import net.labhackercd.edemocracia.liferay.session.EDMSession;
 import net.labhackercd.edemocracia.util.Identifiable;
 import net.labhackercd.edemocracia.util.GsonParcelable;
 import net.labhackercd.edemocracia.util.JSONReader;

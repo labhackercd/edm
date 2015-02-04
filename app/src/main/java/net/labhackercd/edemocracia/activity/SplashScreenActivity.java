@@ -9,7 +9,7 @@ import com.liferay.mobile.android.v62.group.GroupService;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.application.EDMApplication;
-import net.labhackercd.edemocracia.util.EDMSession;
+import net.labhackercd.edemocracia.liferay.session.EDMSession;
 
 import javax.inject.Inject;
 

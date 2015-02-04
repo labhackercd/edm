@@ -24,7 +24,7 @@ import net.labhackercd.edemocracia.task.AddMessageTaskQueue;
 import net.labhackercd.edemocracia.task.AddMessageTaskService;
 import net.labhackercd.edemocracia.task.VideoUploadTaskQueue;
 import net.labhackercd.edemocracia.task.VideoUploadTaskService;
-import net.labhackercd.edemocracia.util.EDMSession;
+import net.labhackercd.edemocracia.liferay.session.EDMSession;
 
 public class EDMApplication extends MultiDexApplication {
     private ObjectGraph objectGraph;

@@ -1,7 +1,10 @@
 package net.labhackercd.edemocracia.fragment;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -16,6 +19,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.activity.SignInActivity;
+import net.labhackercd.edemocracia.liferay.exception.AuthorizationException;
 import net.labhackercd.edemocracia.util.Identifiable;
 
 import java.io.IOException;
@@ -156,11 +161,13 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
             } catch (IOException e) {
                 Log.w(TAG, "IOException while loading a list: " + e);
                 return R.string.network_error_message;
+            } catch (AuthorizationException e) {
+                Log.w(TAG, "Authorization error while loading a list: " + e);
+                return R.string.authorization_error_message;
             } catch (Exception e) {
                 Log.w(TAG, "Something went wrong while loading a list: " + e);
                 return -1;
             }
-
             return 0;
         }
 
@@ -170,20 +177,38 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
 
             if (error != 0) {
                 // Set the error message, if not yet present
-                int errorMessage = error;
-                if (errorMessage < 0) {
-                    errorMessage = R.string.load_error_message;
-                }
+                final int errorMessage = (error > 0 ? error : R.string.load_error_message);
 
-                if (swipeRefreshLayout.isEnabled()) {
+                // XXX I really don't know how to guarantee the right Context
+                final Activity activity = getActivity();
+                final Context context = (activity != null ? activity : swipeRefreshLayout.getContext().getApplicationContext());
+
+                if (error == R.string.authorization_error_message) {
+                    // If it's an authorization error we should conduce the user
+                    // to the sign in screen.
+                    new AlertDialog.Builder(context)
+                            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // TODO Redirect the user back to this same screen after sign in
+                                    startActivity(new Intent(context, SignInActivity.class));
+
+                                    dialog.dismiss();
+                                    if (activity != null) {
+                                        activity.finish();
+                                    }
+                                }
+                            })
+                            .create()
+                            .show();
+                } else if (swipeRefreshLayout.isEnabled()) {
                     // If it was loaded through the swipe-to-refresh gesture, we don't
                     // need to do much. Just show a toast.
                     swipeRefreshLayout.setRefreshing(false);
 
                     // Show a toast with the error message.
-                    Toast.makeText(getActivity(), errorMessage, Toast.LENGTH_SHORT).show();
-                }
-                else {
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show();
+                } else {
                     // Hide everything...
                     progressView.setVisibility(View.GONE);
                     recyclerView.setVisibility(View.GONE);

@@ -1,8 +1,15 @@
-package net.labhackercd.edemocracia.util;
+package net.labhackercd.edemocracia.liferay.session;
 
 import com.liferay.mobile.android.auth.Authentication;
+import com.liferay.mobile.android.exception.ServerException;
 import com.liferay.mobile.android.http.HttpUtil;
 import com.liferay.mobile.android.service.SessionImpl;
+
+import net.labhackercd.edemocracia.liferay.exception.AuthorizationException;
+import net.labhackercd.edemocracia.liferay.exception.NotFoundException;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 
@@ -35,6 +42,25 @@ public class EDMSession extends SessionImpl {
 
     public void setCompanyId(long companyId) {
         this.companyId = companyId;
+    }
+
+    @Override
+    public JSONArray invoke(JSONObject command) throws Exception {
+        try {
+            return super.invoke(command);
+        } catch (ServerException e) {
+            throw tryAndSpecializeException(e);
+        }
+    }
+
+    protected Exception tryAndSpecializeException(Exception e) {
+        String err = e.toString().toLowerCase();
+        if (err.matches("no *such") || err.matches("no *\\w+ *exists")) {
+            e = new NotFoundException(e);
+        } else if (err.matches("please *sign") || err.matches("authenticated *access")) {
+            e = new AuthorizationException(e);
+        }
+        return e;
     }
 
     /**

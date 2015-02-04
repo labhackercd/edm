@@ -5,7 +5,7 @@ import android.net.Uri;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import net.labhackercd.edemocracia.util.EDMSession;
+import net.labhackercd.edemocracia.liferay.session.EDMSession;
 import net.labhackercd.edemocracia.util.Identifiable;
 import net.labhackercd.edemocracia.util.GsonParcelable;
 import net.labhackercd.edemocracia.util.JSONReader;

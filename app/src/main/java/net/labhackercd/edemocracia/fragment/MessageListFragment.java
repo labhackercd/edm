@@ -18,7 +18,7 @@ import javax.inject.Inject;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.content.Message;
 import net.labhackercd.edemocracia.content.Thread;
-import net.labhackercd.edemocracia.util.EDMSession;
+import net.labhackercd.edemocracia.liferay.session.EDMSession;
 import net.labhackercd.edemocracia.util.JSONReader;
 
 public class MessageListFragment extends SimpleRecyclerViewFragment<Message> {

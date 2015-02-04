@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.util;
+package net.labhackercd.edemocracia.liferay.session;
 
 import android.os.AsyncTask;
 
