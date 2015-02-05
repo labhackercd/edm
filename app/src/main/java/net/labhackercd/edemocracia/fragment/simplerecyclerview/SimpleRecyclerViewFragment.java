@@ -137,8 +137,8 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
 
     @SuppressWarnings("UnusedDeclaration")
     public void onEventMainThread(RefreshListTask.ResultEvent<List<T>> event) {
-        if (!event.getTag().equals(this)) {
-            Log.d(TAG, "Tags aren't equal: " + ((Object) this) + " != " + event.getTag());
+        if (!event.getTag().equals(getClass())) {
+            Log.d(TAG, "Tags aren't equal: " + getClass() + " != " + event.getTag());
             return;
         }
 
@@ -174,7 +174,7 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
         }
 
         // Kick the background task to refresh the list
-        refreshListTask = new RefreshListTask<>(this, eventBus, new RefreshListTask.Task<List<T>>() {
+        refreshListTask = new RefreshListTask<>(getClass(), eventBus, new RefreshListTask.Task<List<T>>() {
             @Override
             public List<T> execute() throws Exception {
                 return blockingFetchItems();
