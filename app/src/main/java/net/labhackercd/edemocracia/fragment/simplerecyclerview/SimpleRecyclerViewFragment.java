@@ -25,6 +25,7 @@ import net.labhackercd.edemocracia.liferay.exception.AuthorizationException;
 import net.labhackercd.edemocracia.liferay.session.SessionManager;
 import net.labhackercd.edemocracia.util.Identifiable;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -150,6 +151,7 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
         } else {
             // Failure events should only be dealt with once. Unregister this one.
             eventBus.removeStickyEvent(event);
+            Log.w(TAG, "Something went wrong while loading a list: " + e);
             onRefreshFailure(e);
         }
     }
@@ -221,6 +223,13 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
         final Activity activity = getActivity();
         final Context context = (activity != null ? activity : swipeRefreshLayout.getContext().getApplicationContext());
 
+        int errorMessage = R.string.load_error_message;
+        if (e instanceof IOException) {
+            errorMessage = R.string.network_error_message;
+        } else if (e instanceof AuthorizationException) {
+            errorMessage = R.string.authorization_error_message;
+        }
+
         if (e instanceof AuthorizationException) {
             new AlertDialog.Builder(context)
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -240,7 +249,7 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
                             }
                         }
                     })
-                    .setMessage(e.getMessage())
+                    .setMessage(errorMessage)
                     .create()
                     .show();
         } else if (swipeRefreshLayout.isEnabled()) {
@@ -249,7 +258,7 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
             swipeRefreshLayout.setRefreshing(false);
 
             // Show a toast with the error message.
-            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show();
         } else {
             // Hide everything...
             progressView.setVisibility(View.GONE);
@@ -259,7 +268,7 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
             swipeRefreshLayout.setRefreshing(false);
             swipeRefreshLayout.setEnabled(false);
 
-            errorMessageView.setText(e.getMessage());
+            errorMessageView.setText(errorMessage);
 
             // Show the error message
             errorContainerView.setVisibility(View.VISIBLE);
