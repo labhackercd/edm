@@ -73,8 +73,11 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
         swipeRefreshLayout = new SwipeRefreshLayout(context) {
             @Override
             public boolean canChildScrollUp() {
-                // TODO make this check
-                return super.canChildScrollUp();
+                // XXX Only works for vertical LinearLayoutManager. If you need something else,
+                // implement it.
+                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                int position = layoutManager.findFirstCompletelyVisibleItemPosition();
+                return position != 0;
             }
         };
 
