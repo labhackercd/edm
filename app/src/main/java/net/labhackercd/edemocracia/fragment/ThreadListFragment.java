@@ -29,10 +29,13 @@ import net.labhackercd.edemocracia.liferay.session.EDMBatchSession;
 import net.labhackercd.edemocracia.liferay.session.EDMSession;
 import net.labhackercd.edemocracia.util.JSONReader;
 
+import de.greenrobot.event.EventBus;
+
 public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
 
     public static String ARG_PARENT = "parent";
 
+    @Inject EventBus eventBus;
     @Inject EDMSession session;
 
     private Forum forum;
@@ -61,26 +64,9 @@ public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
         }
     }
 
-/*
-    @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        super.onListItemClick(l, v, position, id);
-
-        if (listener != null) {
-            ThreadItem item = (ThreadItem) getListAdapter().getItem(position);
-
-            if (item.getForum() == null) {
-                listener.onThreadSelected(item.getThread());
-            } else {
-                listener.onForumSelected(item.getForum());
-            }
-        }
-    }
-    */
-
     @Override
     protected RecyclerView.Adapter createAdapter(List<ThreadItem> items) {
-        return new ThreadListAdapter(getActivity(), items);
+        return new ThreadListAdapter(getActivity(), eventBus, items);
     }
 
     @Override

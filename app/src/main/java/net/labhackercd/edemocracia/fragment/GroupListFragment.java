@@ -19,8 +19,11 @@ import net.labhackercd.edemocracia.fragment.simplerecyclerview.SimpleRecyclerVie
 import net.labhackercd.edemocracia.liferay.session.EDMSession;
 import net.labhackercd.edemocracia.util.JSONReader;
 
+import de.greenrobot.event.EventBus;
+
 public class GroupListFragment extends SimpleRecyclerViewFragment<Group> {
 
+    @Inject EventBus eventBus;
     @Inject EDMSession session;
 
     @Override
@@ -42,6 +45,6 @@ public class GroupListFragment extends SimpleRecyclerViewFragment<Group> {
 
     @Override
     protected RecyclerView.Adapter createAdapter(List<Group> items) {
-        return new GroupListAdapter(getActivity(), items);
+        return new GroupListAdapter(getActivity(), eventBus, items);
     }
 }

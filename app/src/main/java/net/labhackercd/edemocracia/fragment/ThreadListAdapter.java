@@ -1,7 +1,6 @@
 package net.labhackercd.edemocracia.fragment;
 
 import android.content.Context;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +12,8 @@ import com.ocpsoft.pretty.time.PrettyTime;
 import com.squareup.picasso.Picasso;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.activity.MainActivity;
+import net.labhackercd.edemocracia.activity.ShowForumEvent;
+import net.labhackercd.edemocracia.activity.ShowThreadEvent;
 import net.labhackercd.edemocracia.content.Forum;
 import net.labhackercd.edemocracia.fragment.simplerecyclerview.SimpleRecyclerViewAdapter;
 
@@ -23,14 +23,17 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import de.greenrobot.event.EventBus;
 
 public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, ThreadListAdapter.ViewHolder> {
 
     private final Context context;
+    private final EventBus eventBus;
 
-    public ThreadListAdapter(Context context, List<ThreadItem> items) {
+    public ThreadListAdapter(Context context, EventBus eventBus, List<ThreadItem> items) {
         super(items);
         this.context = context;
+        this.eventBus = eventBus;
     }
 
     @Override
@@ -38,7 +41,7 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
         View view = LayoutInflater
                 .from(parent.getContext())
                 .inflate(R.layout.thread_list_item, parent, false);
-        return new ViewHolder(view);
+        return new ViewHolder(view, eventBus);
     }
 
     @Override
@@ -56,9 +59,11 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
         @InjectView(android.R.id.text1) TextView userView;
 
         private ThreadItem item;
+        private final EventBus eventBus;
 
-        public ViewHolder(View view) {
+        public ViewHolder(View view, EventBus eventBus) {
             super(view);
+            this.eventBus = eventBus;
             ButterKnife.inject(this, view);
             view.setOnClickListener(this);
         }
@@ -68,11 +73,9 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
             if (item != null) {
                 Forum forum = item.getForum();
                 if (forum != null) {
-                    LocalBroadcastManager.getInstance(context)
-                            .sendBroadcast(MainActivity.getIntent(context, forum));
+                    eventBus.post(new ShowForumEvent(forum));
                 } else {
-                    LocalBroadcastManager.getInstance(context)
-                            .sendBroadcast(MainActivity.getIntent(context, item.getThread()));
+                    eventBus.post(new ShowThreadEvent(item.getThread()));
                 }
             }
         }

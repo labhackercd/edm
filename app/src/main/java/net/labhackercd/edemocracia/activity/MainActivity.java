@@ -31,12 +31,6 @@ import de.greenrobot.event.EventBus;
 
 public class MainActivity extends ActionBarActivity {
 
-    public static final String SHOW_FORUM_INTENT = "net.labhackercd.edemocracia.MainActivity.ShowForum";
-    public static final String SHOW_FORUM_INTENT_PARAM = "net.labhackercd.edemocracia.MainActivity.ShowForum.forum";
-
-    public static final String SHOW_THREAD_INTENT = "net.labhackercd.edemocracia.MainActivity.ShowThread";
-    public static final String SHOW_THREAD_INTENT_PARAM = "net.labhackercd.edemocracia.MainActivity.ShowThread.thread";
-
     // NOTE: Injection starts queue processing!
     @Inject AddMessageTaskQueue addMessageTaskQueue;
     @Inject VideoUploadTaskQueue videoUploadTaskQueue;
@@ -44,8 +38,6 @@ public class MainActivity extends ActionBarActivity {
     @Inject EventBus eventBus;
 
     private UploadBroadcastReceiver uploadBroadcastReceiver;
-    private ShowGroupBroadcastReceiver showForumBroadcastReceiver;
-    private ShowThreadBroadcastReceiver showThreadBroadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,43 +73,12 @@ public class MainActivity extends ActionBarActivity {
         broadcastManager.registerReceiver(
                 uploadBroadcastReceiver, new IntentFilter(Constants.REQUEST_AUTHORIZATION_INTENT));
 
-        if (showForumBroadcastReceiver == null) {
-            showForumBroadcastReceiver = new ShowGroupBroadcastReceiver();
-        }
-        broadcastManager.registerReceiver(
-                showForumBroadcastReceiver, new IntentFilter(SHOW_FORUM_INTENT));
-
-        if (showThreadBroadcastReceiver == null) {
-            showThreadBroadcastReceiver = new ShowThreadBroadcastReceiver();
-        }
-        broadcastManager.registerReceiver(
-                showThreadBroadcastReceiver, new IntentFilter(SHOW_THREAD_INTENT));
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         eventBus.unregister(this);
-    }
-
-
-    @SuppressWarnings("UnusedDeclaration") // Used by the event bus
-    public void onEventMainThread(AddMessageTask.Success event) {
-        Toast.makeText(this, "Message submitted", Toast.LENGTH_SHORT).show();
-    }
-
-    @SuppressWarnings("UnusedDeclaration") // Used by the event bus
-    public void onEventMainThread(AddMessageTask.Failure event) {
-        // TODO FIXME Should we add the message to the queue again?
-        // Or start the queue service again? What should we do!?
-        Toast.makeText(this, "Failed to submit message", Toast.LENGTH_SHORT).show();
-    }
-
-    protected void replaceMainFragment(Fragment fragment) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.container, fragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
     }
 
     public void addAddMessageTask(AddMessageTask task) {
@@ -128,32 +89,35 @@ public class MainActivity extends ActionBarActivity {
         videoUploadTaskQueue.add(task);
     }
 
-    public static Intent getIntent(Context context, Forum group) {
-        Intent intent = new Intent(SHOW_FORUM_INTENT);
-        intent.putExtra(SHOW_FORUM_INTENT_PARAM, group);
-        return intent;
+    @SuppressWarnings("UnusedDeclaration")
+    public void onEventMainThread(AddMessageTask.Success event) {
+        Toast.makeText(this, "Message submitted", Toast.LENGTH_SHORT).show();
     }
 
-    public static Intent getIntent(Context context, Thread thread) {
-        Intent intent = new Intent(SHOW_THREAD_INTENT);
-        intent.putExtra(SHOW_THREAD_INTENT_PARAM, thread);
-        return intent;
+    @SuppressWarnings("UnusedDeclaration")
+    public void onEventMainThread(AddMessageTask.Failure event) {
+        // TODO FIXME Should we add the message to the queue again?
+        // Or start the queue service again? What should we do!?
+        Toast.makeText(this, "Failed to submit message", Toast.LENGTH_SHORT).show();
     }
 
-    private class ShowGroupBroadcastReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Forum forum = intent.getParcelableExtra(SHOW_FORUM_INTENT_PARAM);
-            replaceMainFragment(ThreadListFragment.newInstance(forum));
-        }
+    @SuppressWarnings("UnusedDeclaration")
+    public void onEventMainThread(ShowForumEvent event) {
+        Forum forum = event.getForum();
+        replaceMainFragment(ThreadListFragment.newInstance(forum));
     }
 
-    private class ShowThreadBroadcastReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Thread thread = intent.getParcelableExtra(SHOW_THREAD_INTENT_PARAM);
-            replaceMainFragment(MessageListFragment.newInstance(thread));
-        }
+    @SuppressWarnings("UnusedDeclaration")
+    public void onEventMainThread(ShowThreadEvent event) {
+        Thread thread = event.getThread();
+        replaceMainFragment(MessageListFragment.newInstance(thread));
+    }
+
+    protected void replaceMainFragment(Fragment fragment) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.container, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     private class UploadBroadcastReceiver extends BroadcastReceiver {

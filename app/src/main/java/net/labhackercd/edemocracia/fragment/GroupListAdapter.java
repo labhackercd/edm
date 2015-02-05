@@ -1,8 +1,6 @@
 package net.labhackercd.edemocracia.fragment;
 
 import android.content.Context;
-import android.content.Intent;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +11,7 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.activity.MainActivity;
+import net.labhackercd.edemocracia.activity.ShowForumEvent;
 import net.labhackercd.edemocracia.content.Group;
 import net.labhackercd.edemocracia.fragment.simplerecyclerview.SimpleRecyclerViewAdapter;
 
@@ -21,21 +19,24 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import de.greenrobot.event.EventBus;
 
 public class GroupListAdapter extends SimpleRecyclerViewAdapter<Group, GroupListAdapter.ViewHolder> {
 
     private final Context context;
+    private final EventBus eventBus;
 
-    public GroupListAdapter(Context context, List<Group> items) {
+    public GroupListAdapter(Context context, EventBus eventBus, List<Group> items) {
         super(items);
         this.context = context;
+        this.eventBus = eventBus;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.group_list_item, viewGroup, false);
-        return new ViewHolder(view);
+        return new ViewHolder(view, eventBus);
     }
 
     @Override
@@ -48,9 +49,11 @@ public class GroupListAdapter extends SimpleRecyclerViewAdapter<Group, GroupList
         @InjectView(android.R.id.text1) TextView textView;
 
         private Group group;
+        private final EventBus eventBus;
 
-        public ViewHolder(View view) {
+        public ViewHolder(View view, EventBus eventBus) {
             super(view);
+            this.eventBus = eventBus;
             ButterKnife.inject(this, view);
             view.setOnClickListener(this);
         }
@@ -70,8 +73,7 @@ public class GroupListAdapter extends SimpleRecyclerViewAdapter<Group, GroupList
         @Override
         public void onClick(View v) {
             if (group != null) {
-                Intent intent = MainActivity.getIntent(v.getContext(), group);
-                LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+                eventBus.post(new ShowForumEvent(group));
             }
         }
     }
