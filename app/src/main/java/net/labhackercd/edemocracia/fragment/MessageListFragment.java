@@ -94,6 +94,10 @@ public class MessageListFragment extends SimpleRecyclerViewFragment<Message> {
         JSONArray messages = new MBMessageService(session)
                 .getThreadMessages(thread.getGroupId(), thread.getCategoryId(), thread.getThreadId(), 0, -1, -1);
 
+        if (messages == null) {
+            messages = new JSONArray();
+        }
+
         return JSONReader.fromJSON(messages, Message.JSON_READER);
     }
 }

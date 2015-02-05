@@ -33,6 +33,10 @@ public class GroupListFragment extends SimpleRecyclerViewFragment<Group> {
         JSONArray jsonGroups = groupService.search(
                 session.getCompanyId(), "%", "%", new JSONArray(), -1, -1);
 
+        if (jsonGroups == null) {
+            jsonGroups = new JSONArray();
+        }
+
         List<Group> groups = JSONReader.fromJSON(jsonGroups, Group.JSON_READER);
 
         return Lists.newArrayList(Collections2.filter(groups, new Predicate<Group>() {

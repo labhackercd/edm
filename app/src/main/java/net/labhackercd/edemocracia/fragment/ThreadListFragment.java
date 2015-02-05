@@ -15,6 +15,7 @@ import com.liferay.mobile.android.v62.mbthread.MBThreadService;
 
 import org.json.JSONArray;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -90,6 +91,14 @@ public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
         JSONArray jsonThreads = jsonResult.getJSONArray(0);
         JSONArray jsonCategories = jsonResult.getJSONArray(1);
 
+        if (jsonThreads == null) {
+            jsonThreads = new JSONArray();
+        }
+
+        if (jsonCategories == null) {
+            jsonCategories = new JSONArray();
+        }
+
         List<Thread> threads = JSONReader.fromJSON(jsonThreads, Thread.JSON_READER);
         List<Category> categories = JSONReader.fromJSON(jsonCategories, Category.JSON_READER);
 
@@ -118,7 +127,13 @@ public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
             messageService.getMessage(thread.getRootMessageId());
         }
 
-        List<Message> messages = JSONReader.fromJSON(batchSession.invoke(), Message.JSON_READER);
+        JSONArray jsonMessages = batchSession.invoke();
+
+        if (jsonMessages == null) {
+            jsonMessages = new JSONArray();
+        }
+
+        List<Message> messages = JSONReader.fromJSON(jsonMessages, Message.JSON_READER);
 
         for (Message message : messages) {
             threads.get(messages.indexOf(message)).setRootMessage(message);
