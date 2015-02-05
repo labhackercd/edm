@@ -15,6 +15,7 @@ import com.squareup.picasso.Picasso;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.activity.MainActivity;
 import net.labhackercd.edemocracia.content.Forum;
+import net.labhackercd.edemocracia.fragment.simplerecyclerview.SimpleRecyclerViewAdapter;
 
 import org.joda.time.DateTime;
 

@@ -13,6 +13,7 @@ import com.squareup.picasso.Picasso;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.content.Message;
+import net.labhackercd.edemocracia.fragment.simplerecyclerview.SimpleRecyclerViewAdapter;
 
 import org.joda.time.DateTime;
 

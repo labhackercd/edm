@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 import net.labhackercd.edemocracia.content.Group;
+import net.labhackercd.edemocracia.fragment.simplerecyclerview.SimpleRecyclerViewFragment;
 import net.labhackercd.edemocracia.liferay.session.EDMSession;
 import net.labhackercd.edemocracia.util.JSONReader;
 

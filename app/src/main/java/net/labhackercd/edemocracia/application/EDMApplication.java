@@ -18,7 +18,7 @@ import net.labhackercd.edemocracia.activity.SignInActivity;
 import net.labhackercd.edemocracia.activity.SplashScreenActivity;
 import net.labhackercd.edemocracia.fragment.GroupListFragment;
 import net.labhackercd.edemocracia.fragment.MessageListFragment;
-import net.labhackercd.edemocracia.fragment.SimpleRecyclerViewFragment;
+import net.labhackercd.edemocracia.fragment.simplerecyclerview.SimpleRecyclerViewFragment;
 import net.labhackercd.edemocracia.fragment.ThreadListFragment;
 import net.labhackercd.edemocracia.liferay.session.SessionManager;
 import net.labhackercd.edemocracia.task.AddMessageTaskQueue;

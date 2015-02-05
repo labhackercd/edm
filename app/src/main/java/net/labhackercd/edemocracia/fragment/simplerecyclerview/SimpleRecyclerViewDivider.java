@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.fragment;
+package net.labhackercd.edemocracia.fragment.simplerecyclerview;
 
 import android.content.Context;
 import android.content.res.TypedArray;

@@ -24,6 +24,7 @@ import net.labhackercd.edemocracia.content.Forum;
 import net.labhackercd.edemocracia.content.Group;
 import net.labhackercd.edemocracia.content.Message;
 import net.labhackercd.edemocracia.content.Thread;
+import net.labhackercd.edemocracia.fragment.simplerecyclerview.SimpleRecyclerViewFragment;
 import net.labhackercd.edemocracia.liferay.session.EDMBatchSession;
 import net.labhackercd.edemocracia.liferay.session.EDMSession;
 import net.labhackercd.edemocracia.util.JSONReader;
