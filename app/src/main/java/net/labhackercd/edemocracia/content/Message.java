@@ -11,7 +11,9 @@ import net.labhackercd.edemocracia.util.Identifiable;
 import net.labhackercd.edemocracia.util.GsonParcelable;
 import net.labhackercd.edemocracia.util.JSONReader;
 
-public class Message extends GsonParcelable implements Identifiable {
+import java.io.Serializable;
+
+public class Message extends GsonParcelable implements Identifiable, Serializable {
 
     private int status;
     private boolean attachments;

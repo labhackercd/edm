@@ -15,7 +15,6 @@ import com.liferay.mobile.android.v62.mbthread.MBThreadService;
 
 import org.json.JSONArray;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;

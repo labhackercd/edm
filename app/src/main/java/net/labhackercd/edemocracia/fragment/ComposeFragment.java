@@ -10,7 +10,6 @@ import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,27 +21,26 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.common.base.Splitter;
+import com.path.android.jobqueue.JobManager;
 
 import java.io.FileNotFoundException;
 import java.util.List;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.activity.MainActivity;
 import net.labhackercd.edemocracia.activity.VideoPickerActivity;
 import net.labhackercd.edemocracia.content.Message;
 import net.labhackercd.edemocracia.content.Thread;
-import net.labhackercd.edemocracia.task.AddMessageTask;
-import net.labhackercd.edemocracia.task.VideoUploadTask;
+import net.labhackercd.edemocracia.jobqueue.AddMessageJob;
+import net.labhackercd.edemocracia.jobqueue.VideoUploadJob;
+
+import javax.inject.Inject;
 
 
-public class ComposeFragment extends Fragment {
+public class ComposeFragment extends InjectableFragment {
     private static final String ARG_THREADLIKE = "threadLike";
-
     private static final int RESULT_ATTACH_VIDEO = 17;
 
-    public static final String THREADLIKE_KEY = "ROFLYEAHTHREADLIKE";
-    public static final String SUBJECT_KEY = "subject";
-    public static final String MESSAGE_KEY = "message";
+    @Inject JobManager jobManager;
 
     private Thread threadLike;
     private Uri attachedVideoUri;
@@ -219,25 +217,15 @@ public class ComposeFragment extends Fragment {
 
         Message message = Message.create(threadLike, subject, body, "bbcode", false, 0.0, true);
 
-        // FIXME It's probably a sign of bad design to tie up this fragment and MainActivity.
-        MainActivity activity = (MainActivity) getActivity();
-
-        assert activity != null;
-
         if (attachedVideoUri == null) {
-            activity.addAddMessageTask(new AddMessageTask(message));
+            jobManager.addJob(new AddMessageJob(message));
         } else {
-            activity.addVideoUploadTask(new VideoUploadTask(attachedVideoUri, videoAccount, message));
+            jobManager.addJob(new VideoUploadJob(attachedVideoUri, videoAccount, message));
         }
 
-        activity.getFragmentManager().popBackStack();
-
+        // FIXME We should probably trigger this from AddMessageJob.onJobAdded
         Toast.makeText(getActivity(), R.string.sending_message, Toast.LENGTH_SHORT).show();
 
         return true;
-    }
-
-    protected void onMessageSubmitted() {
-        getActivity().getFragmentManager().popBackStack();
     }
 }

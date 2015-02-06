@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.NETWORK" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -58,9 +59,6 @@
         </activity>
         <meta-data android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
-
-        <service android:name=".task.AddMessageTaskService"/>
-        <service android:name=".task.VideoUploadTaskService"/>
     </application>
 
 </manifest>

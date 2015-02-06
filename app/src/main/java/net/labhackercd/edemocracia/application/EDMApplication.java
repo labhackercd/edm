@@ -2,9 +2,13 @@ package net.labhackercd.edemocracia.application;
 
 import android.content.Context;
 import android.support.multidex.MultiDexApplication;
+import android.util.Log;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.path.android.jobqueue.BaseJob;
+import com.path.android.jobqueue.JobManager;
+import com.path.android.jobqueue.config.Configuration;
+import com.path.android.jobqueue.di.DependencyInjector;
+import com.path.android.jobqueue.log.CustomLogger;
 
 import dagger.ObjectGraph;
 import dagger.Provides;
@@ -13,6 +17,7 @@ import de.greenrobot.event.EventBus;
 
 import javax.inject.Singleton;
 
+import net.labhackercd.edemocracia.BuildConfig;
 import net.labhackercd.edemocracia.activity.MainActivity;
 import net.labhackercd.edemocracia.activity.SignInActivity;
 import net.labhackercd.edemocracia.activity.SplashScreenActivity;
@@ -20,19 +25,13 @@ import net.labhackercd.edemocracia.fragment.GroupListFragment;
 import net.labhackercd.edemocracia.fragment.MessageListFragment;
 import net.labhackercd.edemocracia.fragment.simplerecyclerview.SimpleRecyclerViewFragment;
 import net.labhackercd.edemocracia.fragment.ThreadListFragment;
+import net.labhackercd.edemocracia.jobqueue.AddMessageJob;
+import net.labhackercd.edemocracia.jobqueue.VideoUploadJob;
 import net.labhackercd.edemocracia.liferay.session.SessionManager;
-import net.labhackercd.edemocracia.task.AddMessageTaskQueue;
-import net.labhackercd.edemocracia.task.AddMessageTaskService;
-import net.labhackercd.edemocracia.task.VideoUploadTaskQueue;
-import net.labhackercd.edemocracia.task.VideoUploadTaskService;
 import net.labhackercd.edemocracia.liferay.session.EDMSession;
 
-public class EDMApplication extends MultiDexApplication {
+public class EDMApplication extends MultiDexApplication implements DependencyInjector {
     private ObjectGraph objectGraph;
-
-    private static final String SHARED_PREFERENCES = "net.labhackercd.EDMApplication";
-    private static final String CREDENTIALS_KEY = "credentials";
-    private static final String COMPANY_ID_KEY = "compnayId";
 
     @Override
     public void onCreate() {
@@ -44,10 +43,15 @@ public class EDMApplication extends MultiDexApplication {
         objectGraph.inject(object);
     }
 
+    @Override
+    public void inject(BaseJob job) {
+        inject((Object) job);
+    }
+
     @dagger.Module(
             injects = {
-                    AddMessageTaskService.class,
-                    VideoUploadTaskService.class,
+                    AddMessageJob.class,
+                    VideoUploadJob.class,
                     MainActivity.class,
                     SignInActivity.class,
                     SplashScreenActivity.class,
@@ -59,25 +63,17 @@ public class EDMApplication extends MultiDexApplication {
     )
     static class Module {
         private SessionManager sessionManager;
-        private final Context applicationContext;
+        private final EDMApplication application;
 
-        Module(Context applicationContext) {
+        Module(EDMApplication application) {
+            this.application = application;
             this.sessionManager = null;
-            this.applicationContext = applicationContext;
         }
 
         @Provides
-        @Singleton
         @SuppressWarnings("UnusedDeclaration")
-        AddMessageTaskQueue provideAddMessageTaskQueue(Gson gson, EventBus eventBus) {
-            return AddMessageTaskQueue.create(applicationContext, gson, eventBus);
-        }
-
-        @Provides
-        @Singleton
-        @SuppressWarnings("UnusedDeclaration")
-        VideoUploadTaskQueue provideVideoUploadTaskQueue(Gson gson, EventBus eventBus) {
-            return VideoUploadTaskQueue.create(applicationContext, gson);
+        Context provideContext() {
+            return application;
         }
 
         @Provides
@@ -85,13 +81,6 @@ public class EDMApplication extends MultiDexApplication {
         @SuppressWarnings("UnusedDeclaration")
         EventBus provideBus() {
             return EventBus.getDefault();
-        }
-
-        @Provides
-        @Singleton
-        @SuppressWarnings("UnusedDeclaration")
-        Gson provideGson() {
-            return new GsonBuilder().create();
         }
 
         @Provides
@@ -112,9 +101,46 @@ public class EDMApplication extends MultiDexApplication {
         @SuppressWarnings("UnusedDeclaration")
         SessionManager provideSessionManager() {
             if (sessionManager == null) {
-                sessionManager = new SessionManager(applicationContext);
+                sessionManager = new SessionManager(application);
             }
             return sessionManager;
+        }
+
+        @Provides
+        @Singleton
+        @SuppressWarnings("UnusedDeclaration")
+        JobManager provideJobManager() {
+            Configuration configuration = new Configuration.Builder(application)
+                    .customLogger(new CustomLogger() {
+                        public static final String TAG = "JobManager";
+
+                        @Override
+                        public boolean isDebugEnabled() {
+                            return BuildConfig.DEBUG;
+                        }
+
+                        @Override
+                        public void d(String text, Object... args) {
+                            Log.d(TAG, String.format(text, args));
+                        }
+
+                        @Override
+                        public void e(Throwable t, String text, Object... args) {
+                            Log.e(TAG, String.format(text, args), t);
+                        }
+
+                        @Override
+                        public void e(String text, Object... args) {
+                            Log.e(TAG, String.format(text, args));
+                        }
+                    })
+                    .minConsumerCount(0)
+                    .maxConsumerCount(3)
+                    .loadFactor(3)
+                    .consumerKeepAlive(3)
+                    .injector(application)
+                    .build();
+            return new JobManager(application, configuration);
         }
     }
 }

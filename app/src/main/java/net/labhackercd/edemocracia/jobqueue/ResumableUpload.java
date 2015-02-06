@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.task;
+package net.labhackercd.edemocracia.jobqueue;
 
 import android.app.NotificationManager;
 import android.content.Context;

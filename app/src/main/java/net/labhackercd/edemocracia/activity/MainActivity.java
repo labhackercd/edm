@@ -12,6 +12,8 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.widget.Toast;
 
+import com.path.android.jobqueue.JobManager;
+
 import javax.inject.Inject;
 
 import net.labhackercd.edemocracia.application.EDMApplication;
@@ -21,19 +23,15 @@ import net.labhackercd.edemocracia.fragment.MessageListFragment;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.content.*;
 import net.labhackercd.edemocracia.content.Thread;
-import net.labhackercd.edemocracia.task.AddMessageTask;
-import net.labhackercd.edemocracia.task.AddMessageTaskQueue;
-import net.labhackercd.edemocracia.task.VideoUploadTask;
-import net.labhackercd.edemocracia.task.VideoUploadTaskQueue;
+import net.labhackercd.edemocracia.jobqueue.AddMessageJob;
+import net.labhackercd.edemocracia.jobqueue.VideoUploadJob;
 import net.labhackercd.edemocracia.ytdl.Constants;
 
 import de.greenrobot.event.EventBus;
 
 public class MainActivity extends ActionBarActivity {
 
-    // NOTE: Injection starts queue processing!
-    @Inject AddMessageTaskQueue addMessageTaskQueue;
-    @Inject VideoUploadTaskQueue videoUploadTaskQueue;
+    @Inject JobManager jobManager;
 
     @Inject EventBus eventBus;
 
@@ -81,21 +79,23 @@ public class MainActivity extends ActionBarActivity {
         eventBus.unregister(this);
     }
 
-    public void addAddMessageTask(AddMessageTask task) {
-        addMessageTaskQueue.add(task);
+    public void addAddMessageTask(AddMessageJob task) {
+        jobManager.addJob(task);
+        jobManager.start();
     }
 
-    public void addVideoUploadTask(VideoUploadTask task) {
-        videoUploadTaskQueue.add(task);
+    public void addVideoUploadTask(VideoUploadJob task) {
+        jobManager.addJob(task);
+        jobManager.start();
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    public void onEventMainThread(AddMessageTask.Success event) {
+    public void onEventMainThread(AddMessageJob.Success event) {
         Toast.makeText(this, "Message submitted", Toast.LENGTH_SHORT).show();
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    public void onEventMainThread(AddMessageTask.Failure event) {
+    public void onEventMainThread(AddMessageJob.Failure event) {
         // TODO FIXME Should we add the message to the queue again?
         // Or start the queue service again? What should we do!?
         Toast.makeText(this, "Failed to submit message", Toast.LENGTH_SHORT).show();

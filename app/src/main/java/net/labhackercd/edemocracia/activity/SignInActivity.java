@@ -19,7 +19,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.liferay.mobile.android.auth.basic.BasicAuthentication;
-import com.liferay.mobile.android.exception.ServerException;
 import com.liferay.mobile.android.v62.group.GroupService;
 
 import net.labhackercd.edemocracia.liferay.exception.AuthorizationException;
