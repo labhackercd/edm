@@ -46,6 +46,13 @@
                 android:value=".activity.SplashScreenActivity" />
         </activity>
         <activity
+            android:name=".activity.ComposeActivity"
+            android:parentActivityName=".activity.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.MainActivity" />
+        </activity>
+        <activity
             android:name=".activity.VideoPickerActivity"
             android:label="@string/attach_video"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
