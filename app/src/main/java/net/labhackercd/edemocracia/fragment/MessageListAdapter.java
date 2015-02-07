@@ -15,8 +15,7 @@ import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.content.Message;
 import net.labhackercd.edemocracia.fragment.simplerecyclerview.SimpleRecyclerViewAdapter;
 
-import org.joda.time.DateTime;
-
+import java.util.Date;
 import java.util.List;
 
 import butterknife.ButterKnife;
@@ -67,11 +66,11 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
             subjectView.setText(message.getSubject());
 
             // Set the date
-            DateTime date = message.getCreateDate();
+            Date date = message.getCreateDate();
 
             if (date != null) {
                 PrettyTime formatter = new PrettyTime(context.getResources().getConfiguration().locale);
-                dateView.setText(formatter.format(date.toDate()));
+                dateView.setText(formatter.format(date));
             }
 
             // Fill the user avatar image

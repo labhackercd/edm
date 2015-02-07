@@ -7,23 +7,24 @@ import net.labhackercd.edemocracia.util.GsonParcelable;
 import net.labhackercd.edemocracia.util.Identifiable;
 import net.labhackercd.edemocracia.util.JSONReader;
 
-import org.joda.time.DateTime;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Date;
 
 public class Category extends GsonParcelable implements Forum, Identifiable {
 
     private String userName;
     private String description;
-    private DateTime lastPostDate;
+    private Date lastPostDate;
     private long companyId;
-    private DateTime createDate;
+    private Date createDate;
     private long parentCategoryId;
     private long userId;
     private String uuid;
     private int threadCount;
     private long categoryId;
-    private DateTime modifiedDate;
+    private Date modifiedDate;
     private long groupId;
     private int messageCount;
     private String displayStyle;
@@ -38,7 +39,7 @@ public class Category extends GsonParcelable implements Forum, Identifiable {
         return description;
     }
 
-    public DateTime getLastPostDate() {
+    public Date getLastPostDate() {
         return lastPostDate;
     }
 
@@ -46,7 +47,7 @@ public class Category extends GsonParcelable implements Forum, Identifiable {
         return companyId;
     }
 
-    public DateTime getCreateDate() {
+    public Date getCreateDate() {
         return createDate;
     }
 
@@ -70,7 +71,7 @@ public class Category extends GsonParcelable implements Forum, Identifiable {
         return categoryId;
     }
 
-    public DateTime getModifiedDate() {
+    public Date getModifiedDate() {
         return modifiedDate;
     }
 
@@ -112,13 +113,13 @@ public class Category extends GsonParcelable implements Forum, Identifiable {
             instance.userName = json.getString("userName");
             instance.description = json.getString("description");
             instance.companyId = json.getLong("companyId");
-            instance.createDate = new DateTime(json.getLong("createDate"));
+            instance.createDate = new Date(json.getLong("createDate"));
             instance.parentCategoryId = json.getLong("parentCategoryId");
             instance.userId = json.getLong("userId");
             instance.uuid = json.getString("uuid");
             instance.threadCount = json.getInt("threadCount");
             instance.categoryId = json.getLong("categoryId");
-            instance.modifiedDate = new DateTime(json.getLong("modifiedDate"));
+            instance.modifiedDate = new Date(json.getLong("modifiedDate"));
             instance.groupId = json.getLong("groupId");
             instance.messageCount = json.getInt("messageCount");
             instance.displayStyle = json.getString("displayStyle");
@@ -128,7 +129,7 @@ public class Category extends GsonParcelable implements Forum, Identifiable {
             if (json.isNull("lastPostDate")) {
                 instance.lastPostDate = null;
             } else {
-                instance.lastPostDate = new DateTime(json.getLong("lastPostDate"));
+                instance.lastPostDate = new Date(json.getLong("lastPostDate"));
             }
 
             return instance;

@@ -17,8 +17,7 @@ import net.labhackercd.edemocracia.activity.ShowThreadEvent;
 import net.labhackercd.edemocracia.content.Forum;
 import net.labhackercd.edemocracia.fragment.simplerecyclerview.SimpleRecyclerViewAdapter;
 
-import org.joda.time.DateTime;
-
+import java.util.Date;
 import java.util.List;
 
 import butterknife.ButterKnife;
@@ -110,7 +109,7 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
             }
 
             // Fill the date view if any date is available
-            DateTime date = item.getLastPostDate();
+            Date date = item.getLastPostDate();
 
             if (date == null) {
                 date = item.getCreateDate();
@@ -118,7 +117,7 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
 
             if (date != null) {
                 PrettyTime formatter = new PrettyTime(context.getResources().getConfiguration().locale);
-                dateView.setText(formatter.format(date.toDate()));
+                dateView.setText(formatter.format(date));
             }
         }
     }

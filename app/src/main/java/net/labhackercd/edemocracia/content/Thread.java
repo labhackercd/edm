@@ -7,16 +7,17 @@ import net.labhackercd.edemocracia.util.GsonParcelable;
 import net.labhackercd.edemocracia.util.Identifiable;
 import net.labhackercd.edemocracia.util.JSONReader;
 
-import org.joda.time.DateTime;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Date;
 
 public class Thread extends GsonParcelable implements Identifiable {
 
     private int status;
     private int viewCount;
     private int messageCount;
-    private DateTime lastPostDate;
+    private Date lastPostDate;
     private long companyId;
     private long statusByUserId;
     private long rootMessageUserId;
@@ -27,7 +28,7 @@ public class Thread extends GsonParcelable implements Identifiable {
     private long threadId;
     private long groupId;
     private String statusByUserName;
-    private DateTime statusDate;
+    private Date statusDate;
     private long categoryId;
     private Message rootMessage = null;
 
@@ -43,7 +44,7 @@ public class Thread extends GsonParcelable implements Identifiable {
         return messageCount;
     }
 
-    public DateTime getLastPostDate() {
+    public Date getLastPostDate() {
         return lastPostDate;
     }
 
@@ -87,7 +88,7 @@ public class Thread extends GsonParcelable implements Identifiable {
         return statusByUserName;
     }
 
-    public DateTime getStatusDate() {
+    public Date getStatusDate() {
         return statusDate;
     }
 
@@ -135,7 +136,7 @@ public class Thread extends GsonParcelable implements Identifiable {
             instance.status = json.getInt("status");
             instance.viewCount = json.getInt("viewCount");
             instance.messageCount = json.getInt("messageCount");
-            instance.lastPostDate = new DateTime(json.getLong("lastPostDate"));
+            instance.lastPostDate = new Date(json.getLong("lastPostDate"));
             instance.companyId = json.getLong("companyId");
             instance.statusByUserId = json.getLong("statusByUserId");
             instance.rootMessageUserId = json.getLong("rootMessageUserId");
@@ -146,7 +147,7 @@ public class Thread extends GsonParcelable implements Identifiable {
             instance.threadId = json.getLong("threadId");
             instance.groupId = json.getLong("groupId");
             instance.statusByUserName = json.getString("statusByUserName");
-            instance.statusDate = new DateTime(json.getLong("statusDate"));
+            instance.statusDate = new Date(json.getLong("statusDate"));
             instance.categoryId = json.getLong("categoryId");
 
             if (json.has("rootMessage")) {

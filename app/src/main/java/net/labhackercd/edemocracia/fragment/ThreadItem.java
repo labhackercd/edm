@@ -6,8 +6,7 @@ import net.labhackercd.edemocracia.content.*;
 import net.labhackercd.edemocracia.content.Thread;
 import net.labhackercd.edemocracia.util.Identifiable;
 
-import org.joda.time.DateTime;
-
+import java.util.Date;
 
 import javax.annotation.Nullable;
 
@@ -69,7 +68,7 @@ class ThreadItem implements Identifiable {
         }
     }
 
-    public DateTime getLastPostDate() {
+    public Date getLastPostDate() {
         if (thread != null) {
             return thread.getLastPostDate();
         } else {
@@ -85,7 +84,7 @@ class ThreadItem implements Identifiable {
         }
     }
 
-    public DateTime getCreateDate() {
+    public Date getCreateDate() {
         if (thread != null) {
             Message root = thread.getRootMessage();
             if (root != null) {

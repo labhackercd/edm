@@ -2,7 +2,6 @@ package net.labhackercd.edemocracia.content;
 
 import android.net.Uri;
 
-import org.joda.time.DateTime;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,6 +11,7 @@ import net.labhackercd.edemocracia.util.GsonParcelable;
 import net.labhackercd.edemocracia.util.JSONReader;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public class Message extends GsonParcelable implements Identifiable, Serializable {
 
@@ -24,11 +24,11 @@ public class Message extends GsonParcelable implements Identifiable, Serializabl
     private boolean answer;
     private String uuid;
     private long companyId;
-    private DateTime createDate;
+    private Date createDate;
     private String format;
     private double priority;
     private long statusByUserId;
-    private DateTime statusDate;
+    private Date statusDate;
     private long categoryId;
     private String body;
     private long classPK;
@@ -36,7 +36,7 @@ public class Message extends GsonParcelable implements Identifiable, Serializabl
     private long classNameId;
     private long rootMessageId;
     private long parentMessageId;
-    private DateTime modifiedDate;
+    private Date modifiedDate;
     private boolean anonymous;
     private long groupId;
     private String userName;
@@ -105,7 +105,7 @@ public class Message extends GsonParcelable implements Identifiable, Serializabl
         return companyId;
     }
 
-    public DateTime getCreateDate() {
+    public Date getCreateDate() {
         return createDate;
     }
 
@@ -121,7 +121,7 @@ public class Message extends GsonParcelable implements Identifiable, Serializabl
         return statusByUserId;
     }
 
-    public DateTime getStatusDate() {
+    public Date getStatusDate() {
         return statusDate;
     }
 
@@ -153,7 +153,7 @@ public class Message extends GsonParcelable implements Identifiable, Serializabl
         return parentMessageId;
     }
 
-    public DateTime getModifiedDate() {
+    public Date getModifiedDate() {
         return modifiedDate;
     }
 
@@ -201,11 +201,11 @@ public class Message extends GsonParcelable implements Identifiable, Serializabl
             instance.answer = json.getBoolean("answer");
             instance.uuid = json.getString("uuid");
             instance.companyId = json.getLong("companyId");
-            instance.createDate = new DateTime(json.getLong("createDate"));
+            instance.createDate = new Date(json.getLong("createDate"));
             instance.format = json.getString("format");
             instance.priority = json.getDouble("priority");
             instance.statusByUserId = json.getLong("statusByUserId");
-            instance.statusDate = new DateTime(json.getLong("statusDate"));
+            instance.statusDate = new Date(json.getLong("statusDate"));
             instance.categoryId = json.getLong("categoryId");
             instance.body = json.getString("body");
             instance.classPK = json.getLong("classPK");
@@ -213,7 +213,7 @@ public class Message extends GsonParcelable implements Identifiable, Serializabl
             instance.classNameId = json.getLong("classNameId");
             instance.rootMessageId = json.getLong("rootMessageId");
             instance.parentMessageId = json.getLong("parentMessageId");
-            instance.modifiedDate = new DateTime(json.getLong("modifiedDate"));
+            instance.modifiedDate = new Date(json.getLong("modifiedDate"));
             instance.anonymous = json.getBoolean("anonymous");
             instance.groupId = json.getLong("groupId");
             instance.userName = json.getString("userName");
