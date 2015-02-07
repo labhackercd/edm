@@ -124,7 +124,7 @@ public class Thread extends GsonParcelable implements Identifiable {
         return subject;
     }
 
-    public Uri getIconUri() {
+    public Uri getUserPortrait() {
         return Uri.parse(EDMSession.SERVICE_URL + "/image/user_male_portrait?img_id=" + getRootMessageUserId());
     }
 

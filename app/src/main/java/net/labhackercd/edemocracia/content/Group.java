@@ -27,7 +27,6 @@ public class Group extends GsonParcelable implements Forum, Identifiable {
     private int type;
     private long groupId;
     private String name;
-    private int iconUrl;
 
     public String getFriendlyURL() {
         return friendlyURL;
@@ -101,7 +100,7 @@ public class Group extends GsonParcelable implements Forum, Identifiable {
         return getName();
     }
 
-    public Uri getIconUri() {
+    public Uri getGroupImage() {
         return Uri.parse(EDMSession.SERVICE_URL + "/documents/" + getGroupId() + "/0/icone");
     }
 

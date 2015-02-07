@@ -11,7 +11,7 @@ import java.util.Date;
 import javax.annotation.Nullable;
 
 /**
- * A item in a ThreadListFragment. It warps a Thread or a Category.
+ * An item in a ThreadListFragment. It warps a Thread or a Category.
  */
 class ThreadItem implements Identifiable {
     private final Thread thread;
@@ -60,11 +60,11 @@ class ThreadItem implements Identifiable {
         }
     }
 
-    public Uri getIconUri() {
+    public Uri getUserPortrait() {
         if (thread != null) {
-            return thread.getIconUri();
+            return thread.getUserPortrait();
         } else {
-            return category.getIconUri();
+            return category.getUserPortrait();
         }
     }
 

@@ -101,7 +101,7 @@ public class Category extends GsonParcelable implements Forum, Identifiable {
         return getName();
     }
 
-    public Uri getIconUri() {
+    public Uri getUserPortrait() {
         return Uri.parse(EDMSession.SERVICE_URL + "/image/user_male_portrait?img_id=" + getUserId());
     }
 

@@ -64,7 +64,7 @@ public class GroupListAdapter extends SimpleRecyclerViewAdapter<Group, GroupList
             textView.setText(group.getName());
 
             Picasso.with(context)
-                    .load(group.getIconUri())
+                    .load(group.getGroupImage())
                     .resize(128, 128)
                     .centerCrop()
                     .into(iconView);

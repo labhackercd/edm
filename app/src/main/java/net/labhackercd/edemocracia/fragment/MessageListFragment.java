@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.liferay.mobile.android.v62.mbmessage.MBMessageService;
+import com.liferay.mobile.android.v62.user.UserService;
 import com.path.android.jobqueue.JobManager;
 
 import org.json.JSONArray;
@@ -23,9 +24,12 @@ import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.activity.ComposeActivity;
 import net.labhackercd.edemocracia.content.Message;
 import net.labhackercd.edemocracia.content.Thread;
+import net.labhackercd.edemocracia.content.User;
 import net.labhackercd.edemocracia.fragment.simplerecyclerview.SimpleRecyclerViewFragment;
 import net.labhackercd.edemocracia.jobqueue.AddMessageJob;
 import net.labhackercd.edemocracia.jobqueue.VideoUploadJob;
+import net.labhackercd.edemocracia.liferay.exception.PrincipalException;
+import net.labhackercd.edemocracia.liferay.session.EDMBatchSession;
 import net.labhackercd.edemocracia.liferay.session.EDMSession;
 import net.labhackercd.edemocracia.util.JSONReader;
 
@@ -117,13 +121,44 @@ public class MessageListFragment extends SimpleRecyclerViewFragment<Message> {
 
     @Override
     protected List<Message> blockingFetchItems() throws Exception {
-        JSONArray messages = new MBMessageService(session)
-                .getThreadMessages(thread.getGroupId(), thread.getCategoryId(), thread.getThreadId(), 0, -1, -1);
+        EDMBatchSession batchSession = new EDMBatchSession(session);
 
-        if (messages == null) {
-            messages = new JSONArray();
+        JSONArray jsonMessages = new MBMessageService(session)
+                .getThreadMessages(
+                        thread.getGroupId(), thread.getCategoryId(),
+                        thread.getThreadId(), 0, -1, -1);
+
+        if (jsonMessages == null) {
+            jsonMessages = new JSONArray();
         }
 
-        return JSONReader.fromJSON(messages, Message.JSON_READER);
+        // Fetch users associated with each message
+        UserService userService = new UserService(batchSession);
+        for (int i = 0; i < jsonMessages.length(); i++) {
+            long userId = jsonMessages.getJSONObject(i).getLong("userId");
+            userService.getUserById(userId);
+        }
+
+        try {
+            JSONArray jsonUsers = batchSession.invoke();
+
+            // Associate users with their respective messages
+            for (int i = 0; i < jsonUsers.length(); i++) {
+                jsonMessages.getJSONObject(i).put("user", jsonUsers.getJSONObject(i));
+            }
+        } catch (PrincipalException e) {
+            // Ignore
+        }
+
+        User currentUser = session.getUser();
+
+        List<Message> messages = JSONReader.fromJSON(jsonMessages, Message.JSON_READER);
+        for (Message i : messages) {
+            if (i.getUserId() == currentUser.getUserId()) {
+                i.setUser(currentUser);
+            }
+        }
+
+        return messages;
     }
 }

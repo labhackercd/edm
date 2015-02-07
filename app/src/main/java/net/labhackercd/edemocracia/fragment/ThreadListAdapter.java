@@ -82,9 +82,9 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
         public void bindThreadItem(ThreadItem item) {
             this.item = item;
 
-            // Fill the icon
+            // Fill the user portrait
             Picasso.with(context)
-                    .load(item.getIconUri())
+                    .load(item.getUserPortrait())
                     .resize(100, 100)
                     .centerCrop()
                     .into(iconView);

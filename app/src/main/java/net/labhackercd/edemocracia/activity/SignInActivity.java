@@ -20,11 +20,14 @@ import android.widget.TextView;
 
 import com.liferay.mobile.android.auth.basic.BasicAuthentication;
 import com.liferay.mobile.android.v62.group.GroupService;
+import com.liferay.mobile.android.v62.user.UserService;
 
+import net.labhackercd.edemocracia.content.User;
 import net.labhackercd.edemocracia.liferay.exception.AuthorizationException;
 import net.labhackercd.edemocracia.liferay.session.EDMSession;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -170,15 +173,18 @@ public class SignInActivity extends Activity {
             // Prepare to test the supplied credentials
             session.setAuthentication(new BasicAuthentication(email, password));
 
-            GroupService groupService = new GroupService(session);
-
             int error = 0;
-            long companyId = -1;
+            User user = null;
             Exception exception = null;
 
             try {
-                JSONArray userGroups = groupService.getUserSites();
-                companyId = userGroups.getJSONObject(0).getLong("companyId");
+                JSONArray userGroups = new GroupService(session).getUserSites();
+                long companyId = userGroups.getJSONObject(0).getLong("companyId");
+
+                JSONObject jsonUser = new UserService(session)
+                        .getUserByEmailAddress(companyId, email);
+
+                user = User.JSON_READER.fromJSON(jsonUser);
             } catch (IOException e) {
                 // IOException are probably only caused by network problems
                 exception = e;
@@ -191,13 +197,13 @@ public class SignInActivity extends Activity {
                 error = R.string.unknown_error_message;
             }
 
-            if (companyId < 0 || exception != null) {
-                Log.e(TAG, "Failed to authenticate user: " + (exception == null ? "Unknown error" : exception));
+            if (user == null) {
+                Log.e(TAG, "Error while authenticating user.", exception);
             } else {
-                // Save the companyId
-                session.setCompanyId(companyId);
+                // Save the user.
+                session.setUser(user);
 
-                // And persist the session for future uses.
+                // Persist the session for future uses.
                 sessionManager.save(session);
             }
 
@@ -209,8 +215,6 @@ public class SignInActivity extends Activity {
             authenticationTask = null;
 
             showProgress(false);
-
-            AlertDialog.Builder dialogBuilder;
 
             if (error != 0) {
                 new AlertDialog.Builder(SignInActivity.this)

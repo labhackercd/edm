@@ -1,6 +1,7 @@
 package net.labhackercd.edemocracia.fragment;
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -73,12 +74,16 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
                 dateView.setText(formatter.format(date));
             }
 
-            // Fill the user avatar image
-            Picasso.with(context)
-                    .load(message.getUserAvatarUri())
-                    .resize(100, 100)
-                    .centerCrop()
-                    .into(iconView);
+            // Fill the user portrait
+            Uri portrait = message.getUserPortrait();
+
+            if (portrait != null) {
+                Picasso.with(context)
+                        .load(portrait)
+                        .resize(100, 100)
+                        .centerCrop()
+                        .into(iconView);
+            }
         }
 
         @Override

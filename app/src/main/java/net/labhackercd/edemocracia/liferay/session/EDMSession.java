@@ -5,8 +5,10 @@ import com.liferay.mobile.android.exception.ServerException;
 import com.liferay.mobile.android.http.HttpUtil;
 import com.liferay.mobile.android.service.SessionImpl;
 
+import net.labhackercd.edemocracia.content.User;
 import net.labhackercd.edemocracia.liferay.exception.AuthorizationException;
 import net.labhackercd.edemocracia.liferay.exception.NotFoundException;
+import net.labhackercd.edemocracia.liferay.exception.PrincipalException;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -15,10 +17,9 @@ import java.lang.reflect.Field;
 
 public class EDMSession extends SessionImpl {
     public static final String SERVICE_URL = "https://edemocracia.camara.gov.br";
-
     private static boolean monkeyPatched = false;
 
-    private long companyId;
+    private User user;
 
     public EDMSession() {
         super(SERVICE_URL);
@@ -30,18 +31,22 @@ public class EDMSession extends SessionImpl {
         monkeyPatchServicePath();
     }
 
-    public EDMSession(Authentication credentials, long companyId) {
+    public EDMSession(Authentication credentials, User user) {
         super(SERVICE_URL, credentials);
-        this.companyId = companyId;
+        this.user = user;
         monkeyPatchServicePath();
     }
 
     public long getCompanyId() {
-        return companyId;
+        return user == null ? 0 : user.getCompanyId();
     }
 
-    public void setCompanyId(long companyId) {
-        this.companyId = companyId;
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     @Override
@@ -54,11 +59,13 @@ public class EDMSession extends SessionImpl {
     }
 
     protected Exception tryAndSpecializeException(Exception e) {
-        String err = e.getMessage().toLowerCase();
-        if (err.matches("no *such") || err.matches("no *\\w+ *exists")) {
+        String err = e.getMessage().toLowerCase().trim();
+        if (err.matches(".*principal *exception")) {
+            e = new PrincipalException(e);
+        } else if (err.matches(".*no *such") || err.matches(".*no *\\w+ *exists")) {
             e = new NotFoundException(e);
-        } else if (err.matches("please *sign.*") || err.matches("authenticated *access.*")
-                || err.matches("authentication failed.*")) {
+        } else if (err.matches(".*please *sign") || err.matches(".*authenticated *access")
+                || err.matches(".*authentication failed")) {
             e = new AuthorizationException(e);
         }
         return e;
