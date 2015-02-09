@@ -16,7 +16,7 @@
         >
 
         <ImageView
-            android:id="@android:id/icon"
+            android:id="@+id/portrait"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_gravity="center_vertical"

@@ -1,6 +1,7 @@
 package net.labhackercd.edemocracia.fragment;
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,11 +51,11 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        @InjectView(android.R.id.icon) ImageView iconView;
         @InjectView(android.R.id.text2) TextView titleView;
         @InjectView(R.id.body) TextView bodyView;
         @InjectView(R.id.itemCount) TextView countView;
         @InjectView(R.id.date) TextView dateView;
+        @InjectView(R.id.portrait) ImageView portraitView;
         @InjectView(android.R.id.text1) TextView userView;
 
         private ThreadItem item;
@@ -83,11 +84,16 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
             this.item = item;
 
             // Fill the user portrait
-            Picasso.with(context)
-                    .load(item.getUserPortrait())
-                    .resize(100, 100)
-                    .centerCrop()
-                    .into(iconView);
+            Uri userPortrait = item.getUserPortrait();
+            if (userPortrait == null) {
+                portraitView.setImageDrawable(null);
+            } else {
+                Picasso.with(context)
+                        .load(item.getUserPortrait())
+                        .resize(100, 100)
+                        .centerCrop()
+                        .into(portraitView);
+            }
 
             // Fill the user name
             userView.setText(item.getUserName());

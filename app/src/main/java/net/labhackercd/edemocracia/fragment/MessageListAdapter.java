@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.ocpsoft.pretty.time.PrettyTime;
@@ -47,7 +48,7 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
 
         @InjectView(R.id.body) TextView bodyView;
         @InjectView(R.id.date) TextView dateView;
-        @InjectView(android.R.id.icon) ImageView iconView;
+        @InjectView(R.id.portrait) ImageView portraitView;
         @InjectView(android.R.id.text1) TextView userView;
         @InjectView(android.R.id.text2) TextView subjectView;
 
@@ -77,12 +78,16 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
             // Fill the user portrait
             Uri portrait = message.getUserPortrait();
 
-            if (portrait != null) {
+            if (portrait == null) {
+                // Clean up portrait ImageView in case it's filled with someone else's portrait
+                portraitView.setImageDrawable(null);
+            } else {
+                // Load current user's portrait image
                 Picasso.with(context)
                         .load(portrait)
                         .resize(100, 100)
                         .centerCrop()
-                        .into(iconView);
+                        .into(portraitView);
             }
         }
 
