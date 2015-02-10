@@ -12,7 +12,7 @@
  * the License.
  */
 
-package net.labhackercd.edemocracia.ytdl;
+package net.labhackercd.edemocracia.util;
 
 /**
  * @author Ibrahim Ulukaya <ulukaya@google.com>

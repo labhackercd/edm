@@ -4,9 +4,7 @@ import android.support.v7.widget.RecyclerView;
 
 import java.util.List;
 
-import net.labhackercd.edemocracia.util.Identifiable;
-
-public abstract class SimpleRecyclerViewAdapter<T extends Identifiable, VH extends RecyclerView.ViewHolder>
+public abstract class SimpleRecyclerViewAdapter<T, VH extends RecyclerView.ViewHolder>
         extends RecyclerView.Adapter<VH> {
 
     private final List<T> items;
@@ -26,6 +24,6 @@ public abstract class SimpleRecyclerViewAdapter<T extends Identifiable, VH exten
 
     @Override
     public long getItemId(int position) {
-        return getItem(position).getId();
+        return position;
     }
 }

@@ -4,7 +4,6 @@ import android.net.Uri;
 
 import net.labhackercd.edemocracia.liferay.session.EDMSession;
 import net.labhackercd.edemocracia.util.GsonParcelable;
-import net.labhackercd.edemocracia.util.Identifiable;
 import net.labhackercd.edemocracia.util.JSONReader;
 
 import org.json.JSONException;
@@ -12,7 +11,7 @@ import org.json.JSONObject;
 
 import java.util.Date;
 
-public class Thread extends GsonParcelable implements Identifiable {
+public class Thread extends GsonParcelable {
 
     private int status;
     private int viewCount;
@@ -103,11 +102,6 @@ public class Thread extends GsonParcelable implements Identifiable {
     // FIXME Maybe we should move this *set root message* method into some other layer?
     public void setRootMessage(Message message) {
         rootMessage = message;
-    }
-
-    @Override
-    public long getId() {
-        return getThreadId();
     }
 
     public String getSubject() {

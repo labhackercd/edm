@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,10 +21,9 @@ import android.widget.Toast;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.activity.SignInActivity;
-import net.labhackercd.edemocracia.fragment.InjectableFragment;
+import net.labhackercd.edemocracia.application.EDMApplication;
 import net.labhackercd.edemocracia.liferay.exception.AuthorizationException;
 import net.labhackercd.edemocracia.liferay.session.SessionManager;
-import net.labhackercd.edemocracia.util.Identifiable;
 
 import java.io.IOException;
 import java.util.List;
@@ -35,8 +35,7 @@ import butterknife.InjectView;
 import butterknife.OnClick;
 import de.greenrobot.event.EventBus;
 
-
-public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends InjectableFragment {
+public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
     private static final String TAG = SimpleRecyclerViewFragment.class.getSimpleName();
 
     private RefreshListTask<List<T>> refreshListTask;
@@ -295,4 +294,11 @@ public abstract class SimpleRecyclerViewFragment<T extends Identifiable> extends
      * @return adapter
      */
     protected abstract RecyclerView.Adapter createAdapter(List<T> items);
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        ((EDMApplication) getActivity().getApplication()).inject(this);
+    }
 }

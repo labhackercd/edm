@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.ytdl.Constants;
+import net.labhackercd.edemocracia.util.Constants;
 
 
 /**

@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.ytdl.Auth;
+import net.labhackercd.edemocracia.util.Auth;
 
 
 public class VideoPickerActivity extends Activity {

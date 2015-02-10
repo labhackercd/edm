@@ -25,7 +25,7 @@ import net.labhackercd.edemocracia.content.*;
 import net.labhackercd.edemocracia.content.Thread;
 import net.labhackercd.edemocracia.jobqueue.AddMessageJob;
 import net.labhackercd.edemocracia.jobqueue.VideoUploadJob;
-import net.labhackercd.edemocracia.ytdl.Constants;
+import net.labhackercd.edemocracia.util.Constants;
 
 import de.greenrobot.event.EventBus;
 

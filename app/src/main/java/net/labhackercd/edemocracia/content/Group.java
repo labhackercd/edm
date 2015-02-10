@@ -6,12 +6,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import net.labhackercd.edemocracia.liferay.session.EDMSession;
-import net.labhackercd.edemocracia.util.Identifiable;
 import net.labhackercd.edemocracia.util.GsonParcelable;
 import net.labhackercd.edemocracia.util.JSONReader;
 
-
-public class Group extends GsonParcelable implements Forum, Identifiable {
+public class Group extends GsonParcelable implements Forum {
 
     private String friendlyURL;
     private long classPK;
@@ -88,11 +86,6 @@ public class Group extends GsonParcelable implements Forum, Identifiable {
 
     public String getName() {
         return name;
-    }
-
-    @Override
-    public long getId() {
-        return getGroupId();
     }
 
     @Override

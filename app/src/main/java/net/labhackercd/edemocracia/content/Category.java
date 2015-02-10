@@ -4,7 +4,6 @@ import android.net.Uri;
 
 import net.labhackercd.edemocracia.liferay.session.EDMSession;
 import net.labhackercd.edemocracia.util.GsonParcelable;
-import net.labhackercd.edemocracia.util.Identifiable;
 import net.labhackercd.edemocracia.util.JSONReader;
 
 import org.json.JSONException;
@@ -12,7 +11,7 @@ import org.json.JSONObject;
 
 import java.util.Date;
 
-public class Category extends GsonParcelable implements Forum, Identifiable {
+public class Category extends GsonParcelable implements Forum {
 
     private String userName;
     private String description;
@@ -89,11 +88,6 @@ public class Category extends GsonParcelable implements Forum, Identifiable {
 
     public String getName() {
         return name;
-    }
-
-    @Override
-    public long getId() {
-        return getCategoryId();
     }
 
     @Override

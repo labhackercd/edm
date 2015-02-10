@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.ytdl;
+package net.labhackercd.edemocracia.util;
 
 import com.google.android.gms.common.Scopes;
 import com.google.api.services.youtube.YouTubeScopes;

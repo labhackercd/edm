@@ -23,7 +23,7 @@ import java.io.InputStream;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.content.Message;
-import net.labhackercd.edemocracia.ytdl.Auth;
+import net.labhackercd.edemocracia.util.Auth;
 
 import javax.inject.Inject;
 

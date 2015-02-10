@@ -6,14 +6,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import net.labhackercd.edemocracia.liferay.session.EDMSession;
-import net.labhackercd.edemocracia.util.Identifiable;
 import net.labhackercd.edemocracia.util.GsonParcelable;
 import net.labhackercd.edemocracia.util.JSONReader;
 
 import java.io.Serializable;
 import java.util.Date;
 
-public class Message extends GsonParcelable implements Identifiable, Serializable {
+public class Message extends GsonParcelable implements Serializable {
 
     private int status;
     private boolean attachments;
@@ -172,11 +171,6 @@ public class Message extends GsonParcelable implements Identifiable, Serializabl
 
     public long getMessageId() {
         return messageId;
-    }
-
-    @Override
-    public long getId() {
-        return getMessageId();
     }
 
     public Uri getUserPortrait() {

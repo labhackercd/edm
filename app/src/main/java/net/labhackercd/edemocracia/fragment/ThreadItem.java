@@ -4,7 +4,6 @@ import android.net.Uri;
 
 import net.labhackercd.edemocracia.content.*;
 import net.labhackercd.edemocracia.content.Thread;
-import net.labhackercd.edemocracia.util.Identifiable;
 
 import java.util.Date;
 
@@ -13,7 +12,7 @@ import javax.annotation.Nullable;
 /**
  * An item in a ThreadListFragment. It warps a Thread or a Category.
  */
-class ThreadItem implements Identifiable {
+class ThreadItem {
     private final Thread thread;
     private final Category category;
 
@@ -38,16 +37,6 @@ class ThreadItem implements Identifiable {
     @Nullable
     public Thread getThread() {
         return thread;
-    }
-
-    @Override
-    public long getId() {
-        Thread thread = getThread();
-        if (thread != null) {
-            return getThread().getId();
-        } else {
-            return category.getId();
-        }
     }
 
     @Override
