@@ -1,5 +1,7 @@
 package net.labhackercd.edemocracia.liferay.session;
 
+import android.util.Log;
+
 import com.liferay.mobile.android.auth.Authentication;
 import com.liferay.mobile.android.exception.ServerException;
 import com.liferay.mobile.android.http.HttpUtil;
@@ -60,14 +62,14 @@ public class EDMSession extends SessionImpl {
 
     protected Exception tryAndSpecializeException(Exception e) {
         String err = e.getMessage().toLowerCase().trim();
-        if (err.matches(".*principal *exception")) {
+        if (err.matches(".*principal *exception.*")) {
             e = new PrincipalException(e);
-        } else if (err.matches(".*no *such") || err.matches(".*no *\\w+ *exists")) {
+        } else if (err.matches(".*(no *such|no *\\w+ *exists).*")) {
             e = new NotFoundException(e);
-        } else if (err.matches(".*please *sign") || err.matches(".*authenticated *access")
-                || err.matches(".*authentication failed")) {
+        } else if (err.matches(".*(please *sign|authenticated *access|authentication *failed).*")) {
             e = new AuthorizationException(e);
         }
+        Log.i("EDMSession", err + " converted to " + e.toString());
         return e;
     }
 
