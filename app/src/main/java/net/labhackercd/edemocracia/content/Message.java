@@ -42,12 +42,25 @@ public class Message extends GsonParcelable implements Serializable {
     private long messageId;
     private User user;
 
-    public static Message create(Thread thread, String subject, String body, String format,
-                                 boolean anonymous, double priority, boolean allowPingbacks) {
+    public static Message create(Thread thread, String subject, String body) {
         return create(
-                thread.getGroupId(), thread.getCategoryId(), thread.getThreadId(),
-                thread.getRootMessageId(), subject, body, format, anonymous, priority, allowPingbacks);
+                thread.getGroupId(), thread.getCategoryId(),
+                thread.getThreadId(), thread.getRootMessageId(), subject, body);
     }
+
+    public static Message create(Message parent, String subject, String body) {
+        return create(
+                parent.getGroupId(), parent.getCategoryId(),
+                parent.getThreadId(), parent.getMessageId(), subject, body);
+    }
+
+    public static Message create(long groupId, long categoryId, long threadId,
+                                 long parentMessageId, String subject, String body) {
+        return create(
+                groupId, categoryId, threadId,
+                parentMessageId,subject,body, "bbcode", false, 1.0, true);
+    }
+
 
     public static Message create(
         long groupId, long categoryId, long threadId, long parentMessageId, String subject,
@@ -235,4 +248,5 @@ public class Message extends GsonParcelable implements Serializable {
             return instance;
         }
     };
+
 }

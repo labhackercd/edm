@@ -70,7 +70,7 @@
                 android:layout_marginLeft="8sp"
                 android:id="@+id/reply"
                 android:src="@drawable/ic_reply_black_24dp"
-                android:alpha="0.7" />
+                android:alpha="0.4" />
         </LinearLayout>
 
     </LinearLayout>

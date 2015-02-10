@@ -18,6 +18,7 @@ import de.greenrobot.event.EventBus;
 import javax.inject.Singleton;
 
 import net.labhackercd.edemocracia.BuildConfig;
+import net.labhackercd.edemocracia.activity.ComposeActivity;
 import net.labhackercd.edemocracia.activity.MainActivity;
 import net.labhackercd.edemocracia.activity.SignInActivity;
 import net.labhackercd.edemocracia.activity.SplashScreenActivity;
@@ -52,6 +53,7 @@ public class EDMApplication extends MultiDexApplication implements DependencyInj
             injects = {
                     AddMessageJob.class,
                     VideoUploadJob.class,
+                    ComposeActivity.class,
                     MainActivity.class,
                     SignInActivity.class,
                     SplashScreenActivity.class,

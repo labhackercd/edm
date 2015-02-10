@@ -17,35 +17,43 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.common.base.Splitter;
+import com.path.android.jobqueue.JobManager;
 
 import java.io.FileNotFoundException;
 import java.util.List;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.content.Message;
+import net.labhackercd.edemocracia.application.EDMApplication;
 import net.labhackercd.edemocracia.content.Thread;
+import net.labhackercd.edemocracia.content.Message;
+import net.labhackercd.edemocracia.jobqueue.AddMessageJob;
+import net.labhackercd.edemocracia.jobqueue.VideoUploadJob;
+
+import javax.inject.Inject;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
-
 public class ComposeActivity extends ActionBarActivity {
-    public static final String THREAD_EXTRA = "thread";
-    public static final String MESSAGE_EXTRA = "message";
+    public static final String BODY_EXTRA = "body";
+    public static final String PARENT_EXTRA = "parent";
+    public static final String SUBJECT_EXTRA = "subject";
     public static final String VIDEO_ATTACHMENT_EXTRA = "videoAttachment";
     public static final String VIDEO_ATTACHMENT_ACCOUNT_EXTRA = "videoAttachmentAccount";
 
     private static final int RESULT_ATTACH_VIDEO = 17;
 
-    private Thread thread;
     private Uri attachedVideoUri;
-
     private String videoAccount;
+    private Parcelable parent;
 
+    @Inject JobManager jobManager;
+
+    @InjectView(R.id.message) TextView bodyView;
     @InjectView(R.id.subject) TextView subjectView;
-    @InjectView(R.id.message) TextView messageView;
     @InjectView(R.id.videoFrame) View videoFrame;
     @InjectView(R.id.videoThumb) ImageView videoThumbView;
     @InjectView(R.id.videoTitle) TextView videoTitleView;
@@ -55,35 +63,52 @@ public class ComposeActivity extends ActionBarActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        ((EDMApplication) getApplication()).inject(this);
+
         setContentView(R.layout.fragment_compose);
 
         ButterKnife.inject(this);
 
         Intent intent = getIntent();
 
-        thread = intent.getParcelableExtra(THREAD_EXTRA);
+        // Save the parent
+        parent = intent.getParcelableExtra(PARENT_EXTRA);
+
+        // Fill in the fields with their default values
+        String body = intent.getStringExtra(BODY_EXTRA);
+        if (body != null) {
+            bodyView.setText(body);
+        }
+
+        String subject = intent.getStringExtra(SUBJECT_EXTRA);
+
+        if (subject == null && parent != null) {
+            if (parent instanceof Thread) {
+                subject = ((Thread) parent).getSubject();
+            } else if (parent instanceof Message) {
+                subject = ((Message) parent).getSubject();
+            }
+            if (subject != null) {
+                subject = getReplySubject(subject);
+            }
+        }
+
+        if (subject != null) {
+            bodyView.requestFocus();
+            subjectView.setText(subject);
+        } else {
+            subjectView.requestFocus();
+        }
 
         // TODO Refactor this two into something *unique* or remove account entirely
         videoAccount = intent.getStringExtra(VIDEO_ATTACHMENT_ACCOUNT_EXTRA);
         attachedVideoUri = intent.getParcelableExtra(VIDEO_ATTACHMENT_EXTRA);
-
-        if (thread == null) {
-            throw new IllegalStateException("A non-null thread must be supplied");
-        }
 
         if (attachedVideoUri != null) {
             setAttachedVideoUri(attachedVideoUri);
         }
 
         setVideoFrameShown(attachedVideoUri != null);
-
-        if (thread != null && subjectView != null) {
-            subjectView.setText(getSubjectFor(thread));
-        }
-
-        if (messageView != null) {
-            messageView.requestFocus();
-        }
     }
 
     @Override
@@ -120,16 +145,6 @@ public class ComposeActivity extends ActionBarActivity {
                 }
                 break;
         }
-    }
-
-    private String getSubjectFor(Thread threadLike) {
-        String subject = threadLike.getSubject();
-
-        if (!subject.startsWith("RE:")) {
-            subject = "RE: " + subject;
-        }
-
-        return subject;
     }
 
     protected void setAttachedVideoUri(Uri uri) {
@@ -185,27 +200,41 @@ public class ComposeActivity extends ActionBarActivity {
     protected boolean sendMessage() {
         // Reset errors.
         subjectView.setError(null);
-        messageView.setError(null);
+        bodyView.setError(null);
 
         // Store values at the time of the login attempt.
-        String body = messageView.getText().toString();
+        String body = bodyView.getText().toString();
         String subject = subjectView.getText().toString();
 
-        Message message = Message.create(thread, subject, body, "bbcode", false, 0.0, true);
+        Message message;
 
-        Intent intent = new Intent();
-
-        intent.putExtra(MESSAGE_EXTRA, (Parcelable) message);
-
-        if (attachedVideoUri != null) {
-            intent.putExtra(VIDEO_ATTACHMENT_EXTRA, attachedVideoUri);
-            intent.putExtra(VIDEO_ATTACHMENT_ACCOUNT_EXTRA, videoAccount);
+        if (parent instanceof Thread) {
+            message = Message.create((Thread) parent, subject, body);
+        } else if (parent instanceof Message) {
+            message = Message.create((Message) parent, subject, body);
+        } else {
+            throw new IllegalStateException("Unexpected parent type.");
         }
 
-        setResult(Activity.RESULT_OK, intent);
+        if (attachedVideoUri != null) {
+            jobManager.addJob(new VideoUploadJob(attachedVideoUri, videoAccount, message));
+        } else {
+            jobManager.addJob(new AddMessageJob(message));
+        }
+
+        // FIXME We should probably trigger this from AddMessageJob.onJobAdded
+        Toast.makeText(this, R.string.sending_message, Toast.LENGTH_SHORT).show();
 
         finish();
 
         return true;
+    }
+
+    private static String getReplySubject(String subject) {
+        String prefix = "RE:";
+        if (!subject.startsWith(prefix)) {
+            subject = prefix + " " + subject;
+        }
+        return subject;
     }
 }

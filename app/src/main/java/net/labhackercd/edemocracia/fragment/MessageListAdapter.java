@@ -1,23 +1,23 @@
 package net.labhackercd.edemocracia.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Parcelable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
-import com.amulyakhare.textdrawable.util.ColorGenerator;
-import com.google.common.collect.Lists;
 import com.ocpsoft.pretty.time.PrettyTime;
 import com.squareup.picasso.Picasso;
 
 import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.activity.ComposeActivity;
 import net.labhackercd.edemocracia.content.Message;
 import net.labhackercd.edemocracia.fragment.simplerecyclerview.SimpleRecyclerViewAdapter;
 
@@ -26,6 +26,7 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import butterknife.OnClick;
 
 public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, MessageListAdapter.ViewHolder> {
 
@@ -100,6 +101,16 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
         public void onClick(View v) {
             if (message != null) {
                 // TODO Do something when a message is clicked
+            }
+        }
+
+        @OnClick(R.id.reply)
+        public void onReplyClick(View v) {
+            if (message != null) {
+                Intent intent = new Intent(context, ComposeActivity.class);
+                intent.setAction(Intent.ACTION_INSERT);
+                intent.putExtra(ComposeActivity.PARENT_EXTRA, (Parcelable) message);
+                context.startActivity(intent);
             }
         }
     }
