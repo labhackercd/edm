@@ -76,6 +76,13 @@ public class VideoPickerActivity extends Activity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        // XXX Finish activity if anything is cancelled through the flow.
+        // Be wary that if you need to deal with any RESULT_CANCELED below you
+        // should change this.
+        if (resultCode == Activity.RESULT_CANCELED) {
+            finish();
+        }
+
         switch (requestCode) {
             case REQUEST_GOOGLE_PLAY_SERVICES:
                 if (resultCode == Activity.RESULT_OK) {
