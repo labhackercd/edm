@@ -1,6 +1,7 @@
 package net.labhackercd.edemocracia.fragment;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,6 +11,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.amulyakhare.textdrawable.TextDrawable;
+import com.amulyakhare.textdrawable.util.ColorGenerator;
+import com.google.common.collect.Lists;
 import com.ocpsoft.pretty.time.PrettyTime;
 import com.squareup.picasso.Picasso;
 
@@ -76,15 +80,16 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
             }
 
             // Fill the user portrait
-            Uri portrait = message.getUserPortrait();
+            String letter = message.getUserName().trim().substring(0, 1).toUpperCase();
+            TextDrawable textDrawable = TextDrawable.builder().buildRect(letter, Color.LTGRAY);
 
+            Uri portrait = message.getUserPortrait();
             if (portrait == null) {
-                // Clean up portrait ImageView in case it's filled with someone else's portrait
-                portraitView.setImageDrawable(null);
+                portraitView.setImageDrawable(textDrawable);
             } else {
-                // Load current user's portrait image
                 Picasso.with(context)
                         .load(portrait)
+                        .placeholder(textDrawable)
                         .resize(100, 100)
                         .centerCrop()
                         .into(portraitView);

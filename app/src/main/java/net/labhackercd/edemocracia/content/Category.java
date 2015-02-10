@@ -96,7 +96,7 @@ public class Category extends GsonParcelable implements Forum {
     }
 
     public Uri getUserPortrait() {
-        return Uri.parse(EDMSession.SERVICE_URL + "/image/user_male_portrait?img_id=" + getUserId());
+        return null;
     }
 
     public static final JSONReader<Category> JSON_READER = new JSONReader<Category>() {

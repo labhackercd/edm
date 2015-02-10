@@ -37,6 +37,9 @@ android {
 repositories {
     jcenter()
     mavenCentral()
+    maven {
+        url 'http://dl.bintray.com/amulyakhare/maven'
+    }
 }
 
 dependencies {
@@ -67,4 +70,5 @@ dependencies {
     compile 'com.jakewharton:butterknife:6.1.0'
     compile 'de.greenrobot:eventbus:2.4.0'
     compile 'com.path:android-priority-jobqueue:1.1.2'
+    compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
 }

@@ -119,7 +119,12 @@ public class Thread extends GsonParcelable {
     }
 
     public Uri getUserPortrait() {
-        return Uri.parse(EDMSession.SERVICE_URL + "/image/user_male_portrait?img_id=" + getRootMessageUserId());
+        Uri portrait = null;
+        Message root = getRootMessage();
+        if (root != null) {
+            portrait = root.getUserPortrait();
+        }
+        return portrait;
     }
 
     public static final JSONReader<Thread> JSON_READER = new JSONReader<Thread>() {

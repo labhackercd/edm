@@ -1,6 +1,7 @@
 package net.labhackercd.edemocracia.fragment;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.amulyakhare.textdrawable.TextDrawable;
 import com.squareup.picasso.Picasso;
 
 import net.labhackercd.edemocracia.R;
@@ -63,8 +65,12 @@ public class GroupListAdapter extends SimpleRecyclerViewAdapter<Group, GroupList
 
             textView.setText(group.getName());
 
+            String letter = group.getName().trim().substring(0, 1).toUpperCase();
+            TextDrawable textDrawable = TextDrawable.builder().buildRect(letter, Color.LTGRAY);
+
             Picasso.with(context)
                     .load(group.getGroupImage())
+                    .placeholder(textDrawable)
                     .resize(128, 128)
                     .centerCrop()
                     .into(iconView);

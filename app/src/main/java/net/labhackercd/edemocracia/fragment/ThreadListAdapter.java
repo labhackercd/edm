@@ -1,6 +1,7 @@
 package net.labhackercd.edemocracia.fragment;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -9,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.amulyakhare.textdrawable.TextDrawable;
 import com.ocpsoft.pretty.time.PrettyTime;
 import com.squareup.picasso.Picasso;
 
@@ -84,12 +86,16 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
             this.item = item;
 
             // Fill the user portrait
+            String letter = item.getUserName().trim().substring(0, 1).toUpperCase();
+            TextDrawable textDrawable = TextDrawable.builder().buildRect(letter, Color.LTGRAY);
+
             Uri userPortrait = item.getUserPortrait();
             if (userPortrait == null) {
-                portraitView.setImageDrawable(null);
+                portraitView.setImageDrawable(textDrawable);
             } else {
                 Picasso.with(context)
                         .load(item.getUserPortrait())
+                        .placeholder(textDrawable)
                         .resize(100, 100)
                         .centerCrop()
                         .into(portraitView);
