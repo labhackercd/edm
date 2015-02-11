@@ -13,7 +13,6 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.util.Pair;
-import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -26,11 +25,11 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccoun
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.common.collect.Lists;
 
-import java.util.Arrays;
-import java.util.List;
-
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.util.Auth;
+
+import java.util.Arrays;
+import java.util.List;
 
 
 public class VideoPickerActivity extends Activity {
@@ -169,8 +168,7 @@ public class VideoPickerActivity extends Activity {
             }
         };
 
-        new AlertDialog.Builder(
-                new ContextThemeWrapper(this, android.R.style.Theme_Material_Light_Dialog))
+        new AlertDialog.Builder(this)
                 .setOnCancelListener(new DialogInterface.OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
