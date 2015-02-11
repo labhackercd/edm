@@ -15,8 +15,7 @@ import com.ocpsoft.pretty.time.PrettyTime;
 import com.squareup.picasso.Picasso;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.activity.ShowForumEvent;
-import net.labhackercd.edemocracia.activity.ShowThreadEvent;
+import net.labhackercd.edemocracia.activity.MainActivity;
 import net.labhackercd.edemocracia.content.Forum;
 import net.labhackercd.edemocracia.fragment.simplerecyclerview.SimpleRecyclerViewAdapter;
 
@@ -75,9 +74,9 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
             if (item != null) {
                 Forum forum = item.getForum();
                 if (forum != null) {
-                    eventBus.post(new ShowForumEvent(forum));
+                    eventBus.post(new MainActivity.ShowForumEvent(forum));
                 } else {
-                    eventBus.post(new ShowThreadEvent(item.getThread()));
+                    eventBus.post(new MainActivity.ShowThreadEvent(item.getThread()));
                 }
             }
         }

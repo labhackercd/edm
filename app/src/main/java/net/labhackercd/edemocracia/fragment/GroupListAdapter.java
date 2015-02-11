@@ -13,7 +13,7 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.squareup.picasso.Picasso;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.activity.ShowForumEvent;
+import net.labhackercd.edemocracia.activity.MainActivity;
 import net.labhackercd.edemocracia.content.Group;
 import net.labhackercd.edemocracia.fragment.simplerecyclerview.SimpleRecyclerViewAdapter;
 
@@ -79,7 +79,7 @@ public class GroupListAdapter extends SimpleRecyclerViewAdapter<Group, GroupList
         @Override
         public void onClick(View v) {
             if (group != null) {
-                eventBus.post(new ShowForumEvent(group));
+                eventBus.post(new MainActivity.ShowForumEvent(group));
             }
         }
     }

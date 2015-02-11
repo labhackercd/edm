@@ -130,4 +130,28 @@ public class MainActivity extends ActionBarActivity {
             }
         }
     }
+
+    public static class ShowForumEvent {
+        private final Forum forum;
+
+        public ShowForumEvent(Forum forum) {
+            this.forum = forum;
+        }
+
+        public Forum getForum() {
+            return forum;
+        }
+    }
+
+    public static class ShowThreadEvent {
+        private final Thread thread;
+
+        public ShowThreadEvent(Thread thread) {
+            this.thread = thread;
+        }
+
+        public Thread getThread() {
+            return thread;
+        }
+    }
 }
