@@ -133,8 +133,8 @@ public class EDMGetSessionWrapper implements Session {
                 } catch (IOException e) {
                     throw e;
                 } catch (Exception e) {
-                    // TODO FIXME We should really not do this
-                    // But liferay-mobile-sdk-android won't let us know what's happening
+                    // XXX We should really not do this, but liferay-mobile-sdk-android
+                    // won't let us know what's happening.
                     throw new RuntimeException(e);
                 }
             }

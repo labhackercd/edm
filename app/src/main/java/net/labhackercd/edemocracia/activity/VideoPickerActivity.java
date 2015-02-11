@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,13 +34,9 @@ import java.util.List;
 
 
 public class VideoPickerActivity extends Activity {
+    private static final String TAG = VideoPickerActivity.class.getSimpleName();
     private static final String ARG_ACCOUNT_NAME = "accountName";
-    private String chosenAccountName;
-    private GoogleAccountCredential credential;
 
-    public static final int RESULT_PICK = 4;
-
-    private static final int REQUEST_DIRECT_TAG = 12;
     public static final int REQUEST_AUTHORIZATION = 13;
     private static final int REQUEST_GOOGLE_PLAY_SERVICES = 14;
     private static final int RESULT_PICK_IMAGE_CROP = 15;
@@ -47,26 +44,28 @@ public class VideoPickerActivity extends Activity {
     private static final int REQUEST_ACCOUNT_PICKER = 17;
     private static final int REQUEST_ACCOUNT_PICKER_AND_THEN_ATTACH = 18;
 
+    private String chosenAccountName;
+    private GoogleAccountCredential credential;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setFinishOnTouchOutside(true);
 
-        chosenAccountName = loadChosenAccount();
-
-        credential = GoogleAccountCredential.usingOAuth2(
-                getApplicationContext(), Arrays.asList(Auth.SCOPES));
-        credential.setBackOff(new ExponentialBackOff());
-        credential.setSelectedAccountName(chosenAccountName);
-
-        // Process intents
         Intent intent = getIntent();
 
         if (Intent.ACTION_PICK.equals(intent.getAction())) {
+            chosenAccountName = loadChosenAccount();
+
+            credential = GoogleAccountCredential.usingOAuth2(
+                    getApplicationContext(), Arrays.asList(Auth.SCOPES));
+            credential.setBackOff(new ExponentialBackOff());
+            credential.setSelectedAccountName(chosenAccountName);
+
             attachVideo();
         } else {
-            // FIXME What to do when no action is requested?
+            Log.w(TAG, "Activity called without any action. Finishing...");
             finish();
         }
     }

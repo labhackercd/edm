@@ -96,8 +96,6 @@ public class MainActivity extends ActionBarActivity {
 
     @SuppressWarnings("UnusedDeclaration")
     public void onEventMainThread(AddMessageJob.Failure event) {
-        // TODO FIXME Should we add the message to the queue again?
-        // Or start the queue service again? What should we do!?
         Toast.makeText(this, "Failed to submit message", Toast.LENGTH_SHORT).show();
     }
 
