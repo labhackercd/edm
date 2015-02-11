@@ -6,10 +6,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.path.android.jobqueue.JobManager;
@@ -30,10 +32,10 @@ import net.labhackercd.edemocracia.util.Constants;
 import de.greenrobot.event.EventBus;
 
 public class MainActivity extends ActionBarActivity {
-
-    @Inject JobManager jobManager;
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     @Inject EventBus eventBus;
+    @Inject JobManager jobManager;
 
     private UploadBroadcastReceiver uploadBroadcastReceiver;
 
@@ -45,15 +47,44 @@ public class MainActivity extends ActionBarActivity {
 
         setContentView(R.layout.activity_main);
 
-        ActionBar actionBar = getSupportActionBar();
+        final ActionBar actionBar = getSupportActionBar();
+
         if (actionBar != null) {
+            actionBar.setHomeButtonEnabled(true);
+            actionBar.setDisplayShowHomeEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(false);
         }
 
+        final FragmentManager fragmentManager = getSupportFragmentManager();
+
+        getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                final boolean showBackButton = fragmentManager.getBackStackEntryCount() > 0;
+                if (actionBar != null) {
+                    actionBar.setDisplayHomeAsUpEnabled(showBackButton);
+                    actionBar.setDisplayShowHomeEnabled(!showBackButton);
+                }
+            }
+        });
+
         if (savedInstanceState == null) {
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
             transaction.add(R.id.container, new GroupListFragment());
             transaction.commit();
+        }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        // Pop back stack (go to previous fragment) until we get to home,
+        // then close the application.
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        if (fragmentManager.getBackStackEntryCount() > 0) {
+            fragmentManager.popBackStack();
+            return true;
+        } else {
+            return super.onSupportNavigateUp();
         }
     }
 
