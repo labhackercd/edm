@@ -29,11 +29,13 @@ import de.greenrobot.event.EventBus;
 public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, ThreadListAdapter.ViewHolder> {
 
     private final Context context;
+    private final Picasso picasso;
     private final EventBus eventBus;
 
-    public ThreadListAdapter(Context context, EventBus eventBus, List<ThreadItem> items) {
+    public ThreadListAdapter(Context context, Picasso picasso, EventBus eventBus, List<ThreadItem> items) {
         super(items);
         this.context = context;
+        this.picasso = picasso;
         this.eventBus = eventBus;
     }
 
@@ -92,8 +94,7 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
             if (userPortrait == null) {
                 portraitView.setImageDrawable(textDrawable);
             } else {
-                Picasso.with(context)
-                        .load(item.getUserPortrait())
+                picasso.load(item.getUserPortrait())
                         .placeholder(textDrawable)
                         .resize(100, 100)
                         .centerCrop()

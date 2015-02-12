@@ -25,6 +25,10 @@ public class EDMApplication extends Application {
         objectGraph.inject(object);
     }
 
+    public static EDMApplication get(Context context) {
+        return (EDMApplication) context.getApplicationContext();
+    }
+
     /**
      * A Timber Tree that logs important information for crash reporting.
      */

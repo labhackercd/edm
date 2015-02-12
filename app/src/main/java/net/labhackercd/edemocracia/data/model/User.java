@@ -1,13 +1,6 @@
 package net.labhackercd.edemocracia.data.model;
 
-import net.labhackercd.edemocracia.data.model.util.JSONReader;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.Date;
-
-import static net.labhackercd.edemocracia.data.model.util.JSON.getJSONLongAsDate;
 
 public class User {
     private boolean agreedToTermsOfUse;
@@ -180,48 +173,4 @@ public class User {
     public String getUUID() {
         return uuid;
     }
-
-    public static final JSONReader<User> JSON_READER = new JSONReader<User>() {
-        @Override
-        public User fromJSON(JSONObject json) throws JSONException {
-            User instance = new User();
-
-            instance.agreedToTermsOfUse = json.getBoolean("agreedToTermsOfUse");
-            instance.comments = json.getString("comments");
-            instance.companyId = json.getLong("companyId");
-            instance.contactId = json.getLong("contactId");
-            instance.createDate = getJSONLongAsDate(json, "createDate");
-            instance.defaultUser = json.getBoolean("defaultUser");
-            instance.emailAddress = json.getString("emailAddress");
-            instance.emailAddressVerified = json.getBoolean("emailAddressVerified");
-            instance.facebookId = json.getLong("facebookId");
-            instance.failedLoginAttempts = json.getInt("failedLoginAttempts");
-            instance.firstName = json.getString("firstName");
-            instance.graceLoginCount = json.getInt("graceLoginCount");
-            instance.greeting = json.getString("greeting");
-            instance.jobTitle = json.getString("jobTitle");
-            instance.languageId = json.getString("languageId");
-            instance.lastFailedLoginDate = getJSONLongAsDate(json, "lastFailedLoginDate");
-            instance.lastLoginDate = getJSONLongAsDate(json, "lastLoginDate");
-            instance.lastLoginIP = json.getString("lastLoginIP");
-            instance.lastName = json.getString("lastName");
-            instance.lockout = json.getBoolean("lockout");
-            instance.lockoutDate = getJSONLongAsDate(json, "lockoutDate");
-            instance.loginDate = getJSONLongAsDate(json, "loginDate");
-            instance.loginIP = json.getString("loginIP");
-            instance.middleName = json.getString("middleName");
-            instance.modifiedDate = getJSONLongAsDate(json, "modifiedDate");
-            instance.openId = json.getString("openId");
-            instance.portraitId = json.getLong("portraitId");
-            instance.reminderQueryAnswer = json.getString("reminderQueryAnswer");
-            instance.reminderQueryQuestion = json.getString("reminderQueryQuestion");
-            instance.screenName = json.getString("screenName");
-            instance.status = json.getInt("status");
-            instance.timeZoneId = json.getString("timeZoneId");
-            instance.userId = json.getLong("userId");
-            instance.uuid = json.getString("uuid");
-
-            return instance;
-        }
-    };
 }

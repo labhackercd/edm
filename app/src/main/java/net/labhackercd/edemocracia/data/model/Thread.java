@@ -2,12 +2,6 @@ package net.labhackercd.edemocracia.data.model;
 
 import android.net.Uri;
 
-import net.labhackercd.edemocracia.data.model.util.GsonParcelable;
-import net.labhackercd.edemocracia.data.model.util.JSONReader;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.Date;
 
 public class Thread extends GsonParcelable {
@@ -125,34 +119,4 @@ public class Thread extends GsonParcelable {
         }
         return portrait;
     }
-
-    public static final JSONReader<Thread> JSON_READER = new JSONReader<Thread>() {
-        @Override
-        public Thread fromJSON(JSONObject json) throws JSONException {
-            Thread instance = new Thread();
-
-            instance.status = json.getInt("status");
-            instance.viewCount = json.getInt("viewCount");
-            instance.messageCount = json.getInt("messageCount");
-            instance.lastPostDate = new Date(json.getLong("lastPostDate"));
-            instance.companyId = json.getLong("companyId");
-            instance.statusByUserId = json.getLong("statusByUserId");
-            instance.rootMessageUserId = json.getLong("rootMessageUserId");
-            instance.rootMessageId = json.getLong("rootMessageId");
-            instance.question = json.getBoolean("question");
-            instance.lastPostByUserId = json.getLong("lastPostByUserId");
-            instance.priority = json.getInt("priority");
-            instance.threadId = json.getLong("threadId");
-            instance.groupId = json.getLong("groupId");
-            instance.statusByUserName = json.getString("statusByUserName");
-            instance.statusDate = new Date(json.getLong("statusDate"));
-            instance.categoryId = json.getLong("categoryId");
-
-            if (json.has("rootMessage")) {
-                instance.rootMessage = Message.JSON_READER.fromJSON(json.getJSONObject("rootMessage"));
-            }
-
-            return instance;
-        }
-    };
 }

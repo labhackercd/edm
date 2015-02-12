@@ -3,70 +3,103 @@ package net.labhackercd.edemocracia.ui;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
-import com.liferay.mobile.android.v62.user.UserService;
-
-import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.EDMApplication;
+import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.data.api.error.ClientErrorEvent;
 import net.labhackercd.edemocracia.data.model.User;
-import net.labhackercd.edemocracia.data.api.EDMSession;
-import net.labhackercd.edemocracia.data.api.SessionManager;
-
-import org.json.JSONObject;
+import net.labhackercd.edemocracia.data.api.SharedPreferencesCredentialStorage;
+import net.labhackercd.edemocracia.data.api.GroupService;
 
 import javax.inject.Inject;
 
+import de.greenrobot.event.EventBus;
+import de.greenrobot.event.util.AsyncExecutor;
+import de.greenrobot.event.util.ThrowableFailureEvent;
 import timber.log.Timber;
 
 public class SplashScreenActivity extends Activity {
-    @Inject EDMSession session;
-    @Inject SessionManager sessionManager;
+    private static final String TAG = SplashScreenActivity.class.getSimpleName();
+
+    @Inject EventBus eventBus;
+    @Inject GroupService groupService;
+    @Inject SharedPreferencesCredentialStorage credentials;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ((EDMApplication) getApplication()).inject(this);
+        EDMApplication.get(this).inject(this);
 
         setContentView(R.layout.activity_splash_screen);
 
         // Kick off a background thread to check if the user is authenticated
-        new Thread(new Runnable() {
+        AsyncExecutor.builder().buildForScope(this).execute(new AsyncExecutor.RunnableEx() {
             @Override
-            public void run() {
-                checkIsAuthenticated();
+            public void run() throws Exception {
+                User user = groupService.getUserById();
+                eventBus.post(new AuthenticationSuccess(user));
             }
-        }).start();
+        });
     }
 
-    private void checkIsAuthenticated() {
-        // Essentially, the session is authenticated if it is associated
-        // with some credentials and some user information.
-        boolean isAuthenticated = session.getAuthentication() != null && session.getUser() != null;
+    @Override
+    protected void onResume() {
+        super.onResume();
+        eventBus.register(this);
+    }
 
-        if (isAuthenticated) {
-            JSONObject jsonUser;
+    @Override
+    protected void onPause() {
+        eventBus.unregister(this);
+        super.onPause();
+    }
 
-            try {
-                // But just for the sake of it, we try to reach the remote service.
-                // And since we're at it, update the user information.
-                jsonUser = new UserService(session).getUserById(session.getUser().getUserId());
+    /**
+     * Called when the authentication attempt goes alright.
+     */
+    @SuppressWarnings("UnusedDeclaration")
+    public void onEventMainThread(AuthenticationSuccess event) {
+        // TODO Store the user for future uses.
 
-                // FIXME We should only set and save if the user info changed
-                session.setUser(User.JSON_READER.fromJSON(jsonUser));
+        startNextActivity(true);
+    }
 
-                sessionManager.save(session);
-            } catch (Exception e) {
-                // We keep the previous result if something goes wrong, but we log the exception
-                // as a warning just for the sake of it.
-                Timber.e(e, "Failed to check user credentials.");
-            }
+    /**
+     * Called when something goes wrong while authenticating.
+     */
+    @SuppressWarnings("UnusedDeclaration")
+    public void onEventMainThread(ThrowableFailureEvent event) {
+        if (!this.equals(event.getExecutionScope())) {
+            // Don't touch other people's business.
+            return;
         }
 
+        // If the failure wasn't caused by a network error send the user
+        // to the login screen.
+        if (!ClientErrorEvent.isNetworkError(event)) {
+            credentials.clear();
+        }
+
+        // Only way we know to *kind of check* if the user is authenticated without
+        // relying on connectivity.
+        boolean isAuthenticated = credentials.load() != null;
+
+        startNextActivity(isAuthenticated);
+    }
+
+    private void startNextActivity(boolean isAuthenticated) {
         Class nextActivity = isAuthenticated ? MainActivity.class : SignInActivity.class;
 
         startActivity(new Intent(getApplicationContext(), nextActivity));
         finish();
+    }
+
+    private static class AuthenticationSuccess {
+        public final User user;
+
+        public AuthenticationSuccess(User user) {
+            this.user = user;
+        }
     }
 }

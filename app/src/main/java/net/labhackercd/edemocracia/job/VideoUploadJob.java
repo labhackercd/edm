@@ -28,6 +28,7 @@ import net.labhackercd.edemocracia.youtube.Constants;
 import javax.inject.Inject;
 
 public class VideoUploadJob extends Job {
+    private static final String TAG = "VideoUploadTask";
 
     public static final int PRIORITY = -1;
 

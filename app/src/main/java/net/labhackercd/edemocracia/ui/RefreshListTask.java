@@ -3,6 +3,7 @@ package net.labhackercd.edemocracia.ui;
 import android.os.AsyncTask;
 
 import de.greenrobot.event.EventBus;
+import de.greenrobot.event.util.ThrowableFailureEvent;
 
 /**
  * TODO: Replace *tag* checking mechanism with something like a result class builder in such
@@ -13,39 +14,24 @@ import de.greenrobot.event.EventBus;
  * @param <T>
  */
 public class RefreshListTask<T> extends AsyncTask<Void, Void, Void> {
-
     public interface Task<T> {
         public T execute() throws Exception;
     }
 
-    public static class ResultEvent<T> {
+    public static class SuccessEvent<T> {
         private final T result;
         private final Object tag;
-        private final Throwable throwable;
 
-        public ResultEvent(T result, Object tag) {
-            this(result, null, tag);
-        }
-
-        public ResultEvent(Throwable throwable, Object tag) {
-            this(null, throwable, tag);
-        }
-
-        private ResultEvent(T result, Throwable throwable, Object tag) {
+        public SuccessEvent(T result, Object tag) {
             this.tag = tag;
             this.result = result;
-            this.throwable = throwable;
         }
 
         public T getResult() {
             return result;
         }
 
-        public Throwable getThrowable() {
-            return throwable;
-        }
-
-        public Object getTag() {
+        public Object getExecutionScope() {
             return tag;
         }
     }
@@ -67,10 +53,12 @@ public class RefreshListTask<T> extends AsyncTask<Void, Void, Void> {
         try {
             result = task.execute();
         } catch (Exception e) {
-            eventBus.postSticky(new ResultEvent<T>(e, tag));
+            ThrowableFailureEvent failureEvent = new ThrowableFailureEvent(e);
+            failureEvent.setExecutionScope(tag);
+            eventBus.post(failureEvent);
             return null;
         }
-        eventBus.postSticky(new ResultEvent<>(result, tag));
+        eventBus.postSticky(new SuccessEvent<>(result, tag));
         return null;
     }
 }

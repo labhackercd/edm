@@ -13,26 +13,22 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.widget.Toast;
 
-import com.path.android.jobqueue.JobManager;
-
 import javax.inject.Inject;
 
 import net.labhackercd.edemocracia.EDMApplication;
-import net.labhackercd.edemocracia.ui.message.PlayButtonOverlayTransformation;
+import net.labhackercd.edemocracia.ui.message.MessageListFragment;
 import net.labhackercd.edemocracia.ui.thread.ThreadListFragment;
 import net.labhackercd.edemocracia.ui.group.GroupListFragment;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.model.*;
 import net.labhackercd.edemocracia.data.model.Thread;
 import net.labhackercd.edemocracia.job.AddMessageJob;
-import net.labhackercd.edemocracia.job.VideoUploadJob;
 import net.labhackercd.edemocracia.youtube.Constants;
 
 import de.greenrobot.event.EventBus;
 
 public class MainActivity extends ActionBarActivity {
     @Inject EventBus eventBus;
-    @Inject JobManager jobManager;
 
     private UploadBroadcastReceiver uploadBroadcastReceiver;
 
@@ -40,7 +36,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ((EDMApplication) getApplication()).inject(this);
+        EDMApplication.get(this).inject(this);
 
         setContentView(R.layout.activity_main);
 
@@ -98,23 +94,12 @@ public class MainActivity extends ActionBarActivity {
         }
         broadcastManager.registerReceiver(
                 uploadBroadcastReceiver, new IntentFilter(Constants.REQUEST_AUTHORIZATION_INTENT));
-
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         eventBus.unregister(this);
-    }
-
-    public void addAddMessageTask(AddMessageJob task) {
-        jobManager.addJob(task);
-        jobManager.start();
-    }
-
-    public void addVideoUploadTask(VideoUploadJob task) {
-        jobManager.addJob(task);
-        jobManager.start();
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -136,7 +121,7 @@ public class MainActivity extends ActionBarActivity {
     @SuppressWarnings("UnusedDeclaration")
     public void onEventMainThread(ShowThreadEvent event) {
         Thread thread = event.getThread();
-        replaceMainFragment(PlayButtonOverlayTransformation.newInstance(thread));
+        replaceMainFragment(MessageListFragment.newInstance(thread));
     }
 
     protected void replaceMainFragment(Fragment fragment) {

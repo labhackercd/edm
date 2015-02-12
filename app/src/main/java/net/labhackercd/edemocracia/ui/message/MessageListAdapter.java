@@ -34,10 +34,12 @@ import butterknife.OnClick;
 public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, MessageListAdapter.ViewHolder> {
 
     private final Context context;
+    private final Picasso picasso;
 
-    public MessageListAdapter(Context context, List<Message> items) {
+    public MessageListAdapter(Context context, Picasso picasso, List<Message> items) {
         super(items);
         this.context = context;
+        this.picasso = picasso;
     }
 
     @Override
@@ -149,8 +151,7 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
             if (portrait == null) {
                 portraitView.setImageDrawable(textDrawable);
             } else {
-                Picasso.with(context)
-                        .load(portrait)
+                picasso.load(portrait)
                         .placeholder(textDrawable)
                         .resize(100, 100)
                         .centerCrop()
