@@ -31,8 +31,6 @@ import net.labhackercd.edemocracia.youtube.Constants;
 import de.greenrobot.event.EventBus;
 
 public class MainActivity extends ActionBarActivity {
-    private static final String TAG = MainActivity.class.getSimpleName();
-
     @Inject EventBus eventBus;
     @Inject JobManager jobManager;
 

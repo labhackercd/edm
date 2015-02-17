@@ -12,7 +12,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,10 +32,9 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import de.greenrobot.event.EventBus;
+import timber.log.Timber;
 
 public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
-    private static final String TAG = SimpleRecyclerViewFragment.class.getSimpleName();
-
     private RefreshListTask<List<T>> refreshListTask;
     private SwipeRefreshLayout swipeRefreshLayout;
 
@@ -115,7 +113,6 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
         // in the event bus. This is because it can happen that current sticky event in
         // the event bus is still our list, so we don't need to load it again.
         if (recyclerView.getAdapter() == null) {
-            Log.i(TAG, "Refreshing the list (for the first time?)");
             refreshList();
         }
     }
@@ -147,7 +144,7 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
     @SuppressWarnings("UnusedDeclaration")
     public void onEventMainThread(RefreshListTask.ResultEvent<List<T>> event) {
         if (!event.getTag().equals(getClass())) {
-            Log.d(TAG, "Tags aren't equal: " + getClass() + " != " + event.getTag());
+            // This is not our business..
             return;
         }
 
@@ -159,7 +156,7 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
         } else {
             // Failure events should only be dealt with once. Unregister this one.
             eventBus.removeStickyEvent(event);
-            Log.w(TAG, "Something went wrong while loading a list: " + e);
+            Timber.e(e, "Failed to load list data.");
             onRefreshFailure(e);
         }
     }
@@ -199,8 +196,6 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
     }
 
     protected void onRefreshResult(List<T> result) {
-        Log.d(TAG, "Got a result!");
-
         RecyclerView.Adapter adapter = null;
 
         // Ensure that the error message is not visible

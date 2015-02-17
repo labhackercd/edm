@@ -8,7 +8,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
@@ -37,6 +36,7 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.OnEditorAction;
+import timber.log.Timber;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.EDMApplication;
@@ -198,7 +198,7 @@ public class SignInActivity extends Activity {
             }
 
             if (user == null) {
-                Log.e(TAG, "Error while authenticating user.", exception);
+                Timber.e(exception, "Failed to authenticate user.");
             } else {
                 // Save the user.
                 session.setUser(user);

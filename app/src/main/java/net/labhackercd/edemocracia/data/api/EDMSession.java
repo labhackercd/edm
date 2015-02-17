@@ -69,7 +69,6 @@ public class EDMSession extends SessionImpl {
         } else if (err.matches(".*(please *sign|authenticated *access|authentication *failed).*")) {
             e = new AuthorizationException(e);
         }
-        Log.i("EDMSession", err + " converted to " + e.toString());
         return e;
     }
 

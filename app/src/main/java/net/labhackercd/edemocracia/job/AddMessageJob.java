@@ -1,30 +1,29 @@
 package net.labhackercd.edemocracia.job;
 
+import com.path.android.jobqueue.Job;
+
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import com.liferay.mobile.android.service.JSONObjectWrapper;
 import com.liferay.mobile.android.v62.mbmessage.MBMessageService;
-import com.path.android.jobqueue.Job;
 import com.path.android.jobqueue.Params;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import net.labhackercd.edemocracia.data.model.Message;
 import net.labhackercd.edemocracia.data.api.EDMGetSessionWrapper;
 import net.labhackercd.edemocracia.data.api.EDMSession;
+import net.labhackercd.edemocracia.data.model.Message;
 
 import javax.inject.Inject;
 
 import de.greenrobot.event.EventBus;
+import timber.log.Timber;
 
 public class AddMessageJob extends Job {
-
     public static final int PRIORITY = 1;
 
-    private static final String TAG = "AddMessageJob";
     private static final Handler MAIN_THREAD = new Handler(Looper.getMainLooper());
 
     // XXX Injected fields are declared transient in order to not be serialized
@@ -45,8 +44,6 @@ public class AddMessageJob extends Job {
 
     @Override
     public void onRun() throws Throwable {
-        Log.d(TAG, "Adding message...");
-
         JSONObject serviceContextJson = new JSONObject();
         serviceContextJson.put("addGuestPermissions", true);
 
@@ -77,7 +74,7 @@ public class AddMessageJob extends Job {
 
     @Override
     protected boolean shouldReRunOnThrowable(Throwable throwable) {
-        Log.w(TAG, "Failed to add message: " + throwable);
+        Timber.e(throwable, "Failed to add message.");
         return true;
     }
 

@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,9 +31,9 @@ import net.labhackercd.edemocracia.youtube.Constants;
 import java.util.Arrays;
 import java.util.List;
 
+import timber.log.Timber;
 
 public class VideoPickerActivity extends Activity {
-    private static final String TAG = VideoPickerActivity.class.getSimpleName();
     private static final String ARG_ACCOUNT_NAME = "accountName";
 
     public static final int REQUEST_AUTHORIZATION = 13;
@@ -65,7 +64,7 @@ public class VideoPickerActivity extends Activity {
 
             attachVideo();
         } else {
-            Log.w(TAG, "Activity called without any action. Finishing...");
+            Timber.i("Video picker activity called without any action. Finishing.");
             finish();
         }
     }

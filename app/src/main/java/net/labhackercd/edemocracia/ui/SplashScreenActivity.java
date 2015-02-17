@@ -17,9 +17,9 @@ import org.json.JSONObject;
 
 import javax.inject.Inject;
 
-public class SplashScreenActivity extends Activity {
-    private static final String TAG = SplashScreenActivity.class.getSimpleName();
+import timber.log.Timber;
 
+public class SplashScreenActivity extends Activity {
     @Inject EDMSession session;
     @Inject SessionManager sessionManager;
 
@@ -60,7 +60,7 @@ public class SplashScreenActivity extends Activity {
             } catch (Exception e) {
                 // We keep the previous result if something goes wrong, but we log the exception
                 // as a warning just for the sake of it.
-                Log.w(TAG, "Failed to check user credentials.", e);
+                Timber.e(e, "Failed to check user credentials.");
             }
         }
 

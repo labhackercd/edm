@@ -1,7 +1,6 @@
 package net.labhackercd.edemocracia.job;
 
 import android.app.Application;
-import android.util.Log;
 
 import com.path.android.jobqueue.BaseJob;
 import com.path.android.jobqueue.JobManager;
@@ -16,6 +15,7 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import timber.log.Timber;
 
 @Module(
         injects = AddMessageJob.class,
@@ -29,8 +29,6 @@ public class JobModule {
     JobManager provideJobManager(final Application application) {
         Configuration configuration = new Configuration.Builder(application)
                 .customLogger(new CustomLogger() {
-                    public static final String TAG = "JobManager";
-
                     @Override
                     public boolean isDebugEnabled() {
                         return BuildConfig.DEBUG;
@@ -38,17 +36,17 @@ public class JobModule {
 
                     @Override
                     public void d(String text, Object... args) {
-                        Log.d(TAG, String.format(text, args));
+                        Timber.d(text, args);
                     }
 
                     @Override
                     public void e(Throwable t, String text, Object... args) {
-                        Log.e(TAG, String.format(text, args), t);
+                        Timber.e(t, text, args);
                     }
 
                     @Override
                     public void e(String text, Object... args) {
-                        Log.e(TAG, String.format(text, args));
+                        Timber.e(text, args);
                     }
                 })
                 .minConsumerCount(0)

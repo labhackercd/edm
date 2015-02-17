@@ -2,7 +2,6 @@ package net.labhackercd.edemocracia.job;
 
 import android.app.Application;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -31,8 +30,6 @@ import javax.inject.Inject;
 public class VideoUploadJob extends Job {
 
     public static final int PRIORITY = -1;
-
-    private static final String TAG = "VideoUploadTask";
 
     // XXX Injected fields are declared transient in order to not be serialized
     @Inject transient JobManager jobManager;
