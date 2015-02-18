@@ -17,13 +17,11 @@ import org.json.JSONObject;
 
 import javax.inject.Inject;
 
-
 public class SplashScreenActivity extends Activity {
     private static final String TAG = SplashScreenActivity.class.getSimpleName();
 
     @Inject EDMSession session;
-    @Inject
-    SessionManager sessionManager;
+    @Inject SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

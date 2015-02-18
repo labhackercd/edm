@@ -1,5 +1,6 @@
 package net.labhackercd.edemocracia.job;
 
+import android.app.Application;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
@@ -34,8 +35,8 @@ public class VideoUploadJob extends Job {
     private static final String TAG = "VideoUploadTask";
 
     // XXX Injected fields are declared transient in order to not be serialized
-    @Inject transient Context context;
     @Inject transient JobManager jobManager;
+    @Inject transient Application application;
 
     private String video;
     private String account;
@@ -55,12 +56,12 @@ public class VideoUploadJob extends Job {
     @Override
     public void onRun() throws Throwable {
         GoogleAccountCredential credential = GoogleAccountCredential
-                .usingOAuth2(context.getApplicationContext(), Lists.newArrayList(Constants.AUTH_SCOPES));
+                .usingOAuth2(application, Lists.newArrayList(Constants.AUTH_SCOPES));
 
         credential.setSelectedAccountName(account);
         credential.setBackOff(new ExponentialBackOff());
 
-        String appName = context.getResources().getString(R.string.app_name);
+            String appName = application.getResources().getString(R.string.app_name);
 
         final HttpTransport transport = AndroidHttp.newCompatibleTransport();
         final JsonFactory jsonFactory = new GsonFactory();
@@ -68,7 +69,7 @@ public class VideoUploadJob extends Job {
         YouTube youtube = new YouTube.Builder(transport, jsonFactory, credential)
                 .setApplicationName(appName).build();
 
-        ContentResolver contentResolver = context.getContentResolver();
+        ContentResolver contentResolver = application.getContentResolver();
 
         Uri video = Uri.parse(VideoUploadJob.this.video);
         InputStream fileInputStream = null;
@@ -83,7 +84,7 @@ public class VideoUploadJob extends Job {
 
             final String videoId = ResumableUpload.upload(
                     youtube, fileInputStream, fileSize, video,
-                    cursor.getString(column_index), context);
+                    cursor.getString(column_index), application);
 
             assert videoId != null;
 
