@@ -13,13 +13,13 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
-        android:name=".application.EDMApplication"
+        android:name=".EDMApplication"
         android:allowBackup="true"
         android:icon="@drawable/icon"
         android:label="@string/app_name"
         android:theme="@style/Theme.GreenTheme">
         <activity
-            android:name=".activity.SplashScreenActivity"
+            android:name=".ui.SplashScreenActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.GreenTheme.NoActionBar"
             android:screenOrientation="portrait">
@@ -29,40 +29,40 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.SignInActivity"
+            android:name=".ui.SignInActivity"
             android:label="@string/title_activity_sign_in"
-            android:parentActivityName=".activity.SplashScreenActivity"
+            android:parentActivityName=".ui.SplashScreenActivity"
             android:theme="@style/Theme.GreenTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateVisible" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activity.SplashScreenActivity" />
+                android:value=".ui.SplashScreenActivity" />
         </activity>
         <activity
-            android:name=".activity.MainActivity"
-            android:parentActivityName=".activity.SplashScreenActivity" >
+            android:name=".ui.MainActivity"
+            android:parentActivityName=".ui.SplashScreenActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activity.SplashScreenActivity" />
+                android:value=".ui.SplashScreenActivity" />
         </activity>
         <activity
-            android:name=".activity.ComposeActivity"
-            android:parentActivityName=".activity.MainActivity" >
+            android:name=".ui.message.ComposeActivity"
+            android:parentActivityName=".ui.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activity.MainActivity" />
+                android:value=".ui.MainActivity" />
         </activity>
         <activity
-            android:name=".activity.VideoPickerActivity"
+            android:name=".ui.VideoPickerActivity"
             android:label="@string/attach_video"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:excludeFromRecents="true"
             android:windowSoftInputMode="adjustResize|stateVisible"
-            android:parentActivityName=".activity.MainActivity"
+            android:parentActivityName=".ui.MainActivity"
             >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activity.MainActivity" />
+                android:value=".ui.MainActivity" />
         </activity>
         <meta-data android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
