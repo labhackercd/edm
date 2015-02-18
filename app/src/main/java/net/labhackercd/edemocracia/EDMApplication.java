@@ -1,13 +1,10 @@
 package net.labhackercd.edemocracia;
 
-import android.support.multidex.MultiDexApplication;
-
-import com.path.android.jobqueue.BaseJob;
-import com.path.android.jobqueue.di.DependencyInjector;
+import android.app.Application;
 
 import dagger.ObjectGraph;
 
-public class EDMApplication extends MultiDexApplication {
+public class EDMApplication extends Application {
     private ObjectGraph objectGraph;
 
     @Override

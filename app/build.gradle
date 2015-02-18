@@ -46,7 +46,6 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
 
     // Android Support libraries
-    compile 'com.android.support:multidex:1.0.+'
     compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'com.android.support:recyclerview-v7:21.0.3'
 
@@ -73,7 +72,8 @@ dependencies {
     compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
 
     // YouTube video upload
-    compile 'com.google.android.gms:play-services:6.5.87'
+    compile 'com.google.android.gms:play-services-base:6.5.87'
+    compile 'com.google.android.gms:play-services-identity:6.5.87'
     compile('com.google.api-client:google-api-client-gson:1.19.1') {
         exclude module: 'google-api-client'
         exclude module: 'google-http-client'
