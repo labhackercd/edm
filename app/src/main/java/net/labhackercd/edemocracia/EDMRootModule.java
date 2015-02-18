@@ -121,7 +121,7 @@ class EDMRootModule {
                 .injector(new DependencyInjector() {
                     @Override
                     public void inject(BaseJob job) {
-                        application.inject(this);
+                        application.inject(job);
                     }
                 })
                 .build();
