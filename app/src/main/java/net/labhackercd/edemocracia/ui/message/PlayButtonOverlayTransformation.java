@@ -26,7 +26,7 @@ import net.labhackercd.edemocracia.data.api.EDMBatchSession;
 import net.labhackercd.edemocracia.data.api.EDMSession;
 import net.labhackercd.edemocracia.data.model.util.JSONReader;
 
-public class MessageListFragment extends SimpleRecyclerViewFragment<Message> {
+public class PlayButtonOverlayTransformation extends SimpleRecyclerViewFragment<Message> {
 
     @Inject EDMSession session;
 
@@ -34,8 +34,8 @@ public class MessageListFragment extends SimpleRecyclerViewFragment<Message> {
 
     private static final String ARG_THREAD = "thread";
 
-    public static MessageListFragment newInstance(Thread thread) {
-        MessageListFragment fragment = new MessageListFragment();
+    public static PlayButtonOverlayTransformation newInstance(Thread thread) {
+        PlayButtonOverlayTransformation fragment = new PlayButtonOverlayTransformation();
 
         Bundle args = new Bundle();
         args.putParcelable(ARG_THREAD, thread);

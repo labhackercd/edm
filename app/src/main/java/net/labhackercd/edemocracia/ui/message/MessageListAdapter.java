@@ -2,7 +2,6 @@ package net.labhackercd.edemocracia.ui.message;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Parcelable;
@@ -17,11 +16,11 @@ import android.widget.TextView;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.ocpsoft.pretty.time.PrettyTime;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Transformation;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.model.Message;
 import net.labhackercd.edemocracia.ui.SimpleRecyclerViewAdapter;
-import net.labhackercd.edemocracia.util.OverlayTransformation;
 
 import java.util.Date;
 import java.util.List;
@@ -31,7 +30,6 @@ import java.util.regex.Pattern;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
-
 
 public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, MessageListAdapter.ViewHolder> {
 
@@ -64,35 +62,46 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
         @InjectView(android.R.id.text2) TextView subjectView;
 
         private Message message;
+        private final Transformation videoThumbnailTransformation;
 
         public ViewHolder(View view) {
             super(view);
             ButterKnife.inject(this, view);
             view.setOnClickListener(this);
+
+            this.videoThumbnailTransformation = new VideoPlayButtonTransformation(context);
         }
 
         public void bindMessage(Message message) {
             this.message = message;
 
+            // Get the body text
             String body = message.getBody();
 
+            // Remove all views in *body layout*, in case there are any view remaining
+            // from previously bound messages.
             bodyView.removeAllViewsInLayout();
 
+            // TODO Parse, support or ignore other bbcode tags.
             if (body != null) {
+                // Find all youtube tags.
                 Pattern p = Pattern.compile("\\[youtube\\](.*?)\\[\\/youtube\\]");
                 Matcher m = p.matcher(body);
 
+                // Do this for all video thumbnails in the body.
                 while (m.find()) {
                     final String videoId = m.group(1);
                     String prevText = body.substring(0, m.start());
 
                     body = body.substring(m.end());
 
+                    // Create a text view with any text preceding the video and show that.
                     TextView textView = new TextView(bodyView.getContext(), null, R.style.Widget_BodyTextChunk);
                     textView.setText(prevText);
 
                     bodyView.addView(textView);
 
+                    // Add the video thumbnail
                     ImageView videoThumbView = new ImageView(bodyView.getContext());
                     videoThumbView.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -103,28 +112,20 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
                         }
                     });
 
-
-                    Picasso.with(context).load(R.drawable.ic_play_circle_fill_black_36dp).
-                            into(videoThumbView);
-
-
+                    // TODO Make less instances of this transformation.
+                    // TODO Ensure all the thumbnails are of the same size (if needed)
                     Picasso.with(context)
-                            .load(Uri.parse("http://img.youtube.com/vi/" + videoId + "/0.jpg"))
-                            .transform(new OverlayTransformation((BitmapFactory.decodeResource(context.getResources(),
-                                    R.drawable.ic_play_circle_outline_white_36dp))))
-                            .resize(480, 360)
-                            .centerCrop()
-
-
+                            .load(Uri.parse("http://img.youtube.com/vi/" + videoId + "/hqdefault.jpg"))
+                            .transform(videoThumbnailTransformation)
                             .into(videoThumbView);
 
                     bodyView.addView(videoThumbView);
                 }
 
+                // If there is any text *after* the video, add that too.
                 if (body.length() > 0) {
                     TextView textView = new TextView(bodyView.getContext(), null, R.style.Widget_BodyTextChunk);
                     textView.setText(body);
-
                     bodyView.addView(textView);
                 }
             }
@@ -153,13 +154,9 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
                         .placeholder(textDrawable)
                         .resize(100, 100)
                         .centerCrop()
-
                         .into(portraitView);
             }
         }
-
-
-
 
         @Override
         public void onClick(View v) {
@@ -169,6 +166,7 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
         }
 
         @OnClick(R.id.reply)
+        @SuppressWarnings("UnusedDeclaration")
         public void onReplyClick(View v) {
             if (message != null) {
                 Intent intent = new Intent(context, ComposeActivity.class);
@@ -177,9 +175,5 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
                 context.startActivity(intent);
             }
         }
-
-
     }
-
-
 }

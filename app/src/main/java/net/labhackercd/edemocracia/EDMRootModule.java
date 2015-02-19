@@ -3,8 +3,6 @@ package net.labhackercd.edemocracia;
 import android.app.Application;
 
 import net.labhackercd.edemocracia.data.api.ApiModule;
-import net.labhackercd.edemocracia.data.api.EDMSession;
-import net.labhackercd.edemocracia.data.api.SessionManager;
 import net.labhackercd.edemocracia.job.JobModule;
 import net.labhackercd.edemocracia.job.VideoUploadJob;
 import net.labhackercd.edemocracia.ui.MainActivity;
@@ -13,7 +11,7 @@ import net.labhackercd.edemocracia.ui.SimpleRecyclerViewFragment;
 import net.labhackercd.edemocracia.ui.SplashScreenActivity;
 import net.labhackercd.edemocracia.ui.group.GroupListFragment;
 import net.labhackercd.edemocracia.ui.message.ComposeActivity;
-import net.labhackercd.edemocracia.ui.message.MessageListFragment;
+import net.labhackercd.edemocracia.ui.message.PlayButtonOverlayTransformation;
 import net.labhackercd.edemocracia.ui.thread.ThreadListFragment;
 
 import javax.inject.Singleton;
@@ -30,7 +28,7 @@ import de.greenrobot.event.EventBus;
                 MainActivity.class,
                 ComposeActivity.class,
                 GroupListFragment.class,
-                MessageListFragment.class,
+                PlayButtonOverlayTransformation.class,
                 SignInActivity.class,
                 SimpleRecyclerViewFragment.class,
                 SplashScreenActivity.class,

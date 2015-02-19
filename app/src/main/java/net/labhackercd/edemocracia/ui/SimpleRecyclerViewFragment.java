@@ -49,6 +49,13 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
     @InjectView(android.R.id.list) RecyclerView recyclerView;
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        ((EDMApplication) getActivity().getApplication()).inject(this);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.simple_recycler_view, container, false);
 
@@ -293,11 +300,4 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
      * @return adapter
      */
     protected abstract RecyclerView.Adapter createAdapter(List<T> items);
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        ((EDMApplication) getActivity().getApplication()).inject(this);
-    }
 }

@@ -18,9 +18,9 @@ import com.path.android.jobqueue.JobManager;
 import javax.inject.Inject;
 
 import net.labhackercd.edemocracia.EDMApplication;
+import net.labhackercd.edemocracia.ui.message.PlayButtonOverlayTransformation;
 import net.labhackercd.edemocracia.ui.thread.ThreadListFragment;
 import net.labhackercd.edemocracia.ui.group.GroupListFragment;
-import net.labhackercd.edemocracia.ui.message.MessageListFragment;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.model.*;
 import net.labhackercd.edemocracia.data.model.Thread;
@@ -138,7 +138,7 @@ public class MainActivity extends ActionBarActivity {
     @SuppressWarnings("UnusedDeclaration")
     public void onEventMainThread(ShowThreadEvent event) {
         Thread thread = event.getThread();
-        replaceMainFragment(MessageListFragment.newInstance(thread));
+        replaceMainFragment(PlayButtonOverlayTransformation.newInstance(thread));
     }
 
     protected void replaceMainFragment(Fragment fragment) {
