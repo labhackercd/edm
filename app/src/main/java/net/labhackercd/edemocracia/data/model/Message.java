@@ -2,12 +2,7 @@ package net.labhackercd.edemocracia.data.model;
 
 import android.net.Uri;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import net.labhackercd.edemocracia.data.api.EDMSession;
-import net.labhackercd.edemocracia.data.model.util.GsonParcelable;
-import net.labhackercd.edemocracia.data.model.util.JSONReader;
+import net.labhackercd.edemocracia.data.api.GroupService;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -188,7 +183,7 @@ public class Message extends GsonParcelable implements Serializable {
 
     public Uri getUserPortrait() {
         if (user != null) {
-            return Uri.parse(EDMSession.SERVICE_URL +
+            return Uri.parse(GroupService.SERVICE_URL +
                     "/image/user_male_portrait?img_id=" + user.getPortraitId());
         } else {
             return null;
@@ -203,50 +198,4 @@ public class Message extends GsonParcelable implements Serializable {
     public void setUser(User user) {
         this.user = user;
     }
-
-    @Override
-    public String toString() {
-        return getSubject();
-    }
-
-    public static final JSONReader<Message> JSON_READER = new JSONReader<Message>() {
-        @Override
-        public Message fromJSON(JSONObject json) throws JSONException {
-            Message instance = new Message();
-
-            instance.status = json.getInt("status");
-            instance.attachments = json.getBoolean("attachments");
-            instance.statusByUserName = json.getString("statusByUserName");
-            instance.userId = json.getLong("userId");
-            instance.threadId = json.getLong("threadId");
-            instance.subject = json.getString("subject");
-            instance.answer = json.getBoolean("answer");
-            instance.uuid = json.getString("uuid");
-            instance.companyId = json.getLong("companyId");
-            instance.createDate = new Date(json.getLong("createDate"));
-            instance.format = json.getString("format");
-            instance.priority = json.getDouble("priority");
-            instance.statusByUserId = json.getLong("statusByUserId");
-            instance.statusDate = new Date(json.getLong("statusDate"));
-            instance.categoryId = json.getLong("categoryId");
-            instance.body = json.getString("body");
-            instance.classPK = json.getLong("classPK");
-            instance.allowPingbacks = json.getBoolean("allowPingbacks");
-            instance.classNameId = json.getLong("classNameId");
-            instance.rootMessageId = json.getLong("rootMessageId");
-            instance.parentMessageId = json.getLong("parentMessageId");
-            instance.modifiedDate = new Date(json.getLong("modifiedDate"));
-            instance.anonymous = json.getBoolean("anonymous");
-            instance.groupId = json.getLong("groupId");
-            instance.userName = json.getString("userName");
-            instance.messageId = json.getLong("messageId");
-
-            if (!json.isNull("user")) {
-                instance.user = User.JSON_READER.fromJSON(json.getJSONObject("user"));
-            }
-
-            return instance;
-        }
-    };
-
 }

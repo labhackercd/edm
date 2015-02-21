@@ -1,0 +1,3 @@
+[submodule "deathray"]
+	path = deathray
+	url = git@github.com:ravishi/deathray.git

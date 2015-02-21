@@ -56,7 +56,7 @@ public class JobModule {
                 .injector(new DependencyInjector() {
                     @Override
                     public void inject(BaseJob job) {
-                        ((EDMApplication) application).inject(job);
+                        EDMApplication.get(application).inject(job);
                     }
                 })
                 .build();

@@ -10,7 +10,6 @@ android {
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
-        multiDexEnabled = true
     }
 
     buildTypes {
@@ -23,6 +22,7 @@ android {
     packagingOptions {
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/LICENSE'
+        exclude 'META-INF/services/javax.annotation.processing.Processor'
     }
 
     compileOptions {
@@ -43,6 +43,7 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
 
     // Android Support libraries
+    compile 'com.android.support:support-v4:21.0.3'
     compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'com.android.support:recyclerview-v7:21.0.3'
 
@@ -53,11 +54,10 @@ dependencies {
 
     // Networking
     compile 'com.squareup.picasso:picasso:2.5.0'
+    compile 'com.squareup.okhttp:okhttp-urlconnection:2.2.0'
 
     // Liferay Client
-    compile('com.liferay.mobile:liferay-android-sdk:6.2.0.+') {
-        exclude module: 'httpclient'
-    }
+    compile project(':deathray')
 
     // Utility libraries
     compile 'com.google.code.gson:gson:2.3.1'

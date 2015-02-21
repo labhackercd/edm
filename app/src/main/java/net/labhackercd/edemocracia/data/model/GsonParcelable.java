@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.data.model.util;
+package net.labhackercd.edemocracia.data.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;

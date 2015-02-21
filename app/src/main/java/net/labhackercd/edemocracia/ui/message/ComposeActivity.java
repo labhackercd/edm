@@ -25,13 +25,13 @@ import com.path.android.jobqueue.JobManager;
 import java.io.FileNotFoundException;
 import java.util.List;
 
-import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.ui.VideoPickerActivity;
 import net.labhackercd.edemocracia.EDMApplication;
-import net.labhackercd.edemocracia.data.model.Thread;
+import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.model.Message;
+import net.labhackercd.edemocracia.data.model.Thread;
 import net.labhackercd.edemocracia.job.AddMessageJob;
 import net.labhackercd.edemocracia.job.VideoUploadJob;
+import net.labhackercd.edemocracia.ui.VideoPickerActivity;
 
 import javax.inject.Inject;
 
@@ -64,7 +64,7 @@ public class ComposeActivity extends ActionBarActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ((EDMApplication) getApplication()).inject(this);
+        EDMApplication.get(this).inject(this);
 
         setContentView(R.layout.fragment_compose);
 

@@ -26,11 +26,13 @@ import de.greenrobot.event.EventBus;
 public class GroupListAdapter extends SimpleRecyclerViewAdapter<Group, GroupListAdapter.ViewHolder> {
 
     private final Context context;
+    private final Picasso picasso;
     private final EventBus eventBus;
 
-    public GroupListAdapter(Context context, EventBus eventBus, List<Group> items) {
+    public GroupListAdapter(Context context, Picasso picasso, EventBus eventBus, List<Group> items) {
         super(items);
         this.context = context;
+        this.picasso = picasso;
         this.eventBus = eventBus;
     }
 
@@ -68,8 +70,7 @@ public class GroupListAdapter extends SimpleRecyclerViewAdapter<Group, GroupList
             String letter = group.getName().trim().substring(0, 1).toUpperCase();
             TextDrawable textDrawable = TextDrawable.builder().buildRect(letter, Color.LTGRAY);
 
-            Picasso.with(context)
-                    .load(group.getGroupImage())
+            picasso.load(group.getGroupImage())
                     .placeholder(textDrawable)
                     .resize(128, 128)
                     .centerCrop()

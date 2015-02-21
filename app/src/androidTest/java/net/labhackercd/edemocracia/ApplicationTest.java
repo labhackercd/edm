@@ -1,47 +1,62 @@
 package net.labhackercd.edemocracia;
 
-import android.app.Application;
 import android.test.ApplicationTestCase;
 
+import com.squareup.okhttp.Authenticator;
+import com.squareup.okhttp.Credentials;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+
+import net.labhackercd.edemocracia.data.model.Group;
+import net.labhackercd.edemocracia.data.api.GroupService;
+import net.romenor.deathray.LiferayAdapter;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import java.net.Proxy;
+import java.util.List;
 
-class Helper {
-    private static Properties properties = null;
+public class ApplicationTest extends ApplicationTestCase<EDMApplication> {
+    private static final String TAG = ApplicationTest.class.getSimpleName();
 
-    public static String getProperty(String name) throws IOException {
-        return getProperty(name, null);
-    }
-
-    public static String getProperty(String name, String defaultValue) throws IOException {
-        if (properties == null) {
-            ClassLoader loader = java.lang.Thread.currentThread().getContextClassLoader();
-            InputStream stream = loader.getResourceAsStream("test.properties");
-            if (stream == null) {
-                throw new IOException("Resource `test.properties` doesn't exist");
-            }
-            try {
-                properties = new Properties();
-                properties.load(stream);
-            } catch (IOException | NullPointerException e) {
-                throw new IOException("Failed to load testing properties: " + e.toString());
-            }
-        }
-        return properties.getProperty(name, defaultValue);
-    }
-}
-
-public class ApplicationTest extends ApplicationTestCase<Application> {
     public ApplicationTest() {
-        super(Application.class);
+        super(EDMApplication.class);
     }
 
-    private String getUsername() throws IOException {
-        return Helper.getProperty("username");
+    private OkHttpClient getClient() throws IOException {
+        final OkHttpClient client = new OkHttpClient();
+
+        final String userName = Helper.getProperty("username");
+        final String password = Helper.getProperty("password");
+
+        client.setAuthenticator(new Authenticator() {
+            @Override
+            public Request authenticate(Proxy proxy, Response response) throws IOException {
+                String credential = Credentials.basic(userName, password);
+                return response.request().newBuilder().header("Authorization", credential).build();
+            }
+
+            @Override
+            public Request authenticateProxy(Proxy proxy, Response response) throws IOException {
+                return null;
+            }
+        });
+
+        return client;
     }
 
-    private String getPassword() throws IOException {
-        return Helper.getProperty("password");
+    private LiferayAdapter getLiferayAdapter() throws IOException {
+        return new LiferayAdapter.Builder()
+                .setEndpoint("https://edemocracia.camara.gov.br/api/secure/jsonws")
+                .setClient(getClient())
+                .build();
+    }
+
+    public void testNewClient() throws Throwable {
+        GroupService service = getLiferayAdapter().create(GroupService.class);
+
+        List<Group> groups = service.getUserSites();
+
+        assert groups.size() > 0;
     }
 }

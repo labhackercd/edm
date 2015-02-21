@@ -1,20 +1,18 @@
 package net.labhackercd.edemocracia.job;
 
-import com.path.android.jobqueue.Job;
-
 import android.os.Handler;
 import android.os.Looper;
 
-import com.liferay.mobile.android.service.JSONObjectWrapper;
-import com.liferay.mobile.android.v62.mbmessage.MBMessageService;
+import com.path.android.jobqueue.Job;
 import com.path.android.jobqueue.Params;
 
-import org.json.JSONArray;
+import net.labhackercd.edemocracia.data.api.GroupService;
+import net.labhackercd.edemocracia.data.model.Message;
+import net.romenor.deathray.action.ObjectWrapper;
+
 import org.json.JSONObject;
 
-import net.labhackercd.edemocracia.data.api.EDMGetSessionWrapper;
-import net.labhackercd.edemocracia.data.api.EDMSession;
-import net.labhackercd.edemocracia.data.model.Message;
+import java.util.Collections;
 
 import javax.inject.Inject;
 
@@ -24,11 +22,9 @@ import timber.log.Timber;
 public class AddMessageJob extends Job {
     public static final int PRIORITY = 1;
 
-    private static final Handler MAIN_THREAD = new Handler(Looper.getMainLooper());
-
     // XXX Injected fields are declared transient in order to not be serialized
     @Inject transient EventBus eventBus;
-    @Inject transient EDMSession session;
+    @Inject transient GroupService groupService;
 
     private final Message message;
 
@@ -47,25 +43,18 @@ public class AddMessageJob extends Job {
         JSONObject serviceContextJson = new JSONObject();
         serviceContextJson.put("addGuestPermissions", true);
 
-        JSONObjectWrapper serviceContext = new JSONObjectWrapper(
-                "com.liferay.portal.service.ServiceContext", serviceContextJson);
+        ObjectWrapper serviceContext = new ObjectWrapper.Builder()
+                .setClassName("com.liferay.portal.service.ServiceContext")
+                .put("addGuestPermissions", true)
+                .build();
 
-        MBMessageService service = new MBMessageService(new EDMGetSessionWrapper(session));
-
-        JSONObject insert = service.addMessage(
+        final Message inserted = groupService.addMessage(
                 message.getGroupId(), message.getCategoryId(), message.getThreadId(),
                 message.getParentMessageId(), message.getSubject(), message.getBody(),
-                message.getFormat(), new JSONArray(), message.isAnonymous(),
+                message.getFormat(), Collections.emptyList(), message.isAnonymous(),
                 message.getPriority(), message.allowPingbacks(), serviceContext);
 
-        final Message inserted = Message.JSON_READER.fromJSON(insert);
-
-        MAIN_THREAD.post(new Runnable() {
-            @Override
-            public void run() {
-                eventBus.post(new Success(inserted));
-            }
-        });
+        eventBus.post(new Success(inserted));
     }
 
     @Override

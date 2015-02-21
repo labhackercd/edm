@@ -18,12 +18,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.EDMApplication;
-import net.labhackercd.edemocracia.data.api.exception.AuthorizationException;
-import net.labhackercd.edemocracia.data.api.SessionManager;
+import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.data.api.error.ClientErrorEvent;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -32,6 +30,7 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import de.greenrobot.event.EventBus;
+import de.greenrobot.event.util.ThrowableFailureEvent;
 import timber.log.Timber;
 
 public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
@@ -39,7 +38,6 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
     private SwipeRefreshLayout swipeRefreshLayout;
 
     @Inject EventBus eventBus;
-    @Inject SessionManager sessionManager;
 
     @InjectView(R.id.progress_container) View progressView;
     @InjectView(R.id.load_error_container) View errorContainerView;
@@ -49,8 +47,7 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        ((EDMApplication) getActivity().getApplication()).inject(this);
+        EDMApplication.get(getActivity()).inject(this);
     }
 
     @Override
@@ -142,22 +139,106 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    public void onEventMainThread(RefreshListTask.ResultEvent<List<T>> event) {
-        if (!event.getTag().equals(getClass())) {
-            // This is not our business..
+    public void onEventMainThread(RefreshListTask.SuccessEvent<List<T>> event) {
+        if (!getClass().equals(event.getExecutionScope())) {
+            // Not our business...
             return;
         }
 
+        // Destroy the task.
         destroyRefreshListTask();
 
-        Throwable e = event.getThrowable();
-        if (e == null) {
-            onRefreshResult(event.getResult());
+        // Capture the results.
+        List<T> result = event.getResult();
+
+        // Ensure that the error message is not visible
+        errorContainerView.setVisibility(View.GONE);
+
+        // Set the items
+        RecyclerView.Adapter adapter = null;
+
+        if (recyclerView != null && result != null) {
+            adapter = createAdapter(result);
+            recyclerView.setAdapter(adapter);
+        }
+
+        // TODO Show something when the list is empty
+
+        // Ensure that the progress is also not visible
+        setProgressVisibility(false);
+
+        // Stop that the SwipeRefreshLayout refreshing animation
+        swipeRefreshLayout.setRefreshing(false);
+
+        // Keep the swipe-to-refresh gesture enabled only if there are list items to display
+        if (adapter != null && adapter.getItemCount() > 0) {
+            swipeRefreshLayout.setEnabled(true);
+        }
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    public void onEventMainThread(ThrowableFailureEvent event) {
+        if (!getClass().equals(event.getExecutionScope())) {
+            // Not our business...
+            return;
+        }
+
+        final Activity activity = getActivity();
+        final Context context = activity != null ? activity : recyclerView.getContext();
+
+        if (ClientErrorEvent.isAuthorizationError(event)) {
+            new AlertDialog.Builder(context)
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // TODO Redirect the user back to this same screen after sign in
+                            startActivity(new Intent(context, SignInActivity.class));
+
+                            dialog.dismiss();
+
+                            if (activity != null) {
+                                activity.finish();
+                            }
+                        }
+                    })
+                    .setMessage(R.string.authorization_error_message)
+                    .create()
+                    .show();
+            return;
+        }
+
+        // Try to explain the most common problems in a non-scary way.
+        int errorMessage;
+        if (ClientErrorEvent.isNetworkError(event)) {
+            errorMessage = R.string.network_error_message;
         } else {
-            // Failure events should only be dealt with once. Unregister this one.
-            eventBus.removeStickyEvent(event);
-            Timber.e(e, "Failed to load list data.");
-            onRefreshFailure(e);
+            // Log the failure.
+            Timber.e(event.getThrowable(), "Failed to load list data.");
+
+            // Generic error message
+            errorMessage = R.string.load_error_message;
+        }
+
+        if (swipeRefreshLayout.isEnabled()) {
+            // If it was loaded through the swipe-to-refresh gesture, we don't
+            // need to do much. Just show a toast.
+            swipeRefreshLayout.setRefreshing(false);
+
+            // Show a toast with the error message.
+            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show();
+        } else {
+            // Hide everything...
+            progressView.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.GONE);
+
+            // Disable the swipe-to-refresh gesture...
+            swipeRefreshLayout.setRefreshing(false);
+            swipeRefreshLayout.setEnabled(false);
+
+            errorMessageView.setText(errorMessage);
+
+            // Show the error message
+            errorContainerView.setVisibility(View.VISIBLE);
         }
     }
 
@@ -193,89 +274,6 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
     protected void setProgressVisibility(boolean visible) {
         progressView.setVisibility(visible ? View.VISIBLE : View.GONE);
         recyclerView.setVisibility(visible ? View.GONE : View.VISIBLE);
-    }
-
-    protected void onRefreshResult(List<T> result) {
-        RecyclerView.Adapter adapter = null;
-
-        // Ensure that the error message is not visible
-        errorContainerView.setVisibility(View.GONE);
-
-        // Set the items
-        if (recyclerView != null && result != null) {
-            adapter = createAdapter(result);
-            recyclerView.setAdapter(adapter);
-        }
-
-        // TODO Show something when the list is empty
-
-        // Ensure that the progress is also not visible
-        setProgressVisibility(false);
-
-        // Stop that the SwipeRefreshLayout refreshing animation
-        swipeRefreshLayout.setRefreshing(false);
-
-        // Keep the swipe-to-refresh gesture enabled only if there are list items to display
-        if (adapter != null && adapter.getItemCount() > 0) {
-            swipeRefreshLayout.setEnabled(true);
-        }
-    }
-
-    protected void onRefreshFailure(Throwable e) {
-        // XXX I really don't know how to guarantee the right Context
-        final Activity activity = getActivity();
-        final Context context = (activity != null ? activity : swipeRefreshLayout.getContext().getApplicationContext());
-
-        int errorMessage = R.string.load_error_message;
-        if (e instanceof IOException) {
-            errorMessage = R.string.network_error_message;
-        } else if (e instanceof AuthorizationException) {
-            errorMessage = R.string.authorization_error_message;
-        }
-
-        if (e instanceof AuthorizationException) {
-            new AlertDialog.Builder(context)
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-
-                            // Clear the stored session
-                            sessionManager.clear();
-
-                            // TODO Redirect the user back to this same screen after sign in
-                            startActivity(new Intent(context, SignInActivity.class));
-
-                            dialog.dismiss();
-
-                            if (activity != null) {
-                                activity.finish();
-                            }
-                        }
-                    })
-                    .setMessage(errorMessage)
-                    .create()
-                    .show();
-        } else if (swipeRefreshLayout.isEnabled()) {
-            // If it was loaded through the swipe-to-refresh gesture, we don't
-            // need to do much. Just show a toast.
-            swipeRefreshLayout.setRefreshing(false);
-
-            // Show a toast with the error message.
-            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show();
-        } else {
-            // Hide everything...
-            progressView.setVisibility(View.GONE);
-            recyclerView.setVisibility(View.GONE);
-
-            // Disable the swipe-to-refresh gesture...
-            swipeRefreshLayout.setRefreshing(false);
-            swipeRefreshLayout.setEnabled(false);
-
-            errorMessageView.setText(errorMessage);
-
-            // Show the error message
-            errorContainerView.setVisibility(View.VISIBLE);
-        }
     }
 
     /**

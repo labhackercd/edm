@@ -2,12 +2,7 @@ package net.labhackercd.edemocracia.data.model;
 
 import android.net.Uri;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import net.labhackercd.edemocracia.data.api.EDMSession;
-import net.labhackercd.edemocracia.data.model.util.GsonParcelable;
-import net.labhackercd.edemocracia.data.model.util.JSONReader;
+import net.labhackercd.edemocracia.data.api.GroupService;
 
 public class Group extends GsonParcelable implements Forum {
 
@@ -88,36 +83,7 @@ public class Group extends GsonParcelable implements Forum {
         return name;
     }
 
-    @Override
-    public String toString() {
-        return getName();
-    }
-
     public Uri getGroupImage() {
-        return Uri.parse(EDMSession.SERVICE_URL + "/documents/" + getGroupId() + "/0/icone");
+        return Uri.parse(GroupService.SERVICE_URL + "/documents/" + getGroupId() + "/0/icone");
     }
-
-    public static final JSONReader<Group> JSON_READER = new JSONReader<Group>() {
-        @Override
-        public Group fromJSON(JSONObject json) throws JSONException {
-            Group instance = new Group();
-
-            instance.friendlyURL = json.getString("friendlyURL");
-            instance.classPK = json.getLong("classPK");
-            instance.description = json.getString("description");
-            instance.creatorUserId = json.getLong("creatorUserId");
-            instance.classNameId = json.getLong("classNameId");
-            instance.companyId = json.getLong("companyId");
-            instance.site = json.getBoolean("site");
-            instance.typeSettings = json.getString("typeSettings");
-            instance.parentGroupId = json.getLong("parentGroupId");
-            instance.active = json.getBoolean("active");
-            instance.liveGroupId = json.getLong("liveGroupId");
-            instance.type = json.getInt("type");
-            instance.groupId = json.getLong("groupId");
-            instance.name = json.getString("name");
-
-            return instance;
-        }
-    };
 }

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -17,18 +16,13 @@ import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.liferay.mobile.android.auth.basic.BasicAuthentication;
-import com.liferay.mobile.android.v62.group.GroupService;
-import com.liferay.mobile.android.v62.user.UserService;
+import com.squareup.okhttp.Credentials;
 
 import net.labhackercd.edemocracia.data.model.User;
-import net.labhackercd.edemocracia.data.api.exception.AuthorizationException;
-import net.labhackercd.edemocracia.data.api.EDMSession;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.IOException;
+import net.labhackercd.edemocracia.EDMApplication;
+import net.labhackercd.edemocracia.data.api.error.ClientErrorEvent;
+import net.labhackercd.edemocracia.data.api.SharedPreferencesCredentialStorage;
+import net.labhackercd.edemocracia.data.api.GroupService;
 
 import javax.inject.Inject;
 
@@ -36,32 +30,30 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.OnEditorAction;
+import de.greenrobot.event.EventBus;
+import de.greenrobot.event.util.AsyncExecutor;
+import de.greenrobot.event.util.ThrowableFailureEvent;
 import timber.log.Timber;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.EDMApplication;
-import net.labhackercd.edemocracia.data.api.SessionManager;
-
 
 public class SignInActivity extends Activity {
-
     private static final String TAG = SignInActivity.class.getSimpleName();
 
-    @Inject EDMSession session;
-    @Inject SessionManager sessionManager;
+    @Inject EventBus eventBus;
+    @Inject GroupService groupService;
+    @Inject SharedPreferencesCredentialStorage credentials;
 
     @InjectView(R.id.email) AutoCompleteTextView emailView;
     @InjectView(R.id.password) EditText passwordView;
     @InjectView(R.id.login_form) View loginFormView;
     @InjectView(android.R.id.progress) View progressView;
 
-    private UserLoginTask authenticationTask = null;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ((EDMApplication) getApplication()).inject(this);
+        EDMApplication.get(this).inject(this);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 0);
@@ -72,6 +64,18 @@ public class SignInActivity extends Activity {
 
         // progress view shouldn't be visible at startup
         progressView.setVisibility(View.GONE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        eventBus.register(this);
+    }
+
+    @Override
+    protected void onPause() {
+        eventBus.unregister(this);
+        super.onPause();
     }
 
     @OnEditorAction(R.id.password)
@@ -91,10 +95,6 @@ public class SignInActivity extends Activity {
     }
 
     public void attemptLogin() {
-        if (authenticationTask != null) {
-            return;
-        }
-
         // Reset errors.
         emailView.setError(null);
         passwordView.setError(null);
@@ -129,11 +129,7 @@ public class SignInActivity extends Activity {
             // form field with an error.
             focusView.requestFocus();
         } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
-            showProgress(true);
-            authenticationTask = new UserLoginTask(email, password);
-            authenticationTask.execute((Void) null);
+            doSignIn(email, password);
         }
     }
 
@@ -158,86 +154,76 @@ public class SignInActivity extends Activity {
         return true;
     }
 
-    public class UserLoginTask extends AsyncTask<Void, Void, Integer> {
+    @SuppressWarnings("UnusedDeclaration")
+    public void onEventMainThread(Success event) {
+        showProgress(false);
 
-        private final String email;
-        private final String password;
+        // TODO Store the user for future uses.
 
-        public UserLoginTask(String email, String password) {
-            this.email = email;
-            this.password = password;
+        startActivity(new Intent(SignInActivity.this, MainActivity.class));
+        finish();
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    public void onEventMainThread(ThrowableFailureEvent event) {
+        if (!getClass().equals(event.getExecutionScope())) {
+            return;
         }
 
-        @Override
-        protected Integer doInBackground(Void... params) {
-            // Prepare to test the supplied credentials
-            session.setAuthentication(new BasicAuthentication(email, password));
+        showProgress(false);
 
-            int error = 0;
-            User user = null;
-            Exception exception = null;
-
-            try {
-                JSONArray userGroups = new GroupService(session).getUserSites();
-                long companyId = userGroups.getJSONObject(0).getLong("companyId");
-
-                JSONObject jsonUser = new UserService(session)
-                        .getUserByEmailAddress(companyId, email);
-
-                user = User.JSON_READER.fromJSON(jsonUser);
-            } catch (IOException e) {
-                // IOException are probably only caused by network problems
-                exception = e;
-                error = R.string.network_error_message;
-            } catch (AuthorizationException e) {
-                exception = e;
-                error = R.string.invalid_credentials_message;
-            } catch (Exception e) {
-                exception = e;
-                error = R.string.unknown_error_message;
-            }
-
-            if (user == null) {
-                Timber.e(exception, "Failed to authenticate user.");
-            } else {
-                // Save the user.
-                session.setUser(user);
-
-                // Persist the session for future uses.
-                sessionManager.save(session);
-            }
-
-            return error;
+        int errorMessage;
+        if (ClientErrorEvent.isNetworkError(event)) {
+            errorMessage = R.string.network_error_message;
+        } else if (ClientErrorEvent.isAuthorizationError(event)) {
+            errorMessage = R.string.invalid_credentials_message;
+        } else {
+            errorMessage = R.string.generic_error_message;
+            Timber.e(event.getThrowable(), "Failed to authenticate user.");
         }
 
-        @Override
-        protected void onPostExecute(final Integer error) {
-            authenticationTask = null;
+        new AlertDialog.Builder(SignInActivity.this)
+                .setMessage(errorMessage)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .create()
+        .show();
+    }
 
-            showProgress(false);
+    private void doSignIn(final String email, final String password) {
+        // Show the progress indicator
+        showProgress(true);
 
-            if (error != 0) {
-                new AlertDialog.Builder(SignInActivity.this)
-                        .setMessage(error)
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
-                        .create()
-                        .show();
-            } else {
-                // It's all good, present the user with the MainActivity.
-                startActivity(new Intent(SignInActivity.this, MainActivity.class));
-                finish();
+        // Try to authenticate in another thread.
+        AsyncExecutor.builder().buildForScope(getClass()).execute(new AsyncExecutor.RunnableEx() {
+            @Override
+            public void run() throws Exception {
+                // Inject the supplied credentials into the client
+                credentials.save(Credentials.basic(email, password));
+
+                // Make an authenticated call
+                User user = groupService.getUserById();
+
+                // If the call goes OK, it means we're authenticated.
+                // So we store the credentials for future use.
+                if (user != null) {
+                    eventBus.post(new Success(user));
+                } else {
+                    credentials.clear();
+                }
             }
-        }
-        @Override
+        });
+    }
 
-        protected void onCancelled() {
-            authenticationTask = null;
-            showProgress(false);
+    private static class Success {
+        public final User user;
+
+        public Success(User user) {
+            this.user = user;
         }
     }
 }
