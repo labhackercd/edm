@@ -27,10 +27,7 @@ android {
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
-    }
-
-    dexOptions {
-        javaMaxHeapSize "4g"
+        targetCompatibility JavaVersion.VERSION_1_7
     }
 }
 
