@@ -3,7 +3,6 @@ package net.labhackercd.edemocracia.ui;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.liferay.mobile.android.v62.user.UserService;
 

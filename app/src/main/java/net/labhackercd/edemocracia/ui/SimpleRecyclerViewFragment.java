@@ -143,7 +143,7 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
 
     @SuppressWarnings("UnusedDeclaration")
     public void onEventMainThread(RefreshListTask.ResultEvent<List<T>> event) {
-        if (!event.getTag().equals(getClass())) {
+        if (!event.getTag().equals(getRefreshTaskTag())) {
             // This is not our business..
             return;
         }
@@ -181,7 +181,7 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
         }
 
         // Kick the background task to refresh the list
-        refreshListTask = new RefreshListTask<>(getClass(), eventBus, new RefreshListTask.Task<List<T>>() {
+        refreshListTask = new RefreshListTask<>(getRefreshTaskTag(), eventBus, new RefreshListTask.Task<List<T>>() {
             @Override
             public List<T> execute() throws Exception {
                 return blockingFetchItems();
@@ -295,4 +295,8 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
      * @return adapter
      */
     protected abstract RecyclerView.Adapter createAdapter(List<T> items);
+
+    protected Object getRefreshTaskTag() {
+        return getClass();
+    }
 }

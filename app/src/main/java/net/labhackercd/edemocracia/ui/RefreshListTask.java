@@ -67,7 +67,7 @@ public class RefreshListTask<T> extends AsyncTask<Void, Void, Void> {
         try {
             result = task.execute();
         } catch (Exception e) {
-            eventBus.postSticky(new ResultEvent<T>(e, tag));
+            eventBus.post(new ResultEvent<T>(e, tag));
             return null;
         }
         eventBus.postSticky(new ResultEvent<>(result, tag));

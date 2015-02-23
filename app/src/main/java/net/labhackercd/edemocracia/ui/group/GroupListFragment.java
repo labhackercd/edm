@@ -1,5 +1,6 @@
 package net.labhackercd.edemocracia.ui.group;
 
+import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
 
 import com.google.common.base.Predicate;
@@ -50,5 +51,10 @@ public class GroupListFragment extends SimpleRecyclerViewFragment<Group> {
     @Override
     protected RecyclerView.Adapter createAdapter(List<Group> items) {
         return new GroupListAdapter(getActivity(), eventBus, items);
+    }
+
+    @Override
+    protected Object getRefreshTaskTag() {
+        return new Pair<Class, Long>(getClass(), session.getCompanyId());
     }
 }

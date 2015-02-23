@@ -2,6 +2,7 @@ package net.labhackercd.edemocracia.ui.message;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,7 +27,7 @@ import net.labhackercd.edemocracia.data.api.EDMBatchSession;
 import net.labhackercd.edemocracia.data.api.EDMSession;
 import net.labhackercd.edemocracia.data.model.util.JSONReader;
 
-public class PlayButtonOverlayTransformation extends SimpleRecyclerViewFragment<Message> {
+public class MessageListFragment extends SimpleRecyclerViewFragment<Message> {
 
     @Inject EDMSession session;
 
@@ -34,8 +35,8 @@ public class PlayButtonOverlayTransformation extends SimpleRecyclerViewFragment<
 
     private static final String ARG_THREAD = "thread";
 
-    public static PlayButtonOverlayTransformation newInstance(Thread thread) {
-        PlayButtonOverlayTransformation fragment = new PlayButtonOverlayTransformation();
+    public static MessageListFragment newInstance(Thread thread) {
+        MessageListFragment fragment = new MessageListFragment();
 
         Bundle args = new Bundle();
         args.putParcelable(ARG_THREAD, thread);
@@ -127,5 +128,10 @@ public class PlayButtonOverlayTransformation extends SimpleRecyclerViewFragment<
         }
 
         return messages;
+    }
+
+    @Override
+    protected Object getRefreshTaskTag() {
+        return new Pair<Class, Long>(getClass(), thread.getRootMessageId());
     }
 }

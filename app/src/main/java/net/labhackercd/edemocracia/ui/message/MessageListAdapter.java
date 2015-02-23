@@ -52,8 +52,7 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
         viewHolder.bindMessage(getItem(i));
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener
-    {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         @InjectView(R.id.body) LinearLayout bodyView;
         @InjectView(R.id.date) TextView dateView;

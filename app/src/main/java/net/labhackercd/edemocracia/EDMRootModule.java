@@ -11,7 +11,7 @@ import net.labhackercd.edemocracia.ui.SimpleRecyclerViewFragment;
 import net.labhackercd.edemocracia.ui.SplashScreenActivity;
 import net.labhackercd.edemocracia.ui.group.GroupListFragment;
 import net.labhackercd.edemocracia.ui.message.ComposeActivity;
-import net.labhackercd.edemocracia.ui.message.PlayButtonOverlayTransformation;
+import net.labhackercd.edemocracia.ui.message.MessageListFragment;
 import net.labhackercd.edemocracia.ui.thread.ThreadListFragment;
 
 import javax.inject.Singleton;
@@ -28,7 +28,7 @@ import de.greenrobot.event.EventBus;
                 MainActivity.class,
                 ComposeActivity.class,
                 GroupListFragment.class,
-                PlayButtonOverlayTransformation.class,
+                MessageListFragment.class,
                 SignInActivity.class,
                 SimpleRecyclerViewFragment.class,
                 SplashScreenActivity.class,

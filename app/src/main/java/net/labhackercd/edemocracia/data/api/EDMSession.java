@@ -1,7 +1,5 @@
 package net.labhackercd.edemocracia.data.api;
 
-import android.util.Log;
-
 import com.liferay.mobile.android.auth.Authentication;
 import com.liferay.mobile.android.exception.ServerException;
 import com.liferay.mobile.android.http.HttpUtil;

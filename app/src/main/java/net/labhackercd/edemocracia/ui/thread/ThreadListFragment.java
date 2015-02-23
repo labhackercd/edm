@@ -2,6 +2,7 @@ package net.labhackercd.edemocracia.ui.thread;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
 
 import com.google.common.base.Function;
@@ -153,5 +154,10 @@ public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
         });
 
         return Lists.newArrayList(Iterables.concat(icategories, ithreads));
+    }
+
+    @Override
+    protected Object getRefreshTaskTag() {
+        return new Pair<Class, Pair<Long, Long>>(getClass(), new Pair<>(forum.getGroupId(), forum.getCategoryId()));
     }
 }
