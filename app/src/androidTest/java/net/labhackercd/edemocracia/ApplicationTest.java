@@ -3,8 +3,21 @@ package net.labhackercd.edemocracia;
 import android.app.Application;
 import android.test.ApplicationTestCase;
 
+import com.liferay.mobile.android.auth.basic.BasicAuthentication;
+import com.liferay.mobile.android.v62.expandovalue.ExpandoValueService;
+import com.liferay.mobile.android.v62.group.GroupService;
+
+import net.labhackercd.edemocracia.data.api.EDMBatchSession;
+import net.labhackercd.edemocracia.data.api.EDMSession;
+import net.labhackercd.edemocracia.data.model.Group;
+import net.labhackercd.edemocracia.data.model.util.JSONReader;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 
 class Helper {
@@ -37,11 +50,31 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         super(Application.class);
     }
 
-    private String getUsername() throws IOException {
-        return Helper.getProperty("username");
-    }
+    public void testExpandoValues() throws Throwable {
+        EDMSession session = new EDMSession(new BasicAuthentication(
+                Helper.getProperty("username"), Helper.getProperty("password")));
 
-    private String getPassword() throws IOException {
-        return Helper.getProperty("password");
+        JSONArray jsonGroups = new GroupService(session).getUserSites();
+        List<Group> groups = JSONReader.fromJSON(jsonGroups, Group.JSON_READER);
+
+        EDMBatchSession batchSession = new EDMBatchSession(session);
+
+        for (Group group : groups) {
+            JSONObject params = new JSONObject();
+
+            params.put("companyId", group.getCompanyId());
+            params.put("className", "com.liferay.portal.model.Group");
+            params.put("tableName", "CUSTOM_FIELDS");
+            params.put("columnName", "Encerrada");
+            params.put("classPk", group.getGroupId());
+
+            JSONObject command = new JSONObject();
+            command.put("/expandovalue/get-data.5", params);
+
+            batchSession.invoke(command);
+        }
+
+        JSONArray jsonEncerradas = batchSession.invoke();
+        assert jsonEncerradas.length() == groups.size();
     }
 }

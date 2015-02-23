@@ -9,12 +9,15 @@ import com.google.common.collect.Lists;
 import com.liferay.mobile.android.v62.group.GroupService;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.util.List;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
+import net.labhackercd.edemocracia.data.api.EDMBatchSession;
+import net.labhackercd.edemocracia.data.api.EDMService;
 import net.labhackercd.edemocracia.data.model.Group;
 import net.labhackercd.edemocracia.ui.SimpleRecyclerViewFragment;
 import net.labhackercd.edemocracia.data.api.EDMSession;
@@ -38,12 +41,37 @@ public class GroupListFragment extends SimpleRecyclerViewFragment<Group> {
             jsonGroups = new JSONArray();
         }
 
-        List<Group> groups = JSONReader.fromJSON(jsonGroups, Group.JSON_READER);
+        final List<Group> groups = JSONReader.fromJSON(jsonGroups, Group.JSON_READER);
+
+        EDMBatchSession batchSession = new EDMBatchSession(session);
+        EDMService batchedCustomService = new EDMService(batchSession);
+
+        for (Group group : groups) {
+            batchedCustomService.expandoValueGetData(group.getCompanyId(),
+                    "com.liferay.portal.model.Group", "CUSTOM_FIELDS",
+                    "Encerrada", group.getGroupId());
+        }
+
+        final JSONArray jsonStatuses = batchSession.invoke();
 
         return Lists.newArrayList(Collections2.filter(groups, new Predicate<Group>() {
             @Override
             public boolean apply(@Nullable Group group) {
-                return group != null && group.isActive() && (group.getType() == 1 || group.getType() == 3);
+                if (group == null)
+                    return false;
+
+                if (!group.isActive())
+                    return false;
+
+                if (!(group.getType() == 1 || group.getType() == 3))
+                    return false;
+
+                int idx = groups.indexOf(group);
+                try {
+                    return !jsonStatuses.getBoolean(idx);
+                } catch (JSONException e) {
+                    return false;
+                }
             }
         }));
     }
