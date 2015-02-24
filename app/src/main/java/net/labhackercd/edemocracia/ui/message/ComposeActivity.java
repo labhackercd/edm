@@ -64,7 +64,7 @@ public class ComposeActivity extends ActionBarActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ((EDMApplication) getApplication()).inject(this);
+        EDMApplication.get(this).getObjectGraph().inject(this);
 
         setContentView(R.layout.fragment_compose);
 

@@ -1,11 +1,9 @@
 package net.labhackercd.edemocracia.data.api;
 
-import android.app.Application;
-import android.content.Context;
-import android.content.SharedPreferences;
-
 import com.liferay.mobile.android.auth.Authentication;
 import com.liferay.mobile.android.service.Session;
+
+import net.labhackercd.edemocracia.account.CredentialStore;
 
 import org.apache.http.HttpRequest;
 
@@ -22,16 +20,6 @@ public class ApiModule {
     @Provides @Singleton
     Endpoint provideEndpoint() {
         return Endpoint.createFixed(PRODUCTION_API_URL);
-    }
-
-    @Provides @Singleton
-    SharedPreferences provideSharedPreferences(Application application) {
-        return application.getSharedPreferences("preferences", Context.MODE_PRIVATE);
-    }
-
-    @Provides @Singleton
-    CredentialStore provideCredentialStore(final SharedPreferences sharedPreferences) {
-        return new SharedPreferencesCredentialStore(sharedPreferences);
     }
 
     @Provides @Singleton

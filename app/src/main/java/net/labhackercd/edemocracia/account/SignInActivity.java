@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.ui;
+package net.labhackercd.edemocracia.account;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -23,7 +23,6 @@ import com.liferay.mobile.android.service.Session;
 import com.liferay.mobile.android.v62.group.GroupService;
 import com.liferay.mobile.android.v62.user.UserService;
 
-import net.labhackercd.edemocracia.data.api.CredentialStore;
 import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.data.api.exception.AuthorizationException;
 
@@ -43,6 +42,7 @@ import timber.log.Timber;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.EDMApplication;
+import net.labhackercd.edemocracia.ui.MainActivity;
 
 public class SignInActivity extends Activity {
     @Inject Session session;
@@ -59,7 +59,7 @@ public class SignInActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ((EDMApplication) getApplication()).inject(this);
+        EDMApplication.get(this).getObjectGraph().inject(this);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 0);
@@ -160,6 +160,7 @@ public class SignInActivity extends Activity {
 
         private final String email;
         private final String password;
+        private User user;
 
         public UserLoginTask(String email, String password) {
             this.email = email;
@@ -172,7 +173,6 @@ public class SignInActivity extends Activity {
             session.setAuthentication(new BasicAuthentication(email, password));
 
             int error = 0;
-            User user = null;
             Exception exception = null;
 
             try {
@@ -232,7 +232,9 @@ public class SignInActivity extends Activity {
                         .show();
             } else {
                 // It's all good, present the user with the MainActivity.
-                startActivity(new Intent(SignInActivity.this, MainActivity.class));
+                Intent intent = new Intent(SignInActivity.this, MainActivity.class);
+                intent.putExtra(MainActivity.KEY_USER, user);
+                startActivity(intent);
                 finish();
             }
         }

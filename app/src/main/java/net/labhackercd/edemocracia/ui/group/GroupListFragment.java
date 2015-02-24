@@ -20,23 +20,23 @@ import javax.inject.Inject;
 import net.labhackercd.edemocracia.data.api.EDMBatchSession;
 import net.labhackercd.edemocracia.data.api.EDMService;
 import net.labhackercd.edemocracia.data.api.model.Group;
+import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.ui.SimpleRecyclerViewFragment;
 
 import de.greenrobot.event.EventBus;
 
 public class GroupListFragment extends SimpleRecyclerViewFragment<Group> {
 
-    @Inject EventBus eventBus;
+    @Inject User user;
     @Inject Session session;
-
-    // FIXME Please, please, please, don't leave this hardcoded constant here.
-    private long companyId = 10131;
+    @Inject EventBus eventBus;
 
     @Override
     protected List<Group> blockingFetchItems() throws Exception {
         GroupService groupService = new GroupService(session);
 
-        JSONArray jsonGroups = groupService.search(companyId, "%", "%", new JSONArray(), -1, -1);
+        JSONArray jsonGroups = groupService.search(
+                user.getCompanyId(),"%", "%", new JSONArray(), -1, -1);
 
         if (jsonGroups == null) {
             jsonGroups = new JSONArray();
@@ -84,6 +84,6 @@ public class GroupListFragment extends SimpleRecyclerViewFragment<Group> {
 
     @Override
     protected Object getRefreshTaskTag() {
-        return new Pair<Class, Long>(getClass(), companyId);
+        return new Pair<Class, Long>(getClass(), user.getCompanyId());
     }
 }

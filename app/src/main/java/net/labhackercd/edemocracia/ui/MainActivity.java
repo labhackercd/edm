@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
@@ -25,22 +26,40 @@ import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.api.model.*;
 import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.job.AddMessageJob;
-import net.labhackercd.edemocracia.job.VideoUploadJob;
 import net.labhackercd.edemocracia.youtube.Constants;
 
+import dagger.ObjectGraph;
 import de.greenrobot.event.EventBus;
 
 public class MainActivity extends ActionBarActivity {
-    @Inject EventBus eventBus;
-    @Inject JobManager jobManager;
+    public static final String KEY_USER = "user";
 
+    @Inject User user;
+    @Inject EventBus eventBus;
+
+    private ObjectGraph objectGraph;
     private UploadBroadcastReceiver uploadBroadcastReceiver;
+
+    public static MainActivity get(FragmentActivity activity) {
+        return (MainActivity) activity;
+    }
+
+    public ObjectGraph getObjectGraph() {
+        return objectGraph;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ((EDMApplication) getApplication()).inject(this);
+        Intent intent = getIntent();
+
+        user = (User) intent.getSerializableExtra(KEY_USER);
+
+        ObjectGraph og = EDMApplication.get(this).getObjectGraph();
+        objectGraph = og.plus(new UiModule(user));
+
+        objectGraph.inject(this);
 
         setContentView(R.layout.activity_main);
 
@@ -70,6 +89,12 @@ public class MainActivity extends ActionBarActivity {
             transaction.add(R.id.container, new GroupListFragment());
             transaction.commit();
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putSerializable(KEY_USER, user);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -105,16 +130,6 @@ public class MainActivity extends ActionBarActivity {
     protected void onPause() {
         super.onPause();
         eventBus.unregister(this);
-    }
-
-    public void addAddMessageTask(AddMessageJob task) {
-        jobManager.addJob(task);
-        jobManager.start();
-    }
-
-    public void addVideoUploadTask(VideoUploadJob task) {
-        jobManager.addJob(task);
-        jobManager.start();
     }
 
     @SuppressWarnings("UnusedDeclaration")

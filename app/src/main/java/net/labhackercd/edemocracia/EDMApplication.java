@@ -9,6 +9,10 @@ import timber.log.Timber;
 public class EDMApplication extends Application {
     private ObjectGraph objectGraph;
 
+    public static EDMApplication get(Context context) {
+        return (EDMApplication) context.getApplicationContext();
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -19,6 +23,10 @@ public class EDMApplication extends Application {
         } else {
             Timber.plant(new CrashReportingTree());
         }
+    }
+
+    public ObjectGraph getObjectGraph() {
+        return objectGraph;
     }
 
     public void inject(Object object) {

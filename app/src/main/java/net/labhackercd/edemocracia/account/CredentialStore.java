@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.data.api;
+package net.labhackercd.edemocracia.account;
 
 public interface CredentialStore {
     public String get();

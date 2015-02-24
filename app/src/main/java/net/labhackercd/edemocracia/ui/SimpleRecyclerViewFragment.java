@@ -20,7 +20,8 @@ import android.widget.Toast;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.EDMApplication;
-import net.labhackercd.edemocracia.data.api.CredentialStore;
+import net.labhackercd.edemocracia.account.CredentialStore;
+import net.labhackercd.edemocracia.account.SignInActivity;
 import net.labhackercd.edemocracia.data.api.exception.AuthorizationException;
 
 import java.io.IOException;
@@ -47,10 +48,9 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
     @InjectView(android.R.id.list) RecyclerView recyclerView;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        ((EDMApplication) getActivity().getApplication()).inject(this);
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        MainActivity.get(getActivity()).getObjectGraph().inject(this);
     }
 
     @Override
