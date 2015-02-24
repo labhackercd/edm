@@ -7,7 +7,6 @@ import android.widget.Toast;
 
 import com.liferay.mobile.android.service.Session;
 
-import net.labhackercd.edemocracia.account.CredentialStore;
 import net.labhackercd.edemocracia.account.SignInActivity;
 import net.labhackercd.edemocracia.data.api.exception.AuthorizationException;
 import net.labhackercd.edemocracia.data.api.model.User;
@@ -27,7 +26,6 @@ import timber.log.Timber;
 public class SplashScreenActivity extends Activity {
     @Inject Session session;
     @Inject EventBus eventBus;
-    @Inject CredentialStore credentialStore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +80,8 @@ public class SplashScreenActivity extends Activity {
             || throwable instanceof IOException) {
             // If it's an authentication failure or a network error, send the user to the
             // sign in activity.
-            credentialStore.clear();
+            // TODO Trigger login process
+            // credentialStore.clear();
 
             startActivity(new Intent(this, SignInActivity.class));
             finish();

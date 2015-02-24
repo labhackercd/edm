@@ -1,9 +1,10 @@
 package net.labhackercd.edemocracia.data.api;
 
 import com.liferay.mobile.android.auth.Authentication;
+import com.liferay.mobile.android.auth.basic.BasicAuthentication;
 import com.liferay.mobile.android.service.Session;
 
-import net.labhackercd.edemocracia.account.CredentialStore;
+import net.labhackercd.edemocracia.account.Credentials;
 
 import org.apache.http.HttpRequest;
 
@@ -23,13 +24,16 @@ public class ApiModule {
     }
 
     @Provides @Singleton
-    Authentication provideAuthentication(final CredentialStore credentialStore) {
+    Authentication provideAuthentication(final Credentials.Provider credentialsProvider) {
         return new Authentication() {
             @Override
             public void authenticate(HttpRequest request) throws Exception {
-                String credential = credentialStore.get();
-                if (credential != null) {
-                    request.addHeader("Authorization", credential);
+                Credentials credentials = credentialsProvider.getCredentials();
+
+                if (credentials != null) {
+                    new BasicAuthentication(
+                            credentials.getEmailAddress(), credentials.getPassword())
+                                .authenticate(request);
                 }
             }
         };

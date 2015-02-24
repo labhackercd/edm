@@ -1,14 +1,14 @@
 package net.labhackercd.edemocracia.account;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
@@ -20,17 +20,11 @@ import android.widget.TextView;
 
 import com.liferay.mobile.android.auth.basic.BasicAuthentication;
 import com.liferay.mobile.android.service.Session;
-import com.liferay.mobile.android.v62.group.GroupService;
-import com.liferay.mobile.android.v62.user.UserService;
 
-import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.data.api.exception.AuthorizationException;
+import net.labhackercd.edemocracia.data.api.model.User;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 import javax.inject.Inject;
 
@@ -38,22 +32,37 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.OnEditorAction;
+import de.greenrobot.event.EventBus;
+import de.greenrobot.event.util.AsyncExecutor;
+import de.greenrobot.event.util.ThrowableFailureEvent;
 import timber.log.Timber;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.EDMApplication;
-import net.labhackercd.edemocracia.ui.MainActivity;
+
+import java.io.IOException;
+
+import static android.accounts.AccountManager.KEY_ACCOUNT_NAME;
+import static android.accounts.AccountManager.KEY_ACCOUNT_TYPE;
+import static android.accounts.AccountManager.KEY_AUTHTOKEN;
+
+import static net.labhackercd.edemocracia.account.AccountConstants.ACCOUNT_TYPE;
 
 public class SignInActivity extends Activity {
+    public static final String PARAM_EMAIL = "email";
+    public static final String PARAM_AUTHTOKEN_TYPE = "authTokenType";
+
     @Inject Session session;
-    @Inject CredentialStore credentials;
+    @Inject EventBus eventBus;
 
     @InjectView(R.id.email) AutoCompleteTextView emailView;
     @InjectView(R.id.password) EditText passwordView;
     @InjectView(R.id.login_form) View loginFormView;
     @InjectView(android.R.id.progress) View progressView;
 
-    private UserLoginTask authenticationTask = null;
+    private AccountManager accountManager;
+    private boolean requestNewAccount = false;
+    private String authTokenType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,13 +79,38 @@ public class SignInActivity extends Activity {
 
         // progress view shouldn't be visible at startup
         progressView.setVisibility(View.GONE);
+
+        accountManager = AccountManager.get(this);
+
+        final Intent intent = getIntent();
+        String email = intent.getStringExtra(PARAM_EMAIL);
+        authTokenType = intent.getStringExtra(PARAM_AUTHTOKEN_TYPE);
+        requestNewAccount = TextUtils.isEmpty(email);
+
+        if (!requestNewAccount) {
+            emailView.setText(email);
+            emailView.setEnabled(false);
+            emailView.setFocusable(false);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        eventBus.register(this);
+    }
+
+    @Override
+    protected void onPause() {
+        eventBus.unregister(this);
+        super.onPause();
     }
 
     @OnEditorAction(R.id.password)
     @SuppressWarnings("UnusedDeclaration")
     public boolean onPasswordEditorAction(TextView view, int id, KeyEvent event) {
         if (id == R.id.login || id == EditorInfo.IME_NULL) {
-            attemptLogin();
+            handleLogin();
             return true;
         }
         return false;
@@ -85,21 +119,17 @@ public class SignInActivity extends Activity {
     @OnClick(R.id.email_sign_in_button)
     @SuppressWarnings("UnusedDeclaration")
     public void onSignInButtonClick(View view) {
-        attemptLogin();
+        handleLogin();
     }
 
-    public void attemptLogin() {
-        if (authenticationTask != null) {
-            return;
-        }
-
+    public void handleLogin() {
         // Reset errors.
         emailView.setError(null);
         passwordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String email = emailView.getText().toString();
-        String password = passwordView.getText().toString();
+        final String email = emailView.getText().toString();
+        final String password = passwordView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
@@ -127,12 +157,83 @@ public class SignInActivity extends Activity {
             // form field with an error.
             focusView.requestFocus();
         } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
             showProgress(true);
-            authenticationTask = new UserLoginTask(email, password);
-            authenticationTask.execute((Void) null);
+
+            AsyncExecutor.builder().buildForScope(getClass()).execute(new AsyncExecutor.RunnableEx() {
+                @Override
+                public void run() throws Exception {
+                    session.setAuthentication(new BasicAuthentication(email, password));
+
+                    JSONObject command = new JSONObject("{\"/user/get-user-by-id\": {}}");
+                    JSONObject jsonUser = session.invoke(command).getJSONObject(0);
+                    User user = User.JSON_READER.fromJSON(jsonUser);
+
+                    Timber.d("Got a user.");
+
+                    Account account = new Account(user.getEmailAddress(), ACCOUNT_TYPE);
+                    if (requestNewAccount) {
+                        accountManager.addAccountExplicitly(account, password, null);
+                        configureSyncFor(account);
+                    } else {
+                        accountManager.setPassword(account, password);
+                    }
+
+                    eventBus.post(new SuccessLogin(user, password));
+                }
+            });
         }
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    public void onEventMainThread(SuccessLogin event) {
+        Timber.d("finishLogin");
+        finishLogin(event.user.getEmailAddress(), event.password);
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    public void onEventMainThread(ThrowableFailureEvent event) {
+        if (!getClass().equals(event.getExecutionScope())) {
+            // Not our business...
+            return;
+        }
+
+        Throwable t = event.getThrowable();
+
+        int errorMessage;
+        if (t instanceof IOException) {
+            // Probably a network error.
+            errorMessage = R.string.network_error_message;
+        } else if (t instanceof AuthorizationException) {
+            errorMessage = R.string.invalid_credentials_message;
+        } else {
+            errorMessage = R.string.unknown_error_message;
+            Timber.e(t, "Failed to authenticate user credentials.");
+        }
+
+        new AlertDialog.Builder(this)
+                .setMessage(errorMessage)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .create()
+                .show();
+    }
+
+    private void configureSyncFor(Account account) {
+        // TODO
+    }
+
+    private void finishLogin(String emailAddress, String password) {
+        final Intent intent = new Intent();
+        intent.putExtra(KEY_ACCOUNT_NAME, emailAddress);
+        intent.putExtra(KEY_ACCOUNT_TYPE, ACCOUNT_TYPE);
+        if (ACCOUNT_TYPE.equals(authTokenType))
+            intent.putExtra(KEY_AUTHTOKEN, password);
+        setResult(RESULT_OK, intent);
+        finish();
     }
 
     protected void showProgress(final boolean show) {
@@ -156,93 +257,13 @@ public class SignInActivity extends Activity {
         return true;
     }
 
-    public class UserLoginTask extends AsyncTask<Void, Void, Integer> {
+    private class SuccessLogin {
+        public final User user;
+        public final String password;
 
-        private final String email;
-        private final String password;
-        private User user;
-
-        public UserLoginTask(String email, String password) {
-            this.email = email;
+        public SuccessLogin(User user, String password) {
+            this.user = user;
             this.password = password;
-        }
-
-        @Override
-        protected Integer doInBackground(Void... params) {
-            // Prepare to test the supplied credentials
-            session.setAuthentication(new BasicAuthentication(email, password));
-
-            int error = 0;
-            Exception exception = null;
-
-            try {
-                JSONArray userGroups = new GroupService(session).getUserSites();
-                long companyId = userGroups.getJSONObject(0).getLong("companyId");
-
-                JSONObject jsonUser = new UserService(session)
-                        .getUserByEmailAddress(companyId, email);
-
-                user = User.JSON_READER.fromJSON(jsonUser);
-            } catch (IOException e) {
-                // IOException are probably only caused by network problems
-                exception = e;
-                error = R.string.network_error_message;
-            } catch (AuthorizationException e) {
-                exception = e;
-                error = R.string.invalid_credentials_message;
-            } catch (Exception e) {
-                exception = e;
-                error = R.string.unknown_error_message;
-            }
-
-            if (user == null) {
-                Timber.e(exception, "Failed to authenticate user.");
-            } else {
-                // TODO Move this outta here!
-                try {
-                    String usernameAndPassword = email + ":" + password;
-                    byte[] bytes = usernameAndPassword.getBytes("ISO-8859-1");
-                    String encoded = Base64.encodeToString(bytes, Base64.DEFAULT);
-                    String credential = "Basic " + encoded;
-                    credentials.set(credential);
-                } catch (UnsupportedEncodingException e) {
-                    throw new AssertionError(e);
-                }
-            }
-
-            return error;
-        }
-
-        @Override
-        protected void onPostExecute(final Integer error) {
-            authenticationTask = null;
-
-            showProgress(false);
-
-            if (error != 0) {
-                new AlertDialog.Builder(SignInActivity.this)
-                        .setMessage(error)
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
-                        .create()
-                        .show();
-            } else {
-                // It's all good, present the user with the MainActivity.
-                Intent intent = new Intent(SignInActivity.this, MainActivity.class);
-                intent.putExtra(MainActivity.KEY_USER, user);
-                startActivity(intent);
-                finish();
-            }
-        }
-        @Override
-
-        protected void onCancelled() {
-            authenticationTask = null;
-            showProgress(false);
         }
     }
 }

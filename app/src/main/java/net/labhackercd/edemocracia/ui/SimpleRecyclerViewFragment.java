@@ -19,8 +19,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.EDMApplication;
-import net.labhackercd.edemocracia.account.CredentialStore;
 import net.labhackercd.edemocracia.account.SignInActivity;
 import net.labhackercd.edemocracia.data.api.exception.AuthorizationException;
 
@@ -40,7 +38,6 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
     private SwipeRefreshLayout swipeRefreshLayout;
 
     @Inject EventBus eventBus;
-    @Inject CredentialStore credentialStore;
 
     @InjectView(R.id.progress_container) View progressView;
     @InjectView(R.id.load_error_container) View errorContainerView;
@@ -239,7 +236,8 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             // Clear the stored session
-                            credentialStore.clear();
+                            // TODO Trigger sign in
+                            // credentialStore.clear();
 
                             // TODO Redirect the user back to this same screen after sign in
                             startActivity(new Intent(context, SignInActivity.class));

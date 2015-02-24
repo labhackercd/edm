@@ -50,9 +50,4 @@ class EDMRootModule {
     EventBus provideEventBus() {
         return EventBus.getDefault();
     }
-
-    @Provides @Singleton
-    SharedPreferences provideSharedPreferences(Application application) {
-        return application.getSharedPreferences("preferences", Context.MODE_PRIVATE);
-    }
 }
