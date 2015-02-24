@@ -48,32 +48,4 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
     public ApplicationTest() {
         super(Application.class);
     }
-
-    public void testExpandoValues() throws Throwable {
-        EDMSession session = new EDMSession(new BasicAuthentication(
-                Helper.getProperty("username"), Helper.getProperty("password")));
-
-        JSONArray jsonGroups = new GroupService(session).getUserSites();
-        List<Group> groups = Group.JSON_READER.fromJSON(jsonGroups);
-
-        EDMBatchSession batchSession = new EDMBatchSession(session);
-
-        for (Group group : groups) {
-            JSONObject params = new JSONObject();
-
-            params.put("companyId", group.getCompanyId());
-            params.put("className", "com.liferay.portal.model.Group");
-            params.put("tableName", "CUSTOM_FIELDS");
-            params.put("columnName", "Encerrada");
-            params.put("classPk", group.getGroupId());
-
-            JSONObject command = new JSONObject();
-            command.put("/expandovalue/get-data.5", params);
-
-            batchSession.invoke(command);
-        }
-
-        JSONArray jsonEncerradas = batchSession.invoke();
-        assert jsonEncerradas.length() == groups.size();
-    }
 }

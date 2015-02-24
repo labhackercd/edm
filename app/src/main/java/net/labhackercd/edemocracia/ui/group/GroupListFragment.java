@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import com.liferay.mobile.android.service.Session;
 import com.liferay.mobile.android.v62.group.GroupService;
 
 import org.json.JSONArray;
@@ -20,21 +21,22 @@ import net.labhackercd.edemocracia.data.api.EDMBatchSession;
 import net.labhackercd.edemocracia.data.api.EDMService;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.ui.SimpleRecyclerViewFragment;
-import net.labhackercd.edemocracia.data.api.EDMSession;
 
 import de.greenrobot.event.EventBus;
 
 public class GroupListFragment extends SimpleRecyclerViewFragment<Group> {
 
     @Inject EventBus eventBus;
-    @Inject EDMSession session;
+    @Inject Session session;
+
+    // FIXME Please, please, please, don't leave this hardcoded constant here.
+    private long companyId = 10131;
 
     @Override
     protected List<Group> blockingFetchItems() throws Exception {
         GroupService groupService = new GroupService(session);
 
-        JSONArray jsonGroups = groupService.search(
-                session.getCompanyId(), "%", "%", new JSONArray(), -1, -1);
+        JSONArray jsonGroups = groupService.search(companyId, "%", "%", new JSONArray(), -1, -1);
 
         if (jsonGroups == null) {
             jsonGroups = new JSONArray();
@@ -82,6 +84,6 @@ public class GroupListFragment extends SimpleRecyclerViewFragment<Group> {
 
     @Override
     protected Object getRefreshTaskTag() {
-        return new Pair<Class, Long>(getClass(), session.getCompanyId());
+        return new Pair<Class, Long>(getClass(), companyId);
     }
 }

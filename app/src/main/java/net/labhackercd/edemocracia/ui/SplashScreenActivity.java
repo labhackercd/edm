@@ -4,23 +4,24 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.liferay.mobile.android.v62.user.UserService;
+import com.liferay.mobile.android.service.Session;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.EDMApplication;
-import net.labhackercd.edemocracia.data.api.model.User;
-import net.labhackercd.edemocracia.data.api.EDMSession;
-import net.labhackercd.edemocracia.data.api.SessionManager;
+import net.labhackercd.edemocracia.data.api.CredentialStore;
+import net.labhackercd.edemocracia.data.api.exception.AuthorizationException;
 
 import org.json.JSONObject;
+
+import java.io.IOException;
 
 import javax.inject.Inject;
 
 import timber.log.Timber;
 
 public class SplashScreenActivity extends Activity {
-    @Inject EDMSession session;
-    @Inject SessionManager sessionManager;
+    @Inject Session session;
+    @Inject CredentialStore credentialStore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,30 +41,26 @@ public class SplashScreenActivity extends Activity {
     }
 
     private void checkIsAuthenticated() {
-        // Essentially, the session is authenticated if it is associated
-        // with some credentials and some user information.
-        boolean isAuthenticated = session.getAuthentication() != null && session.getUser() != null;
+        Class<? extends Activity> nextActivity;
 
-        if (isAuthenticated) {
-            JSONObject jsonUser;
-
-            try {
-                // But just for the sake of it, we try to reach the remote service.
-                // And since we're at it, update the user information.
-                jsonUser = new UserService(session).getUserById(session.getUser().getUserId());
-
-                // FIXME We should only set and save if the user info changed
-                session.setUser(User.JSON_READER.fromJSON(jsonUser));
-
-                sessionManager.save(session);
-            } catch (Exception e) {
-                // We keep the previous result if something goes wrong, but we log the exception
-                // as a warning just for the sake of it.
-                Timber.e(e, "Failed to check user credentials.");
+        try {
+            JSONObject command = new JSONObject("{\"/user/get-user-by-id\": {}}");
+            session.invoke(command).getJSONObject(0);
+            nextActivity = MainActivity.class;
+        } catch (AuthorizationException e) {
+            // Unauthorized. Send user to the login screen.
+            nextActivity = SignInActivity.class;
+        } catch (IOException e) {
+            // This is a network error. Let the user go through only if there are credentials stored.
+            if (credentialStore.get() != null) {
+                nextActivity = MainActivity.class;
+            } else {
+                nextActivity = SignInActivity.class;
             }
+        } catch (Exception e) {
+            Timber.e(e, "Error while trying to load User.");
+            nextActivity = SignInActivity.class;
         }
-
-        Class nextActivity = isAuthenticated ? MainActivity.class : SignInActivity.class;
 
         startActivity(new Intent(getApplicationContext(), nextActivity));
         finish();

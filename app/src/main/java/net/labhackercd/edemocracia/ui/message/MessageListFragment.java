@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.liferay.mobile.android.service.Session;
 import com.liferay.mobile.android.v62.mbmessage.MBMessageService;
 import com.liferay.mobile.android.v62.user.UserService;
 
@@ -23,11 +24,10 @@ import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.ui.SimpleRecyclerViewFragment;
 import net.labhackercd.edemocracia.data.api.exception.PrincipalException;
 import net.labhackercd.edemocracia.data.api.EDMBatchSession;
-import net.labhackercd.edemocracia.data.api.EDMSession;
 
 public class MessageListFragment extends SimpleRecyclerViewFragment<Message> {
 
-    @Inject EDMSession session;
+    @Inject Session session;
 
     private Thread thread;
 

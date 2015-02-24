@@ -11,6 +11,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.liferay.mobile.android.service.Session;
 import com.liferay.mobile.android.v62.mbcategory.MBCategoryService;
 import com.liferay.mobile.android.v62.mbthread.MBThreadService;
 
@@ -26,7 +27,6 @@ import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.ui.SimpleRecyclerViewFragment;
 import net.labhackercd.edemocracia.data.api.EDMBatchSession;
-import net.labhackercd.edemocracia.data.api.EDMSession;
 
 import de.greenrobot.event.EventBus;
 
@@ -35,7 +35,7 @@ public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
     public static String ARG_PARENT = "parent";
 
     @Inject EventBus eventBus;
-    @Inject EDMSession session;
+    @Inject Session session;
 
     private BaseModel parent;
 

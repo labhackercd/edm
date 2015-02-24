@@ -1,5 +1,6 @@
 package net.labhackercd.edemocracia.job;
 
+import com.liferay.mobile.android.service.Session;
 import com.path.android.jobqueue.Job;
 
 import android.os.Handler;
@@ -13,7 +14,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import net.labhackercd.edemocracia.data.api.EDMGetSessionWrapper;
-import net.labhackercd.edemocracia.data.api.EDMSession;
 import net.labhackercd.edemocracia.data.api.model.Message;
 
 import javax.inject.Inject;
@@ -27,8 +27,8 @@ public class AddMessageJob extends Job {
     private static final Handler MAIN_THREAD = new Handler(Looper.getMainLooper());
 
     // XXX Injected fields are declared transient in order to not be serialized
+    @Inject transient Session session;
     @Inject transient EventBus eventBus;
-    @Inject transient EDMSession session;
 
     private final Message message;
 

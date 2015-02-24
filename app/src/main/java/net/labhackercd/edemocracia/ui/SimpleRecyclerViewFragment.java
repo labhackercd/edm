@@ -20,8 +20,8 @@ import android.widget.Toast;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.EDMApplication;
+import net.labhackercd.edemocracia.data.api.CredentialStore;
 import net.labhackercd.edemocracia.data.api.exception.AuthorizationException;
-import net.labhackercd.edemocracia.data.api.SessionManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,7 +39,7 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
     private SwipeRefreshLayout swipeRefreshLayout;
 
     @Inject EventBus eventBus;
-    @Inject SessionManager sessionManager;
+    @Inject CredentialStore credentialStore;
 
     @InjectView(R.id.progress_container) View progressView;
     @InjectView(R.id.load_error_container) View errorContainerView;
@@ -238,9 +238,8 @@ public abstract class SimpleRecyclerViewFragment<T> extends Fragment {
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-
                             // Clear the stored session
-                            sessionManager.clear();
+                            credentialStore.clear();
 
                             // TODO Redirect the user back to this same screen after sign in
                             startActivity(new Intent(context, SignInActivity.class));

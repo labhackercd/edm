@@ -57,12 +57,8 @@ class ThreadItem {
 
     public Date getCreateDate() {
         if (thread != null) {
-            Message root = thread.getRootMessage();
-            if (root != null) {
-                return root.getCreateDate();
-            } else {
-                return null;
-            }
+            // FIXME
+            return thread.getLastPostDate();
         } else {
             return category.getCreateDate();
         }
@@ -71,17 +67,16 @@ class ThreadItem {
     public String getBody() {
         Thread thread = getThread();
         if (thread != null) {
-            Message root = thread.getRootMessage();
-            if (root != null) {
-                return root.getBody();
-            }
+            // FIXME
+            return null;
         }
         return null;
     }
 
     public String getUserName() {
         if (thread != null) {
-            Message root = thread.getRootMessage();
+            // FIXME
+            Message root = null;
             if (root != null) {
                 return root.getUserName();
             } else {

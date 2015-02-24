@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
@@ -18,17 +19,19 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.liferay.mobile.android.auth.basic.BasicAuthentication;
+import com.liferay.mobile.android.service.Session;
 import com.liferay.mobile.android.v62.group.GroupService;
 import com.liferay.mobile.android.v62.user.UserService;
 
+import net.labhackercd.edemocracia.data.api.CredentialStore;
 import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.data.api.exception.AuthorizationException;
-import net.labhackercd.edemocracia.data.api.EDMSession;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import javax.inject.Inject;
 
@@ -40,15 +43,10 @@ import timber.log.Timber;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.EDMApplication;
-import net.labhackercd.edemocracia.data.api.SessionManager;
-
 
 public class SignInActivity extends Activity {
-
-    private static final String TAG = SignInActivity.class.getSimpleName();
-
-    @Inject EDMSession session;
-    @Inject SessionManager sessionManager;
+    @Inject Session session;
+    @Inject CredentialStore credentials;
 
     @InjectView(R.id.email) AutoCompleteTextView emailView;
     @InjectView(R.id.password) EditText passwordView;
@@ -200,11 +198,16 @@ public class SignInActivity extends Activity {
             if (user == null) {
                 Timber.e(exception, "Failed to authenticate user.");
             } else {
-                // Save the user.
-                session.setUser(user);
-
-                // Persist the session for future uses.
-                sessionManager.save(session);
+                // TODO Move this outta here!
+                try {
+                    String usernameAndPassword = email + ":" + password;
+                    byte[] bytes = usernameAndPassword.getBytes("ISO-8859-1");
+                    String encoded = Base64.encodeToString(bytes, Base64.DEFAULT);
+                    String credential = "Basic " + encoded;
+                    credentials.set(credential);
+                } catch (UnsupportedEncodingException e) {
+                    throw new AssertionError(e);
+                }
             }
 
             return error;
