@@ -1,10 +1,11 @@
-package net.labhackercd.edemocracia.data.model.util;
+package net.labhackercd.edemocracia.data.api.model.util;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -38,7 +39,7 @@ import java.util.List;
  *          Album album = Album.JSON_READER.fromJSON(albums.getJSONObject(0));
  *
  *          // And the best part:
- *          List<Album> albums = JSONReader.fromJSON(albums, Album.JSON_READER);
+ *          List<Album> albums = Album.JSON_READER.fromJSON(albums, Album.JSON_READER);
  *
  *
  * I don't know about you, but I find this pretty handy...
@@ -48,15 +49,11 @@ import java.util.List;
 public abstract class JSONReader<T> {
     public abstract T fromJSON(JSONObject json) throws JSONException;
 
-    public static <T> List<T> fromJSON(JSONArray json, JSONReader<T> reader) throws JSONException {
+    public List<T> fromJSON(JSONArray json) throws JSONException {
         List<T> list = new ArrayList<>();
         for (int i = 0; i < json.length(); i++) {
-            list.add(fromJSON(json.getJSONObject(i), reader));
+            list.add(fromJSON(json.getJSONObject(i)));
         }
         return list;
-    }
-
-    public static <T> T fromJSON(JSONObject json, JSONReader<T> reader) throws JSONException {
-        return reader.fromJSON(json);
     }
 }

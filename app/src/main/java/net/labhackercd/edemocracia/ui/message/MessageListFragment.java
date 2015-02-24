@@ -18,14 +18,12 @@ import java.util.List;
 import javax.inject.Inject;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.data.model.Message;
-import net.labhackercd.edemocracia.data.model.Thread;
-import net.labhackercd.edemocracia.data.model.User;
+import net.labhackercd.edemocracia.data.api.model.Message;
+import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.ui.SimpleRecyclerViewFragment;
 import net.labhackercd.edemocracia.data.api.exception.PrincipalException;
 import net.labhackercd.edemocracia.data.api.EDMBatchSession;
 import net.labhackercd.edemocracia.data.api.EDMSession;
-import net.labhackercd.edemocracia.data.model.util.JSONReader;
 
 public class MessageListFragment extends SimpleRecyclerViewFragment<Message> {
 
@@ -39,7 +37,7 @@ public class MessageListFragment extends SimpleRecyclerViewFragment<Message> {
         MessageListFragment fragment = new MessageListFragment();
 
         Bundle args = new Bundle();
-        args.putParcelable(ARG_THREAD, thread);
+        args.putSerializable(ARG_THREAD, thread);
 
         fragment.setArguments(args);
 
@@ -55,7 +53,7 @@ public class MessageListFragment extends SimpleRecyclerViewFragment<Message> {
         Bundle args = getArguments();
 
         if (args != null) {
-            thread = args.getParcelable(ARG_THREAD);
+            thread = (Thread) args.getSerializable(ARG_THREAD);
         }
     }
 
@@ -118,14 +116,19 @@ public class MessageListFragment extends SimpleRecyclerViewFragment<Message> {
             // Ignore
         }
 
+        List<Message> messages = Message.JSON_READER.fromJSON(jsonMessages);
+
+        /*
+        TODO Associate users with messages
+
         User currentUser = session.getUser();
 
-        List<Message> messages = JSONReader.fromJSON(jsonMessages, Message.JSON_READER);
         for (Message i : messages) {
             if (i.getUserId() == currentUser.getUserId()) {
                 i.setUser(currentUser);
             }
         }
+        */
 
         return messages;
     }

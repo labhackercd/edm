@@ -14,7 +14,7 @@ import com.squareup.picasso.Picasso;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.ui.MainActivity;
-import net.labhackercd.edemocracia.data.model.Group;
+import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.ui.SimpleRecyclerViewAdapter;
 
 import java.util.List;
@@ -68,18 +68,22 @@ public class GroupListAdapter extends SimpleRecyclerViewAdapter<Group, GroupList
             String letter = group.getName().trim().substring(0, 1).toUpperCase();
             TextDrawable textDrawable = TextDrawable.builder().buildRect(letter, Color.LTGRAY);
 
+            /*
+            TODO Display group icons
+
             Picasso.with(context)
                     .load(group.getGroupImage())
                     .placeholder(textDrawable)
                     .resize(128, 128)
                     .centerCrop()
                     .into(iconView);
+                    */
         }
 
         @Override
         public void onClick(View v) {
             if (group != null) {
-                eventBus.post(new MainActivity.ShowForumEvent(group));
+                eventBus.post(new MainActivity.ShowGroupEvent(group));
             }
         }
     }

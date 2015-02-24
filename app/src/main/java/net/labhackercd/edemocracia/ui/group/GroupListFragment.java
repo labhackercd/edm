@@ -18,10 +18,9 @@ import javax.inject.Inject;
 
 import net.labhackercd.edemocracia.data.api.EDMBatchSession;
 import net.labhackercd.edemocracia.data.api.EDMService;
-import net.labhackercd.edemocracia.data.model.Group;
+import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.ui.SimpleRecyclerViewFragment;
 import net.labhackercd.edemocracia.data.api.EDMSession;
-import net.labhackercd.edemocracia.data.model.util.JSONReader;
 
 import de.greenrobot.event.EventBus;
 
@@ -41,7 +40,7 @@ public class GroupListFragment extends SimpleRecyclerViewFragment<Group> {
             jsonGroups = new JSONArray();
         }
 
-        final List<Group> groups = JSONReader.fromJSON(jsonGroups, Group.JSON_READER);
+        final List<Group> groups = Group.JSON_READER.fromJSON(jsonGroups);
 
         EDMBatchSession batchSession = new EDMBatchSession(session);
         EDMService batchedCustomService = new EDMService(batchSession);

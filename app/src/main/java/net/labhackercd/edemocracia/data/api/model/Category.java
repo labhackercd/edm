@@ -1,16 +1,14 @@
-package net.labhackercd.edemocracia.data.model;
+package net.labhackercd.edemocracia.data.api.model;
 
-import android.net.Uri;
-
-import net.labhackercd.edemocracia.data.model.util.GsonParcelable;
-import net.labhackercd.edemocracia.data.model.util.JSONReader;
+import net.labhackercd.edemocracia.data.api.model.util.JSON;
+import net.labhackercd.edemocracia.data.api.model.util.JSONReader;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
 
-public class Category extends GsonParcelable implements Forum {
+public class Category extends BaseModel {
 
     private String userName;
     private String description;
@@ -27,7 +25,6 @@ public class Category extends GsonParcelable implements Forum {
     private int messageCount;
     private String displayStyle;
     private String name;
-
 
     public String getUserName() {
         return userName;
@@ -89,15 +86,6 @@ public class Category extends GsonParcelable implements Forum {
         return name;
     }
 
-    @Override
-    public String toString() {
-        return getName();
-    }
-
-    public Uri getUserPortrait() {
-        return null;
-    }
-
     public static final JSONReader<Category> JSON_READER = new JSONReader<Category>() {
         @Override
         public Category fromJSON(JSONObject json) throws JSONException {
@@ -105,25 +93,19 @@ public class Category extends GsonParcelable implements Forum {
 
             instance.userName = json.getString("userName");
             instance.description = json.getString("description");
+            instance.lastPostDate = JSON.getJSONLongAsDate(json, "lastPostDate");
             instance.companyId = json.getLong("companyId");
-            instance.createDate = new Date(json.getLong("createDate"));
+            instance.createDate = JSON.getJSONLongAsDate(json, "createDate");
             instance.parentCategoryId = json.getLong("parentCategoryId");
             instance.userId = json.getLong("userId");
             instance.uuid = json.getString("uuid");
             instance.threadCount = json.getInt("threadCount");
             instance.categoryId = json.getLong("categoryId");
-            instance.modifiedDate = new Date(json.getLong("modifiedDate"));
+            instance.modifiedDate = JSON.getJSONLongAsDate(json, "modifiedDate");
             instance.groupId = json.getLong("groupId");
             instance.messageCount = json.getInt("messageCount");
             instance.displayStyle = json.getString("displayStyle");
             instance.name = json.getString("name");
-
-
-            if (json.isNull("lastPostDate")) {
-                instance.lastPostDate = null;
-            } else {
-                instance.lastPostDate = new Date(json.getLong("lastPostDate"));
-            }
 
             return instance;
         }

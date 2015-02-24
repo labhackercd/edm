@@ -5,7 +5,7 @@ import com.liferay.mobile.android.exception.ServerException;
 import com.liferay.mobile.android.http.HttpUtil;
 import com.liferay.mobile.android.service.SessionImpl;
 
-import net.labhackercd.edemocracia.data.model.User;
+import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.data.api.exception.AuthorizationException;
 import net.labhackercd.edemocracia.data.api.exception.NotFoundException;
 import net.labhackercd.edemocracia.data.api.exception.PrincipalException;

@@ -16,7 +16,6 @@ import com.squareup.picasso.Picasso;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.ui.MainActivity;
-import net.labhackercd.edemocracia.data.model.Forum;
 import net.labhackercd.edemocracia.ui.SimpleRecyclerViewAdapter;
 
 import java.util.Date;
@@ -72,11 +71,10 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
         @Override
         public void onClick(View v) {
             if (item != null) {
-                Forum forum = item.getForum();
-                if (forum != null) {
-                    eventBus.post(new MainActivity.ShowForumEvent(forum));
-                } else {
+                if (item.getThread() != null) {
                     eventBus.post(new MainActivity.ShowThreadEvent(item.getThread()));
+                } else {
+                    eventBus.post(new MainActivity.ShowCategoryEvent(item.getCategory()));
                 }
             }
         }
@@ -88,6 +86,10 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
             String letter = item.getUserName().trim().substring(0, 1).toUpperCase();
             TextDrawable textDrawable = TextDrawable.builder().buildRect(letter, Color.LTGRAY);
 
+            portraitView.setImageDrawable(textDrawable);
+
+            /*
+            TODO Show user portraits
             Uri userPortrait = item.getUserPortrait();
             if (userPortrait == null) {
                 portraitView.setImageDrawable(textDrawable);
@@ -99,6 +101,7 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
                         .centerCrop()
                         .into(portraitView);
             }
+             */
 
             // Fill the user name
             userView.setText(item.getUserName());

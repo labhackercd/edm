@@ -1,18 +1,14 @@
-package net.labhackercd.edemocracia.data.model;
-
-import android.net.Uri;
+package net.labhackercd.edemocracia.data.api.model;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import net.labhackercd.edemocracia.data.api.EDMSession;
-import net.labhackercd.edemocracia.data.model.util.GsonParcelable;
-import net.labhackercd.edemocracia.data.model.util.JSONReader;
+import net.labhackercd.edemocracia.data.api.model.util.JSON;
+import net.labhackercd.edemocracia.data.api.model.util.JSONReader;
 
-import java.io.Serializable;
 import java.util.Date;
 
-public class Message extends GsonParcelable implements Serializable {
+public class Message extends BaseModel {
 
     private int status;
     private boolean attachments;
@@ -40,7 +36,6 @@ public class Message extends GsonParcelable implements Serializable {
     private long groupId;
     private String userName;
     private long messageId;
-    private User user;
 
     public static Message create(Thread thread, String subject, String body) {
         return create(
@@ -186,29 +181,6 @@ public class Message extends GsonParcelable implements Serializable {
         return messageId;
     }
 
-    public Uri getUserPortrait() {
-        if (user != null) {
-            return Uri.parse(EDMSession.SERVICE_URL +
-                    "/image/user_male_portrait?img_id=" + user.getPortraitId());
-        } else {
-            return null;
-        }
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    // FIXME We really shouldn't have setters in models :'(
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    @Override
-    public String toString() {
-        return getSubject();
-    }
-
     public static final JSONReader<Message> JSON_READER = new JSONReader<Message>() {
         @Override
         public Message fromJSON(JSONObject json) throws JSONException {
@@ -223,11 +195,11 @@ public class Message extends GsonParcelable implements Serializable {
             instance.answer = json.getBoolean("answer");
             instance.uuid = json.getString("uuid");
             instance.companyId = json.getLong("companyId");
-            instance.createDate = new Date(json.getLong("createDate"));
+            instance.createDate = JSON.getJSONLongAsDate(json, "createDate");
             instance.format = json.getString("format");
             instance.priority = json.getDouble("priority");
             instance.statusByUserId = json.getLong("statusByUserId");
-            instance.statusDate = new Date(json.getLong("statusDate"));
+            instance.statusDate = JSON.getJSONLongAsDate(json, "statusDate");
             instance.categoryId = json.getLong("categoryId");
             instance.body = json.getString("body");
             instance.classPK = json.getLong("classPK");
@@ -235,15 +207,11 @@ public class Message extends GsonParcelable implements Serializable {
             instance.classNameId = json.getLong("classNameId");
             instance.rootMessageId = json.getLong("rootMessageId");
             instance.parentMessageId = json.getLong("parentMessageId");
-            instance.modifiedDate = new Date(json.getLong("modifiedDate"));
+            instance.modifiedDate = JSON.getJSONLongAsDate(json, "modifiedDate");
             instance.anonymous = json.getBoolean("anonymous");
             instance.groupId = json.getLong("groupId");
             instance.userName = json.getString("userName");
             instance.messageId = json.getLong("messageId");
-
-            if (!json.isNull("user")) {
-                instance.user = User.JSON_READER.fromJSON(json.getJSONObject("user"));
-            }
 
             return instance;
         }

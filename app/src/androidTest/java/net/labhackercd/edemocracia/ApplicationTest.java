@@ -4,13 +4,12 @@ import android.app.Application;
 import android.test.ApplicationTestCase;
 
 import com.liferay.mobile.android.auth.basic.BasicAuthentication;
-import com.liferay.mobile.android.v62.expandovalue.ExpandoValueService;
 import com.liferay.mobile.android.v62.group.GroupService;
 
 import net.labhackercd.edemocracia.data.api.EDMBatchSession;
 import net.labhackercd.edemocracia.data.api.EDMSession;
-import net.labhackercd.edemocracia.data.model.Group;
-import net.labhackercd.edemocracia.data.model.util.JSONReader;
+import net.labhackercd.edemocracia.data.api.model.Group;
+import net.labhackercd.edemocracia.data.api.model.util.JSONReader;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -55,7 +54,7 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
                 Helper.getProperty("username"), Helper.getProperty("password")));
 
         JSONArray jsonGroups = new GroupService(session).getUserSites();
-        List<Group> groups = JSONReader.fromJSON(jsonGroups, Group.JSON_READER);
+        List<Group> groups = Group.JSON_READER.fromJSON(jsonGroups);
 
         EDMBatchSession batchSession = new EDMBatchSession(session);
 

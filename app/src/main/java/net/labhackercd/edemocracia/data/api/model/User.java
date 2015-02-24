@@ -1,15 +1,16 @@
-package net.labhackercd.edemocracia.data.model;
+package net.labhackercd.edemocracia.data.api.model;
 
-import net.labhackercd.edemocracia.data.model.util.JSONReader;
+import net.labhackercd.edemocracia.data.api.model.util.JSONReader;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
 
-import static net.labhackercd.edemocracia.data.model.util.JSON.getJSONLongAsDate;
+import static net.labhackercd.edemocracia.data.api.model.util.JSON.getJSONLongAsDate;
 
-public class User {
+public class User extends BaseModel {
+
     private boolean agreedToTermsOfUse;
     private String comments;
     private long companyId;

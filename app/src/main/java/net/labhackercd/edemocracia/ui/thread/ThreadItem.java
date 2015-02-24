@@ -1,9 +1,7 @@
 package net.labhackercd.edemocracia.ui.thread;
 
-import android.net.Uri;
-
-import net.labhackercd.edemocracia.data.model.*;
-import net.labhackercd.edemocracia.data.model.Thread;
+import net.labhackercd.edemocracia.data.api.model.*;
+import net.labhackercd.edemocracia.data.api.model.Thread;
 
 import java.util.Date;
 
@@ -27,14 +25,6 @@ class ThreadItem {
     }
 
     @Nullable
-    public Forum getForum() {
-        if (category != null) {
-            return category;
-        }
-        return null;
-    }
-
-    @Nullable
     public Thread getThread() {
         return thread;
     }
@@ -46,14 +36,6 @@ class ThreadItem {
             return thread.toString();
         } else {
             return category.toString();
-        }
-    }
-
-    public Uri getUserPortrait() {
-        if (thread != null) {
-            return thread.getUserPortrait();
-        } else {
-            return category.getUserPortrait();
         }
     }
 
@@ -108,5 +90,9 @@ class ThreadItem {
         } else {
             return category.getUserName();
         }
+    }
+
+    public Category getCategory() {
+        return category;
     }
 }

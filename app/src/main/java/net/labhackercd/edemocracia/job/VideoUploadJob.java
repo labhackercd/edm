@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.data.model.Message;
+import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.youtube.Constants;
 
 import javax.inject.Inject;

@@ -28,8 +28,8 @@ import java.util.List;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.ui.VideoPickerActivity;
 import net.labhackercd.edemocracia.EDMApplication;
-import net.labhackercd.edemocracia.data.model.Thread;
-import net.labhackercd.edemocracia.data.model.Message;
+import net.labhackercd.edemocracia.data.api.model.Thread;
+import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.job.AddMessageJob;
 import net.labhackercd.edemocracia.job.VideoUploadJob;
 
@@ -85,10 +85,12 @@ public class ComposeActivity extends ActionBarActivity {
 
         if (subject == null && parent != null) {
             if (parent instanceof Thread) {
-                subject = ((Thread) parent).getSubject();
+                // TODO Use the subject from the root message of the Thread
+                subject = null;
             } else if (parent instanceof Message) {
                 subject = ((Message) parent).getSubject();
             }
+
             if (subject != null) {
                 subject = getReplySubject(subject);
             }

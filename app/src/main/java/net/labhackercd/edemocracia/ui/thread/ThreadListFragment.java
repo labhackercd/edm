@@ -2,6 +2,7 @@ package net.labhackercd.edemocracia.ui.thread;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
 
@@ -11,7 +12,6 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.liferay.mobile.android.v62.mbcategory.MBCategoryService;
-import com.liferay.mobile.android.v62.mbmessage.MBMessageService;
 import com.liferay.mobile.android.v62.mbthread.MBThreadService;
 
 import org.json.JSONArray;
@@ -20,15 +20,13 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import net.labhackercd.edemocracia.data.model.Category;
-import net.labhackercd.edemocracia.data.model.Forum;
-import net.labhackercd.edemocracia.data.model.Group;
-import net.labhackercd.edemocracia.data.model.Message;
-import net.labhackercd.edemocracia.data.model.Thread;
+import net.labhackercd.edemocracia.data.api.model.BaseModel;
+import net.labhackercd.edemocracia.data.api.model.Category;
+import net.labhackercd.edemocracia.data.api.model.Group;
+import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.ui.SimpleRecyclerViewFragment;
 import net.labhackercd.edemocracia.data.api.EDMBatchSession;
 import net.labhackercd.edemocracia.data.api.EDMSession;
-import net.labhackercd.edemocracia.data.model.util.JSONReader;
 
 import de.greenrobot.event.EventBus;
 
@@ -39,13 +37,24 @@ public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
     @Inject EventBus eventBus;
     @Inject EDMSession session;
 
-    private Forum forum;
+    private BaseModel parent;
 
-    public static ThreadListFragment newInstance(Forum forum) {
+    public static Fragment newInstance(Group group) {
         ThreadListFragment fragment = new ThreadListFragment();
 
         Bundle args = new Bundle();
-        args.putParcelable(ARG_PARENT, forum);
+        args.putSerializable(ARG_PARENT, group);
+
+        fragment.setArguments(args);
+
+        return fragment;
+    }
+
+    public static Fragment newInstance(Category category) {
+        ThreadListFragment fragment = new ThreadListFragment();
+
+        Bundle args = new Bundle();
+        args.putSerializable(ARG_PARENT, category);
 
         fragment.setArguments(args);
 
@@ -61,7 +70,7 @@ public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
         Bundle args = getArguments();
 
         if (args != null) {
-            forum = args.getParcelable(ARG_PARENT);
+            parent = (BaseModel) args.getSerializable(ARG_PARENT);
         }
     }
 
@@ -77,14 +86,16 @@ public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
         MBThreadService threadService = new MBThreadService(batchSession);
         MBCategoryService categoryService = new MBCategoryService(batchSession);
 
-        boolean forumIsAGroup = forum instanceof Group;
+        boolean parentIsAGroup = parent instanceof Group;
 
-        if (forumIsAGroup) {
-            threadService.getGroupThreads(forum.getGroupId(), -1, 0, -1, -1);
-            categoryService.getCategories(forum.getGroupId());
+        if (parentIsAGroup) {
+            Group group = (Group) parent;
+            threadService.getGroupThreads(group.getGroupId(), -1, 0, -1, -1);
+            categoryService.getCategories(group.getGroupId());
         } else {
-            threadService.getThreads(forum.getGroupId(), forum.getCategoryId(), 0, -1, -1);
-            categoryService.getCategories(forum.getGroupId(), forum.getCategoryId(), -1, -1);
+            Category category = (Category) parent;
+            threadService.getThreads(category.getGroupId(), category.getCategoryId(), 0, -1, -1);
+            categoryService.getCategories(category.getGroupId(), category.getCategoryId(), -1, -1);
         }
 
         JSONArray jsonResult = batchSession.invoke();
@@ -99,10 +110,10 @@ public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
             jsonCategories = new JSONArray();
         }
 
-        List<Thread> threads = JSONReader.fromJSON(jsonThreads, Thread.JSON_READER);
-        List<Category> categories = JSONReader.fromJSON(jsonCategories, Category.JSON_READER);
+        List<Thread> threads = Thread.JSON_READER.fromJSON(jsonThreads);
+        List<Category> categories = Category.JSON_READER.fromJSON(jsonCategories);
 
-        if (forumIsAGroup) {
+        if (parentIsAGroup) {
             // Ignore threads and categories that don't belong to the given group. This is
             // required because the webservice returns all the threads and categories inside a
             // group, even the ones nested inside subcategories.
@@ -121,6 +132,9 @@ public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
             }));
         }
 
+        /*
+        TODO Pull root messages
+
         MBMessageService messageService = new MBMessageService(batchSession);
 
         for (Thread thread : threads) {
@@ -133,11 +147,12 @@ public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
             jsonMessages = new JSONArray();
         }
 
-        List<Message> messages = JSONReader.fromJSON(jsonMessages, Message.JSON_READER);
+        List<Message> messages = Message.JSON_READER.fromJSON(jsonMessages);
 
         for (Message message : messages) {
             threads.get(messages.indexOf(message)).setRootMessage(message);
         }
+        */
 
         Iterable<ThreadItem> ithreads = Collections2.transform(threads, new Function<Thread, ThreadItem>() {
             @Override
@@ -158,6 +173,12 @@ public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
 
     @Override
     protected Object getRefreshTaskTag() {
-        return new Pair<Class, Pair<Long, Long>>(getClass(), new Pair<>(forum.getGroupId(), forum.getCategoryId()));
+        if (parent instanceof Group) {
+            return new Pair<Class, Long>(getClass(), ((Group) parent).getGroupId());
+        } else {
+            Category category = (Category) parent;
+            return new Pair<Class, Pair<Long, Long>>(getClass(), new Pair<>(
+                    category.getGroupId(), category.getCategoryId()));
+        }
     }
 }

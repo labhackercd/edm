@@ -21,7 +21,7 @@ import com.liferay.mobile.android.auth.basic.BasicAuthentication;
 import com.liferay.mobile.android.v62.group.GroupService;
 import com.liferay.mobile.android.v62.user.UserService;
 
-import net.labhackercd.edemocracia.data.model.User;
+import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.data.api.exception.AuthorizationException;
 import net.labhackercd.edemocracia.data.api.EDMSession;
 

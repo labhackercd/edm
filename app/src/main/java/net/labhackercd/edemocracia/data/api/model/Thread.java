@@ -1,16 +1,14 @@
-package net.labhackercd.edemocracia.data.model;
+package net.labhackercd.edemocracia.data.api.model;
 
-import android.net.Uri;
-
-import net.labhackercd.edemocracia.data.model.util.GsonParcelable;
-import net.labhackercd.edemocracia.data.model.util.JSONReader;
+import net.labhackercd.edemocracia.data.api.model.util.JSON;
+import net.labhackercd.edemocracia.data.api.model.util.JSONReader;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
 
-public class Thread extends GsonParcelable {
+public class Thread extends BaseModel {
 
     private int status;
     private int viewCount;
@@ -28,7 +26,6 @@ public class Thread extends GsonParcelable {
     private String statusByUserName;
     private Date statusDate;
     private long categoryId;
-    private Message rootMessage = null;
 
     public int getStatus() {
         return status;
@@ -94,38 +91,6 @@ public class Thread extends GsonParcelable {
         return categoryId;
     }
 
-    public Message getRootMessage() {
-        return rootMessage;
-    }
-
-    // FIXME Maybe we should move this *set root message* method into some other layer?
-    public void setRootMessage(Message message) {
-        rootMessage = message;
-    }
-
-    public String getSubject() {
-        Message rootMessage = getRootMessage();
-        return rootMessage == null ? null : rootMessage.getSubject();
-    }
-
-    @Override
-    public String toString() {
-        String subject = getSubject();
-        if (subject == null) {
-            subject = super.toString();
-        }
-        return subject;
-    }
-
-    public Uri getUserPortrait() {
-        Uri portrait = null;
-        Message root = getRootMessage();
-        if (root != null) {
-            portrait = root.getUserPortrait();
-        }
-        return portrait;
-    }
-
     public static final JSONReader<Thread> JSON_READER = new JSONReader<Thread>() {
         @Override
         public Thread fromJSON(JSONObject json) throws JSONException {
@@ -134,7 +99,7 @@ public class Thread extends GsonParcelable {
             instance.status = json.getInt("status");
             instance.viewCount = json.getInt("viewCount");
             instance.messageCount = json.getInt("messageCount");
-            instance.lastPostDate = new Date(json.getLong("lastPostDate"));
+            instance.lastPostDate = JSON.getJSONLongAsDate(json, "lastPostDate");
             instance.companyId = json.getLong("companyId");
             instance.statusByUserId = json.getLong("statusByUserId");
             instance.rootMessageUserId = json.getLong("rootMessageUserId");
@@ -145,12 +110,8 @@ public class Thread extends GsonParcelable {
             instance.threadId = json.getLong("threadId");
             instance.groupId = json.getLong("groupId");
             instance.statusByUserName = json.getString("statusByUserName");
-            instance.statusDate = new Date(json.getLong("statusDate"));
+            instance.statusDate = JSON.getJSONLongAsDate(json, "statusDate");
             instance.categoryId = json.getLong("categoryId");
-
-            if (json.has("rootMessage")) {
-                instance.rootMessage = Message.JSON_READER.fromJSON(json.getJSONObject("rootMessage"));
-            }
 
             return instance;
         }

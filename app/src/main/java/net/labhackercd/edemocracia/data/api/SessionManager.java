@@ -7,7 +7,7 @@ import android.support.annotation.Nullable;
 import com.google.gson.Gson;
 import com.liferay.mobile.android.auth.basic.BasicAuthentication;
 
-import net.labhackercd.edemocracia.data.model.User;
+import net.labhackercd.edemocracia.data.api.model.User;
 
 /**
  * Manages EDMSessions for a context.

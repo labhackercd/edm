@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.data.model.util;
+package net.labhackercd.edemocracia.data.api.model.util;
 
 import org.json.JSONException;
 import org.json.JSONObject;

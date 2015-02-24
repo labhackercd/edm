@@ -14,7 +14,7 @@ import org.json.JSONObject;
 
 import net.labhackercd.edemocracia.data.api.EDMGetSessionWrapper;
 import net.labhackercd.edemocracia.data.api.EDMSession;
-import net.labhackercd.edemocracia.data.model.Message;
+import net.labhackercd.edemocracia.data.api.model.Message;
 
 import javax.inject.Inject;
 

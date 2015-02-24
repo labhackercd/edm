@@ -19,7 +19,7 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.data.model.Message;
+import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.ui.SimpleRecyclerViewAdapter;
 
 import java.util.Date;
@@ -144,6 +144,9 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
             String letter = message.getUserName().trim().substring(0, 1).toUpperCase();
             TextDrawable textDrawable = TextDrawable.builder().buildRect(letter, Color.LTGRAY);
 
+            /*
+            TODO Display user portraits
+
             Uri portrait = message.getUserPortrait();
             if (portrait == null) {
                 portraitView.setImageDrawable(textDrawable);
@@ -155,6 +158,7 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
                         .centerCrop()
                         .into(portraitView);
             }
+             */
         }
 
         @Override

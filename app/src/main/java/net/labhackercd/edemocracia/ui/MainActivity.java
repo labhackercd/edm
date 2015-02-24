@@ -22,8 +22,8 @@ import net.labhackercd.edemocracia.ui.message.MessageListFragment;
 import net.labhackercd.edemocracia.ui.thread.ThreadListFragment;
 import net.labhackercd.edemocracia.ui.group.GroupListFragment;
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.data.model.*;
-import net.labhackercd.edemocracia.data.model.Thread;
+import net.labhackercd.edemocracia.data.api.model.*;
+import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.job.AddMessageJob;
 import net.labhackercd.edemocracia.job.VideoUploadJob;
 import net.labhackercd.edemocracia.youtube.Constants;
@@ -128,9 +128,15 @@ public class MainActivity extends ActionBarActivity {
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    public void onEventMainThread(ShowForumEvent event) {
-        Forum forum = event.getForum();
-        replaceMainFragment(ThreadListFragment.newInstance(forum));
+    public void onEventMainThread(ShowCategoryEvent event) {
+        Category category = event.getCategory();
+        replaceMainFragment(ThreadListFragment.newInstance(category));
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    public void onEventMainThread(ShowGroupEvent event) {
+        Group group = event.getGroup();
+        replaceMainFragment(ThreadListFragment.newInstance(group));
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -157,18 +163,6 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    public static class ShowForumEvent {
-        private final Forum forum;
-
-        public ShowForumEvent(Forum forum) {
-            this.forum = forum;
-        }
-
-        public Forum getForum() {
-            return forum;
-        }
-    }
-
     public static class ShowThreadEvent {
         private final Thread thread;
 
@@ -178,6 +172,28 @@ public class MainActivity extends ActionBarActivity {
 
         public Thread getThread() {
             return thread;
+        }
+    }
+
+    public static class ShowGroupEvent {
+        private final Group group;
+
+        public ShowGroupEvent(Group group) {
+            this.group = group;
+        }
+
+        public Group getGroup() { return group; }
+    }
+
+    public static class ShowCategoryEvent {
+        private final Category category;
+
+        public ShowCategoryEvent(Category category) {
+            this.category = category;
+        }
+
+        public Category getCategory() {
+            return category;
         }
     }
 }

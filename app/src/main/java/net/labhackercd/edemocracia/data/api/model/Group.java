@@ -1,15 +1,11 @@
-package net.labhackercd.edemocracia.data.model;
-
-import android.net.Uri;
+package net.labhackercd.edemocracia.data.api.model;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import net.labhackercd.edemocracia.data.api.EDMSession;
-import net.labhackercd.edemocracia.data.model.util.GsonParcelable;
-import net.labhackercd.edemocracia.data.model.util.JSONReader;
+import net.labhackercd.edemocracia.data.api.model.util.JSONReader;
 
-public class Group extends GsonParcelable implements Forum {
+public class Group extends BaseModel {
 
     private String friendlyURL;
     private long classPK;
@@ -78,23 +74,8 @@ public class Group extends GsonParcelable implements Forum {
         return groupId;
     }
 
-    @Override
-    public long getCategoryId() {
-        // Groups aren't categories
-        return -1;
-    }
-
     public String getName() {
         return name;
-    }
-
-    @Override
-    public String toString() {
-        return getName();
-    }
-
-    public Uri getGroupImage() {
-        return Uri.parse(EDMSession.SERVICE_URL + "/documents/" + getGroupId() + "/0/icone");
     }
 
     public static final JSONReader<Group> JSON_READER = new JSONReader<Group>() {
