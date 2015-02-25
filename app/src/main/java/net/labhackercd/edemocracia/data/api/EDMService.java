@@ -1,47 +1,28 @@
 package net.labhackercd.edemocracia.data.api;
 
-import com.liferay.mobile.android.service.BaseService;
-import com.liferay.mobile.android.service.Session;
+import net.labhackercd.edemocracia.data.api.model.*;
+import net.labhackercd.edemocracia.data.api.model.Thread;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.util.List;
 
-public class EDMService extends BaseService {
-    public EDMService(Session session) {
-        super(session);
-    }
+public interface EDMService {
 
-    /**
-     * It's just like ExpandoValueService.getData, but with hints and fixed argument names.
-     */
-    public JSONObject expandoValueGetData(long companyId, String className, String tableName, String columnName, long classPK) throws Exception {
-        JSONObject _command = new JSONObject();
+    public User getUser();
 
-        try {
-            JSONObject _params = new JSONObject();
+    List<Thread> getThreads(long groupId);
 
-            _params.put("companyId", companyId);
-            _params.put("className", className);
-            _params.put("tableName", tableName);
-            _params.put("columnName", columnName);
+    List<Thread> getThreads(long groupId, long categoryId);
 
-            // Also, it's classPk that works, not classPK
-            _params.put("classPk", classPK);
+    List<Category> getCategories(long groupId);
 
-            // XXX Watch for the hint (.5), everyone!
-            _command.put("/expandovalue/get-data.5", _params);
-        }
-        catch (JSONException _je) {
-            throw new Exception(_je);
-        }
+    List<Category> getCategories(long groupId, long categoryId);
 
-        JSONArray _result = session.invoke(_command);
+    List<Group> getGroups(long companyId);
 
-        if (_result == null) {
-            return null;
-        }
+    List<Message> getThreadMessages(long groupId, long categoryId, long threadId);
 
-        return _result.getJSONObject(0);
+    Message addMessage(Message message);
+
+    public static class Builder extends EDMServiceImpl.Builder {
     }
 }

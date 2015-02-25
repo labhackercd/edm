@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.data.api.exception;
+package net.labhackercd.edemocracia.data.api.client.exception;
 
 import com.liferay.mobile.android.exception.ServerException;
 

@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.data.api;
+package net.labhackercd.edemocracia.data.api.client;
 
 import android.os.AsyncTask;
 
@@ -8,9 +8,9 @@ import com.liferay.mobile.android.http.HttpUtil;
 import com.liferay.mobile.android.service.Session;
 import com.liferay.mobile.android.task.callback.AsyncTaskCallback;
 
-import net.labhackercd.edemocracia.data.api.exception.AuthorizationException;
-import net.labhackercd.edemocracia.data.api.exception.NotFoundException;
-import net.labhackercd.edemocracia.data.api.exception.PrincipalException;
+import net.labhackercd.edemocracia.data.api.client.exception.AuthorizationException;
+import net.labhackercd.edemocracia.data.api.client.exception.NotFoundException;
+import net.labhackercd.edemocracia.data.api.client.exception.PrincipalException;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

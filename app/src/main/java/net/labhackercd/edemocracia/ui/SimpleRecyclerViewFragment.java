@@ -20,7 +20,7 @@ import android.widget.Toast;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.account.SignInActivity;
-import net.labhackercd.edemocracia.data.api.exception.AuthorizationException;
+import net.labhackercd.edemocracia.data.api.client.exception.AuthorizationException;
 
 import java.io.IOException;
 import java.util.List;

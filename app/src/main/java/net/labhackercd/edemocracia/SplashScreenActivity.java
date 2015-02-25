@@ -5,14 +5,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import com.liferay.mobile.android.service.Session;
-
 import net.labhackercd.edemocracia.account.SignInActivity;
-import net.labhackercd.edemocracia.data.api.exception.AuthorizationException;
+import net.labhackercd.edemocracia.data.api.EDMErrorHandler;
+import net.labhackercd.edemocracia.data.api.EDMService;
+import net.labhackercd.edemocracia.data.api.client.exception.AuthorizationException;
 import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.ui.MainActivity;
-
-import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -24,8 +22,8 @@ import de.greenrobot.event.util.ThrowableFailureEvent;
 import timber.log.Timber;
 
 public class SplashScreenActivity extends Activity {
-    @Inject Session session;
     @Inject EventBus eventBus;
+    @Inject EDMService service;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,9 +43,7 @@ public class SplashScreenActivity extends Activity {
         AsyncExecutor.builder().buildForScope(getClass()).execute(new AsyncExecutor.RunnableEx() {
             @Override
             public void run() throws Exception {
-                JSONObject command = new JSONObject("{\"/user/get-user-by-id\": {}}");
-                JSONObject jsonUser = session.invoke(command).getJSONObject(0);
-                User user = User.JSON_READER.fromJSON(jsonUser);
+                User user = service.getUser();
                 eventBus.post(new UserLoaded(user));
             }
         });
@@ -74,10 +70,9 @@ public class SplashScreenActivity extends Activity {
             return;
         }
 
-        Throwable throwable = event.getThrowable();
+        Throwable throwable = EDMErrorHandler.getCause(event.getThrowable());
 
-        if (throwable instanceof AuthorizationException
-            || throwable instanceof IOException) {
+        if (throwable instanceof AuthorizationException || throwable instanceof IOException) {
             // If it's an authentication failure or a network error, send the user to the
             // sign in activity.
             // TODO Trigger login process

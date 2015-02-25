@@ -2,9 +2,9 @@ package net.labhackercd.edemocracia.data.api;
 
 import com.liferay.mobile.android.auth.Authentication;
 import com.liferay.mobile.android.auth.basic.BasicAuthentication;
-import com.liferay.mobile.android.service.Session;
 
 import net.labhackercd.edemocracia.account.Credentials;
+import net.labhackercd.edemocracia.data.api.client.Endpoint;
 
 import org.apache.http.HttpRequest;
 
@@ -29,18 +29,21 @@ public class ApiModule {
             @Override
             public void authenticate(HttpRequest request) throws Exception {
                 Credentials credentials = credentialsProvider.getCredentials();
-
                 if (credentials != null) {
-                    new BasicAuthentication(
-                            credentials.getEmailAddress(), credentials.getPassword())
-                                .authenticate(request);
+                    String email = credentials.getEmailAddress();
+                    String password = credentials.getPassword();
+                    new BasicAuthentication(email, password).authenticate(request);
                 }
             }
         };
     }
 
     @Provides @Singleton
-    Session provideSession(Endpoint endpoint, Authentication authentication) {
-        return new EDMSession(endpoint, authentication);
+    EDMService provideEDMService(Endpoint endpoint, Authentication authentication) {
+        return new EDMService.Builder()
+                .setEndpoint(endpoint)
+                .setErrorHandler(new EDMErrorHandler())
+                .setAuthentication(authentication)
+                .build();
     }
 }

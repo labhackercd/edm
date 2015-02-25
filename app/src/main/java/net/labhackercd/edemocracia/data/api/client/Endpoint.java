@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.data.api;
+package net.labhackercd.edemocracia.data.api.client;
 
 /** An API endpoint. */
 public abstract class Endpoint {

@@ -5,5 +5,5 @@ import java.io.Serializable;
 /**
  * Base class for all models.
  */
-public class BaseModel implements Serializable {
+class BaseModel implements Serializable {
 }

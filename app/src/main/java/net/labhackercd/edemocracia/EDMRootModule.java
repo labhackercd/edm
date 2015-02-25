@@ -1,20 +1,12 @@
 package net.labhackercd.edemocracia;
 
 import android.app.Application;
-import android.content.Context;
-import android.content.SharedPreferences;
 
 import net.labhackercd.edemocracia.account.AccountModule;
 import net.labhackercd.edemocracia.data.api.ApiModule;
 import net.labhackercd.edemocracia.job.JobModule;
 import net.labhackercd.edemocracia.job.VideoUploadJob;
-import net.labhackercd.edemocracia.ui.MainActivity;
 import net.labhackercd.edemocracia.account.SignInActivity;
-import net.labhackercd.edemocracia.ui.SimpleRecyclerViewFragment;
-import net.labhackercd.edemocracia.ui.group.GroupListFragment;
-import net.labhackercd.edemocracia.ui.message.ComposeActivity;
-import net.labhackercd.edemocracia.ui.message.MessageListFragment;
-import net.labhackercd.edemocracia.ui.thread.ThreadListFragment;
 
 import javax.inject.Singleton;
 

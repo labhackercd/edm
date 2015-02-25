@@ -14,8 +14,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.widget.Toast;
 
-import com.path.android.jobqueue.JobManager;
-
 import javax.inject.Inject;
 
 import net.labhackercd.edemocracia.EDMApplication;

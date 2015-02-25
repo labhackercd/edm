@@ -3,20 +3,8 @@ package net.labhackercd.edemocracia;
 import android.app.Application;
 import android.test.ApplicationTestCase;
 
-import com.liferay.mobile.android.auth.basic.BasicAuthentication;
-import com.liferay.mobile.android.v62.group.GroupService;
-
-import net.labhackercd.edemocracia.data.api.EDMBatchSession;
-import net.labhackercd.edemocracia.data.api.EDMSession;
-import net.labhackercd.edemocracia.data.api.model.Group;
-import net.labhackercd.edemocracia.data.api.model.util.JSONReader;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Properties;
 
 class Helper {

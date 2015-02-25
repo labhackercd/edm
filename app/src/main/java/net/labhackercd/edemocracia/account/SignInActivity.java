@@ -19,12 +19,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.liferay.mobile.android.auth.basic.BasicAuthentication;
-import com.liferay.mobile.android.service.Session;
 
-import net.labhackercd.edemocracia.data.api.exception.AuthorizationException;
+import net.labhackercd.edemocracia.data.api.EDMErrorHandler;
+import net.labhackercd.edemocracia.data.api.EDMService;
+import net.labhackercd.edemocracia.data.api.client.Endpoint;
+import net.labhackercd.edemocracia.data.api.client.exception.AuthorizationException;
 import net.labhackercd.edemocracia.data.api.model.User;
-
-import org.json.JSONObject;
 
 import javax.inject.Inject;
 
@@ -52,8 +52,8 @@ public class SignInActivity extends Activity {
     public static final String PARAM_EMAIL = "email";
     public static final String PARAM_AUTHTOKEN_TYPE = "authTokenType";
 
-    @Inject Session session;
     @Inject EventBus eventBus;
+    @Inject Endpoint apiEndpoint;
 
     @InjectView(R.id.email) AutoCompleteTextView emailView;
     @InjectView(R.id.password) EditText passwordView;
@@ -162,13 +162,12 @@ public class SignInActivity extends Activity {
             AsyncExecutor.builder().buildForScope(getClass()).execute(new AsyncExecutor.RunnableEx() {
                 @Override
                 public void run() throws Exception {
-                    session.setAuthentication(new BasicAuthentication(email, password));
+                    EDMService authService = new EDMService.Builder()
+                            .setEndpoint(apiEndpoint)
+                            .setAuthentication(new BasicAuthentication(email, password))
+                            .build();
 
-                    JSONObject command = new JSONObject("{\"/user/get-user-by-id\": {}}");
-                    JSONObject jsonUser = session.invoke(command).getJSONObject(0);
-                    User user = User.JSON_READER.fromJSON(jsonUser);
-
-                    Timber.d("Got a user.");
+                    User user = authService.getUser();
 
                     Account account = new Account(user.getEmailAddress(), ACCOUNT_TYPE);
                     if (requestNewAccount) {
@@ -197,7 +196,7 @@ public class SignInActivity extends Activity {
             return;
         }
 
-        Throwable t = event.getThrowable();
+        Throwable t = EDMErrorHandler.getCause(event.getThrowable());
 
         int errorMessage;
         if (t instanceof IOException) {

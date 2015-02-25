@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.data.api;
+package net.labhackercd.edemocracia.data.api.client;
 
 import com.liferay.mobile.android.http.HttpUtil;
 import com.liferay.mobile.android.service.Session;
