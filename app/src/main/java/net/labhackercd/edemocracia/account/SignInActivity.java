@@ -20,11 +20,15 @@ import android.widget.TextView;
 
 import com.liferay.mobile.android.auth.basic.BasicAuthentication;
 
+import net.labhackercd.edemocracia.EDMApplication;
+import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.api.EDMErrorHandler;
 import net.labhackercd.edemocracia.data.api.EDMService;
 import net.labhackercd.edemocracia.data.api.client.Endpoint;
 import net.labhackercd.edemocracia.data.api.client.exception.AuthorizationException;
 import net.labhackercd.edemocracia.data.api.model.User;
+
+import java.io.IOException;
 
 import javax.inject.Inject;
 
@@ -37,15 +41,9 @@ import de.greenrobot.event.util.AsyncExecutor;
 import de.greenrobot.event.util.ThrowableFailureEvent;
 import timber.log.Timber;
 
-import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.EDMApplication;
-
-import java.io.IOException;
-
 import static android.accounts.AccountManager.KEY_ACCOUNT_NAME;
 import static android.accounts.AccountManager.KEY_ACCOUNT_TYPE;
 import static android.accounts.AccountManager.KEY_AUTHTOKEN;
-
 import static net.labhackercd.edemocracia.account.AccountConstants.ACCOUNT_TYPE;
 
 public class SignInActivity extends Activity {

@@ -1,10 +1,10 @@
 package net.labhackercd.edemocracia.data.api.model;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import net.labhackercd.edemocracia.data.api.model.util.JSON;
 import net.labhackercd.edemocracia.data.api.model.util.JSONReader;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Date;
 

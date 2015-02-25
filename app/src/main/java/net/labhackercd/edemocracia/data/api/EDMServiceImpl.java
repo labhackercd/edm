@@ -8,11 +8,15 @@ import com.liferay.mobile.android.v62.mbcategory.MBCategoryService;
 import com.liferay.mobile.android.v62.mbmessage.MBMessageService;
 import com.liferay.mobile.android.v62.mbthread.MBThreadService;
 
+import net.labhackercd.edemocracia.data.api.client.CustomService;
 import net.labhackercd.edemocracia.data.api.client.EDMGetSessionWrapper;
 import net.labhackercd.edemocracia.data.api.client.EDMSession;
 import net.labhackercd.edemocracia.data.api.client.Endpoint;
-import net.labhackercd.edemocracia.data.api.model.*;
+import net.labhackercd.edemocracia.data.api.model.Category;
+import net.labhackercd.edemocracia.data.api.model.Group;
+import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.Thread;
+import net.labhackercd.edemocracia.data.api.model.User;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -20,6 +24,7 @@ import org.json.JSONObject;
 import java.util.List;
 
 class EDMServiceImpl implements EDMService {
+
 
     public static class Builder {
         private Endpoint endpoint;
@@ -104,6 +109,7 @@ class EDMServiceImpl implements EDMService {
     }
 
     private GroupService groupService;
+    private CustomService customService;
     private MBThreadService threadService;
     private MBMessageService messageService;
     private MBCategoryService categoryService;
@@ -130,6 +136,12 @@ class EDMServiceImpl implements EDMService {
         if (categoryService == null)
             categoryService = new MBCategoryService(session);
         return categoryService;
+    }
+
+    private CustomService getCustomService() {
+        if (customService == null)
+            customService = new CustomService(session);
+        return customService;
     }
 
     @Override

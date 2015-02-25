@@ -20,8 +20,8 @@ import com.squareup.picasso.Transformation;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.api.model.Message;
-import net.labhackercd.edemocracia.ui.SimpleRecyclerViewAdapter;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -31,14 +31,9 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 
-public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, MessageListAdapter.ViewHolder> {
+public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.ViewHolder> {
 
-    private final Context context;
-
-    public MessageListAdapter(Context context, List<Message> items) {
-        super(items);
-        this.context = context;
-    }
+    private List<Message> messages = Collections.emptyList();
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
@@ -49,7 +44,18 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
-        viewHolder.bindMessage(getItem(i));
+        viewHolder.bindMessage(messages.get(i));
+    }
+
+    @Override
+    public int getItemCount() {
+        return messages.size();
+    }
+
+    public MessageListAdapter replaceWith(List<Message> messages) {
+        this.messages = messages;
+        notifyDataSetChanged();
+        return this;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -67,8 +73,7 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
             super(view);
             ButterKnife.inject(this, view);
             view.setOnClickListener(this);
-
-            this.videoThumbnailTransformation = new VideoPlayButtonTransformation(context);
+            this.videoThumbnailTransformation = new VideoPlayButtonTransformation(view.getContext());
         }
 
         public void bindMessage(Message message) {
@@ -113,7 +118,7 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
 
                     // TODO Make less instances of this transformation.
                     // TODO Ensure all the thumbnails are of the same size (if needed)
-                    Picasso.with(context)
+                    Picasso.with(videoThumbView.getContext())
                             .load(Uri.parse("http://img.youtube.com/vi/" + videoId + "/hqdefault.jpg"))
                             .transform(videoThumbnailTransformation)
                             .into(videoThumbView);
@@ -136,13 +141,15 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
             Date date = message.getCreateDate();
 
             if (date != null) {
-                PrettyTime formatter = new PrettyTime(context.getResources().getConfiguration().locale);
+                PrettyTime formatter = new PrettyTime(dateView.getResources().getConfiguration().locale);
                 dateView.setText(formatter.format(date));
             }
 
             // Fill the user portrait
             String letter = message.getUserName().trim().substring(0, 1).toUpperCase();
             TextDrawable textDrawable = TextDrawable.builder().buildRect(letter, Color.LTGRAY);
+
+            portraitView.setImageDrawable(textDrawable);
 
             /*
             TODO Display user portraits
@@ -172,6 +179,7 @@ public class MessageListAdapter extends SimpleRecyclerViewAdapter<Message, Messa
         @SuppressWarnings("UnusedDeclaration")
         public void onReplyClick(View v) {
             if (message != null) {
+                Context context = v.getContext();
                 Intent intent = new Intent(context, ComposeActivity.class);
                 intent.setAction(Intent.ACTION_INSERT);
                 intent.putExtra(ComposeActivity.PARENT_EXTRA, (Parcelable) message);

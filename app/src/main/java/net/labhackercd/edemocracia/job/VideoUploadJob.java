@@ -18,12 +18,12 @@ import com.path.android.jobqueue.Job;
 import com.path.android.jobqueue.JobManager;
 import com.path.android.jobqueue.Params;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.youtube.Constants;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import javax.inject.Inject;
 

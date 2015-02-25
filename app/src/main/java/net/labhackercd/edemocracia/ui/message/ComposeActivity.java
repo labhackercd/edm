@@ -22,16 +22,16 @@ import android.widget.Toast;
 import com.google.common.base.Splitter;
 import com.path.android.jobqueue.JobManager;
 
-import java.io.FileNotFoundException;
-import java.util.List;
-
-import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.ui.VideoPickerActivity;
 import net.labhackercd.edemocracia.EDMApplication;
-import net.labhackercd.edemocracia.data.api.model.Thread;
+import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.api.model.Message;
+import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.job.AddMessageJob;
 import net.labhackercd.edemocracia.job.VideoUploadJob;
+import net.labhackercd.edemocracia.ui.VideoPickerActivity;
+
+import java.io.FileNotFoundException;
+import java.util.List;
 
 import javax.inject.Inject;
 

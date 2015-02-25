@@ -3,35 +3,40 @@ package net.labhackercd.edemocracia.ui.thread;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+
+import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.data.DataRepository;
+import net.labhackercd.edemocracia.data.api.model.Category;
+import net.labhackercd.edemocracia.data.api.model.Group;
+import net.labhackercd.edemocracia.ui.MainActivity;
+import net.labhackercd.edemocracia.ui.UberLoader;
+import net.labhackercd.edemocracia.ui.UberRecyclerView;
 
 import java.util.List;
 
 import javax.inject.Inject;
 
-import net.labhackercd.edemocracia.data.api.EDMService;
-import net.labhackercd.edemocracia.data.api.model.Category;
-import net.labhackercd.edemocracia.data.api.model.Group;
-import net.labhackercd.edemocracia.data.api.model.Thread;
-import net.labhackercd.edemocracia.ui.SimpleRecyclerViewFragment;
-
 import de.greenrobot.event.EventBus;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 
-public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
+public class ThreadListFragment extends Fragment {
 
     public static String ARG_PARENT = "parent";
 
     @Inject EventBus eventBus;
-    @Inject EDMService service;
+    @Inject DataRepository repository;
 
     private Object parent;
+    private UberLoader uberLoader;
+    private UberRecyclerView uberRecyclerView;
 
     public static Fragment newInstance(Group group) {
         ThreadListFragment fragment = new ThreadListFragment();
@@ -69,93 +74,73 @@ public class ThreadListFragment extends SimpleRecyclerViewFragment<ThreadItem> {
     }
 
     @Override
-    protected RecyclerView.Adapter createAdapter(List<ThreadItem> items) {
-        return new ThreadListAdapter(getActivity(), eventBus, items);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        uberRecyclerView = (UberRecyclerView) inflater.inflate(
+                R.layout.uber_recycler_view, container, false);
+        return uberRecyclerView;
     }
 
     @Override
-    protected List<ThreadItem> blockingFetchItems() throws Exception {
-        boolean parentIsAGroup = parent instanceof Group;
-
-        List<Thread> threads;
-        List<Category> categories;
-
-        if (parentIsAGroup) {
-            Group group = (Group) parent;
-            threads = service.getThreads(group.getGroupId());
-            categories = service.getCategories(group.getGroupId());
-        } else {
-            Category category = (Category) parent;
-            threads = service.getThreads(category.getGroupId(), category.getCategoryId());
-            categories = service.getCategories(category.getGroupId(), category.getCategoryId());
-        }
-
-        if (parentIsAGroup) {
-            // Ignore threads and categories that don't belong to the given group. This is
-            // required because the webservice returns all the threads and categories inside a
-            // group, even the ones nested inside subcategories.
-            threads = Lists.newArrayList(Collections2.filter(threads, new Predicate<Thread>() {
-                @Override
-                public boolean apply(@Nullable Thread thread) {
-                    return thread != null && thread.getCategoryId() == 0;
-                }
-            }));
-
-            categories = Lists.newArrayList(Collections2.filter(categories, new Predicate<Category>() {
-                @Override
-                public boolean apply(@Nullable Category category) {
-                    return category != null && category.getParentCategoryId() == 0;
-                }
-            }));
-        }
-
-        /*
-        TODO Pull root messages
-
-        MBMessageService messageService = new MBMessageService(batchSession);
-
-        for (Thread thread : threads) {
-            messageService.getMessage(thread.getRootMessageId());
-        }
-
-        JSONArray jsonMessages = batchSession.invoke();
-
-        if (jsonMessages == null) {
-            jsonMessages = new JSONArray();
-        }
-
-        List<Message> messages = Message.JSON_READER.fromJSON(jsonMessages);
-
-        for (Message message : messages) {
-            threads.get(messages.indexOf(message)).setRootMessage(message);
-        }
-        */
-
-        Iterable<ThreadItem> ithreads = Collections2.transform(threads, new Function<Thread, ThreadItem>() {
-            @Override
-            public ThreadItem apply(Thread thread) {
-                return new ThreadItem(thread);
-            }
-        });
-
-        Iterable<ThreadItem> icategories = Collections2.transform(categories, new Function<Category, ThreadItem>() {
-            @Override
-            public ThreadItem apply(Category category) {
-                return new ThreadItem(category);
-            }
-        });
-
-        return Lists.newArrayList(Iterables.concat(icategories, ithreads));
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        MainActivity.get(getActivity()).getObjectGraph().inject(this);
     }
 
     @Override
-    protected Object getRefreshTaskTag() {
-        if (parent instanceof Group) {
-            return new Pair<Class, Long>(getClass(), ((Group) parent).getGroupId());
-        } else {
-            Category category = (Category) parent;
-            return new Pair<Class, Pair<Long, Long>>(getClass(), new Pair<>(
-                    category.getGroupId(), category.getCategoryId()));
-        }
+    public void onResume() {
+        super.onResume();
+
+        uberLoader = new UberLoader(uberRecyclerView)
+                .install(dataSource())
+                .start();
+    }
+
+    private Observable<RecyclerView.Adapter> dataSource() {
+        final ThreadListAdapter adapter = new ThreadListAdapter(eventBus);
+
+        return Observable.defer(() -> {
+            Observable<List<ThreadItem>> items;
+
+            if (parent instanceof Group) {
+                Group group = (Group) parent;
+
+                Observable<List<ThreadItem>> threads = repository
+                        .getThreads(group.getGroupId())
+                        .flatMap(Observable::from)
+                        .filter(thread -> thread != null && thread.getCategoryId() == 0)
+                        .map(ThreadItem::new)
+                        .toList();
+
+                Observable<List<ThreadItem>> categories = repository
+                        .getCategories(group.getGroupId())
+                        .flatMap(Observable::from)
+                        .filter(cat -> cat != null && cat.getParentCategoryId() == 0)
+                        .map(ThreadItem::new)
+                        .toList();
+
+                items = Observable.zip(
+                        threads, categories, (t, c) -> Lists.newArrayList(Iterables.concat(t, c)));
+            } else {
+                Category category = (Category) parent;
+
+                Observable<List<ThreadItem>> threads = repository
+                        .getThreads(category.getGroupId(), category.getCategoryId())
+                        .flatMap(Observable::from)
+                        .map(ThreadItem::new)
+                        .toList();
+
+                Observable<List<ThreadItem>> categories = repository
+                        .getCategories(category.getGroupId(), category.getCategoryId())
+                        .flatMap(Observable::from)
+                        .map(ThreadItem::new)
+                        .toList();
+
+                items = Observable.zip(
+                        threads, categories, (t, c) -> Lists.newArrayList(Iterables.concat(t, c)));
+            }
+
+            return items.observeOn(AndroidSchedulers.mainThread())
+                    .map(adapter::replaceWith);
+        });
     }
 }

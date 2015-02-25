@@ -2,29 +2,37 @@ package net.labhackercd.edemocracia.ui.message;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.util.Pair;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
-import java.util.List;
+import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.data.DataRepository;
+import net.labhackercd.edemocracia.data.api.model.Thread;
+import net.labhackercd.edemocracia.ui.MainActivity;
+import net.labhackercd.edemocracia.ui.UberLoader;
+import net.labhackercd.edemocracia.ui.UberRecyclerView;
 
 import javax.inject.Inject;
 
-import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.data.api.EDMService;
-import net.labhackercd.edemocracia.data.api.model.Message;
-import net.labhackercd.edemocracia.data.api.model.Thread;
-import net.labhackercd.edemocracia.ui.SimpleRecyclerViewFragment;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 
-public class MessageListFragment extends SimpleRecyclerViewFragment<Message> {
+public class MessageListFragment extends Fragment {
 
     private static final String ARG_THREAD = "thread";
 
-    @Inject EDMService service;
+    @Inject DataRepository repository;
 
     private Thread thread;
+    private UberLoader uberLoader;
+    private UberRecyclerView uberRecyclerView;
 
     public static MessageListFragment newInstance(Thread thread) {
         MessageListFragment fragment = new MessageListFragment();
@@ -51,6 +59,38 @@ public class MessageListFragment extends SimpleRecyclerViewFragment<Message> {
     }
 
     @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        uberRecyclerView = (UberRecyclerView) inflater.inflate(R.layout.uber_recycler_view, container, false);
+        return uberRecyclerView;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        MainActivity.get(getActivity()).getObjectGraph().inject(this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        uberLoader = new UberLoader(uberRecyclerView)
+                .install(dataSource())
+                .start();
+    }
+
+    private Observable<RecyclerView.Adapter> dataSource() {
+        final MessageListAdapter adapter = new MessageListAdapter();
+
+        return Observable.defer(() -> {
+            return repository
+                    .getMessages(thread)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .map(adapter::replaceWith);
+        });
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.show_thread_menu, menu);
     }
@@ -71,55 +111,5 @@ public class MessageListFragment extends SimpleRecyclerViewFragment<Message> {
         intent.putExtra(ComposeActivity.PARENT_EXTRA, thread);
         startActivity(intent);
         return true;
-    }
-
-    @Override
-    protected RecyclerView.Adapter createAdapter(List<Message> items) {
-        return new MessageListAdapter(getActivity(), items);
-    }
-
-    @Override
-    protected List<Message> blockingFetchItems() throws Exception {
-        List<Message> messages = service.getThreadMessages(
-                thread.getGroupId(), thread.getCategoryId(), thread.getThreadId());
-
-        /*
-        TODO Fetch authors of the messages
-
-        EDMBatchSession batchSession = new EDMBatchSession(session);
-
-        UserService userService = new UserService(batchSession);
-        for (int i = 0; i < jsonMessages.length(); i++) {
-            long userId = jsonMessages.getJSONObject(i).getLong("userId");
-            userService.getUserById(userId);
-        }
-
-        try {
-            JSONArray jsonUsers = batchSession.invoke();
-
-            // Associate users with their respective messages
-            for (int i = 0; i < jsonUsers.length(); i++) {
-                jsonMessages.getJSONObject(i).put("user", jsonUsers.getJSONObject(i));
-            }
-        } catch (PrincipalException e) {
-            // Ignore
-        }
-
-
-        User currentUser = session.getUser();
-
-        for (Message i : messages) {
-            if (i.getUserId() == currentUser.getUserId()) {
-                i.setUser(currentUser);
-            }
-        }
-        */
-
-        return messages;
-    }
-
-    @Override
-    protected Object getRefreshTaskTag() {
-        return new Pair<Class, Long>(getClass(), thread.getRootMessageId());
     }
 }

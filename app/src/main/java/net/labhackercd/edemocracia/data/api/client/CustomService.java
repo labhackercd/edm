@@ -7,15 +7,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class EDMFixedService extends BaseService {
-    public EDMFixedService(Session session) {
+public class CustomService extends BaseService {
+    public CustomService(Session session) {
         super(session);
     }
 
     /**
      * It's just like ExpandoValueService.getData, but with hints and fixed argument names.
      */
-    public JSONObject expandoValueGetData(long companyId, String className, String tableName, String columnName, long classPK) throws Exception {
+    public JSONObject expandoValueGetData(long companyId, String className, String tableName,
+                                          String columnName, long classPK) throws Exception {
         JSONObject _command = new JSONObject();
 
         try {

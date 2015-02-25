@@ -2,7 +2,6 @@ package net.labhackercd.edemocracia.ui.thread;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,12 +11,11 @@ import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.ocpsoft.pretty.time.PrettyTime;
-import com.squareup.picasso.Picasso;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.ui.MainActivity;
-import net.labhackercd.edemocracia.ui.SimpleRecyclerViewAdapter;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -25,15 +23,19 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import de.greenrobot.event.EventBus;
 
-public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, ThreadListAdapter.ViewHolder> {
+public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.ViewHolder> {
 
-    private final Context context;
     private final EventBus eventBus;
+    private List<ThreadItem> items = Collections.emptyList();
 
-    public ThreadListAdapter(Context context, EventBus eventBus, List<ThreadItem> items) {
-        super(items);
-        this.context = context;
+    public ThreadListAdapter(EventBus eventBus) {
         this.eventBus = eventBus;
+    }
+
+    public ThreadListAdapter replaceWith(List<ThreadItem> items) {
+        this.items = items;
+        notifyDataSetChanged();
+        return this;
     }
 
     @Override
@@ -45,8 +47,13 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.bindThreadItem(getItem(position));
+    public void onBindViewHolder(ViewHolder holder, int i) {
+        holder.bindThreadItem(items.get(i));
+    }
+
+    @Override
+    public int getItemCount() {
+        return items.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -130,6 +137,7 @@ public class ThreadListAdapter extends SimpleRecyclerViewAdapter<ThreadItem, Thr
             }
 
             if (date != null) {
+                Context context = dateView.getContext();
                 PrettyTime formatter = new PrettyTime(context.getResources().getConfiguration().locale);
                 dateView.setText(formatter.format(date));
             }

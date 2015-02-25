@@ -1,83 +1,66 @@
 package net.labhackercd.edemocracia.ui.group;
 
-import android.support.v4.util.Pair;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
+import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.data.DataRepository;
+import net.labhackercd.edemocracia.data.api.model.User;
+import net.labhackercd.edemocracia.ui.MainActivity;
+import net.labhackercd.edemocracia.ui.UberLoader;
+import net.labhackercd.edemocracia.ui.UberRecyclerView;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 
-import net.labhackercd.edemocracia.data.api.EDMService;
-import net.labhackercd.edemocracia.data.api.model.Group;
-import net.labhackercd.edemocracia.data.api.model.User;
-import net.labhackercd.edemocracia.ui.SimpleRecyclerViewFragment;
-
 import de.greenrobot.event.EventBus;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 
-public class GroupListFragment extends SimpleRecyclerViewFragment<Group> {
-
+public class GroupListFragment extends Fragment {
     @Inject User user;
     @Inject EventBus eventBus;
-    @Inject EDMService service;
+    @Inject DataRepository repository;
+
+    private UberLoader uberLoader;
+    private UberRecyclerView uberRecyclerView;
 
     @Override
-    protected List<Group> blockingFetchItems() throws Exception {
-        final List<Group> groups = service.getGroups(user.getCompanyId());
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        uberRecyclerView = (UberRecyclerView) inflater.inflate(
+                R.layout.uber_recycler_view, container, false);
 
-        /*
-        TODO Identify closed groups.
 
-        EDMBatchSession batchSession = new EDMBatchSession(session);
-        EDMFixedService batchedCustomService = new EDMFixedService(batchSession);
-
-        for (Group group : groups) {
-            batchedCustomService.expandoValueGetData(group.getCompanyId(),
-                    "com.liferay.portal.model.Group", "CUSTOM_FIELDS",
-                    "Encerrada", group.getGroupId());
-        }
-
-        final JSONArray jsonStatuses = batchSession.invoke();
-        */
-
-        return Lists.newArrayList(Collections2.filter(groups, new Predicate<Group>() {
-            @Override
-            public boolean apply(@Nullable Group group) {
-                if (group == null)
-                    return false;
-
-                if (!group.isActive())
-                    return false;
-
-                if (!(group.getType() == 1 || group.getType() == 3))
-                    return false;
-
-                /*
-                TODO
-
-                int idx = groups.indexOf(group);
-                try {
-                    return !jsonStatuses.getBoolean(idx);
-                } catch (JSONException e) {
-                    return false;
-                }
-                */
-                return true;
-            }
-        }));
+        return uberRecyclerView;
     }
 
     @Override
-    protected RecyclerView.Adapter createAdapter(List<Group> items) {
-        return new GroupListAdapter(getActivity(), eventBus, items);
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        MainActivity.get(getActivity()).getObjectGraph().inject(this);
     }
 
     @Override
-    protected Object getRefreshTaskTag() {
-        return new Pair<Class, Long>(getClass(), user.getCompanyId());
+    public void onResume() {
+        super.onResume();
+
+        uberLoader = new UberLoader(uberRecyclerView)
+                .install(dataSource())
+                .start();
+    }
+
+    private Observable<RecyclerView.Adapter> dataSource() {
+        final GroupListAdapter adapter = new GroupListAdapter(eventBus);
+
+        return Observable.defer(() -> {
+            return repository
+                    .getGroups(user.getCompanyId())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .map(adapter::replaceWith);
+        });
     }
 }

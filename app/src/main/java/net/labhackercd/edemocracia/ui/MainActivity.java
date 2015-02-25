@@ -14,17 +14,19 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.widget.Toast;
 
-import javax.inject.Inject;
-
 import net.labhackercd.edemocracia.EDMApplication;
+import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.data.api.model.Category;
+import net.labhackercd.edemocracia.data.api.model.Group;
+import net.labhackercd.edemocracia.data.api.model.Thread;
+import net.labhackercd.edemocracia.data.api.model.User;
+import net.labhackercd.edemocracia.job.AddMessageJob;
+import net.labhackercd.edemocracia.ui.group.GroupListFragment;
 import net.labhackercd.edemocracia.ui.message.MessageListFragment;
 import net.labhackercd.edemocracia.ui.thread.ThreadListFragment;
-import net.labhackercd.edemocracia.ui.group.GroupListFragment;
-import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.data.api.model.*;
-import net.labhackercd.edemocracia.data.api.model.Thread;
-import net.labhackercd.edemocracia.job.AddMessageJob;
 import net.labhackercd.edemocracia.youtube.Constants;
+
+import javax.inject.Inject;
 
 import dagger.ObjectGraph;
 import de.greenrobot.event.EventBus;

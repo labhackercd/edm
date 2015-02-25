@@ -22,6 +22,9 @@ import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.api.services.youtube.model.VideoSnippet;
 import com.google.api.services.youtube.model.VideoStatus;
 
+import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.youtube.Constants;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,8 +33,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.youtube.Constants;
 
 
 /**

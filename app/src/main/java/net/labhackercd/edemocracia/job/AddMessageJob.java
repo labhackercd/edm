@@ -1,10 +1,9 @@
 package net.labhackercd.edemocracia.job;
 
-import com.path.android.jobqueue.Job;
-
 import android.os.Handler;
 import android.os.Looper;
 
+import com.path.android.jobqueue.Job;
 import com.path.android.jobqueue.Params;
 
 import net.labhackercd.edemocracia.data.api.EDMService;

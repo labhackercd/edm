@@ -14,7 +14,6 @@ import android.text.TextUtils;
 import static android.accounts.AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE;
 import static android.accounts.AccountManager.KEY_BOOLEAN_RESULT;
 import static android.accounts.AccountManager.KEY_INTENT;
-
 import static net.labhackercd.edemocracia.account.AccountConstants.ACCOUNT_TYPE;
 import static net.labhackercd.edemocracia.account.SignInActivity.PARAM_AUTHTOKEN_TYPE;
 import static net.labhackercd.edemocracia.account.SignInActivity.PARAM_EMAIL;

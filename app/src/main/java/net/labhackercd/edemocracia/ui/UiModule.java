@@ -17,8 +17,7 @@ import dagger.Provides;
                 ComposeActivity.class,
                 GroupListFragment.class,
                 ThreadListFragment.class,
-                MessageListFragment.class,
-                SimpleRecyclerViewFragment.class
+                MessageListFragment.class
         },
         library = true,
         complete = false

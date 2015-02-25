@@ -3,10 +3,10 @@ package net.labhackercd.edemocracia;
 import android.app.Application;
 
 import net.labhackercd.edemocracia.account.AccountModule;
-import net.labhackercd.edemocracia.data.api.ApiModule;
+import net.labhackercd.edemocracia.account.SignInActivity;
+import net.labhackercd.edemocracia.data.DataModule;
 import net.labhackercd.edemocracia.job.JobModule;
 import net.labhackercd.edemocracia.job.VideoUploadJob;
-import net.labhackercd.edemocracia.account.SignInActivity;
 
 import javax.inject.Singleton;
 
@@ -16,7 +16,7 @@ import de.greenrobot.event.EventBus;
 @dagger.Module(
         includes = {
                 JobModule.class,
-                ApiModule.class,
+                DataModule.class,
                 AccountModule.class
         },
         injects = {

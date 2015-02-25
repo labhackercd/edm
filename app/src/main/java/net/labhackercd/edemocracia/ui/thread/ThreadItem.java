@@ -1,6 +1,7 @@
 package net.labhackercd.edemocracia.ui.thread;
 
-import net.labhackercd.edemocracia.data.api.model.*;
+import net.labhackercd.edemocracia.data.api.model.Category;
+import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.Thread;
 
 import java.util.Date;

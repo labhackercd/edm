@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'me.tatarka.retrolambda'
 
 android {
     compileSdkVersion 21
@@ -26,8 +27,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
@@ -41,36 +42,31 @@ repositories {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-
     // Android Support libraries
     compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'com.android.support:recyclerview-v7:21.0.3'
-
     // Dependency Injection mechanism
     compile 'javax.inject:javax.inject:1'
     compile 'com.squareup.dagger:dagger:1.2.2'
     provided 'com.squareup.dagger:dagger-compiler:1.2.2'
-
     // Networking
     compile 'com.squareup.picasso:picasso:2.5.0'
-
     // Liferay Client
     compile('com.liferay.mobile:liferay-android-sdk:6.2.0.+') {
         exclude module: 'httpclient'
     }
-
     // Utility libraries
     compile 'com.google.code.gson:gson:2.3.1'
     compile 'com.google.guava:guava-jdk5:17.0'
-
     // More utility
+    compile 'io.reactivex:rxjava:1.0.7'
+    compile 'io.reactivex:rxandroid:0.24.0'
     compile 'de.greenrobot:eventbus:2.4.0'
     compile 'com.jakewharton:butterknife:6.1.0'
     compile 'com.jakewharton.timber:timber:2.5.1'
     compile 'com.ocpsoft:ocpsoft-pretty-time:1.0.7'
     compile 'com.path:android-priority-jobqueue:1.1.2'
     compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
-
     // YouTube video upload
     compile 'com.google.android.gms:play-services-base:6.5.87'
     compile 'com.google.android.gms:play-services-identity:6.5.87'

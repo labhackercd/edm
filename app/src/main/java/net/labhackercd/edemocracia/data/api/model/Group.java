@@ -1,9 +1,9 @@
 package net.labhackercd.edemocracia.data.api.model;
 
+import net.labhackercd.edemocracia.data.api.model.util.JSONReader;
+
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import net.labhackercd.edemocracia.data.api.model.util.JSONReader;
 
 public class Group extends BaseModel {
 

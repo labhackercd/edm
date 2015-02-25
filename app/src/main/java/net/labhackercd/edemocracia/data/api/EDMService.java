@@ -1,7 +1,10 @@
 package net.labhackercd.edemocracia.data.api;
 
-import net.labhackercd.edemocracia.data.api.model.*;
+import net.labhackercd.edemocracia.data.api.model.Category;
+import net.labhackercd.edemocracia.data.api.model.Group;
+import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.Thread;
+import net.labhackercd.edemocracia.data.api.model.User;
 
 import java.util.List;
 

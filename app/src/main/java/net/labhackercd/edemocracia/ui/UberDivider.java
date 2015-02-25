@@ -10,15 +10,15 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
 
-public class SimpleRecyclerViewDivider extends RecyclerView.ItemDecoration {
+public class UberDivider extends RecyclerView.ItemDecoration {
 
     private Drawable divider;
 
-    public SimpleRecyclerViewDivider(Context context) {
+    public UberDivider(Context context) {
         this(context, null);
     }
 
-    public SimpleRecyclerViewDivider(Context context, AttributeSet attrs) {
+    public UberDivider(Context context, AttributeSet attrs) {
         final TypedArray a = context
                 .obtainStyledAttributes(attrs, new int[]{android.R.attr.listDivider});
 
