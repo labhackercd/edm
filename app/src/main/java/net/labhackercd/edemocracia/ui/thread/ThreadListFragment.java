@@ -3,18 +3,17 @@ package net.labhackercd.edemocracia.ui.thread;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.DataRepository;
 import net.labhackercd.edemocracia.data.api.model.Category;
 import net.labhackercd.edemocracia.data.api.model.Group;
+import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.ui.MainActivity;
 import net.labhackercd.edemocracia.ui.UberLoader;
 import net.labhackercd.edemocracia.ui.UberRecyclerView;
@@ -99,48 +98,28 @@ public class ThreadListFragment extends Fragment {
         final ThreadListAdapter adapter = new ThreadListAdapter(eventBus);
 
         return Observable.defer(() -> {
-            Observable<List<ThreadItem>> items;
+            Observable<List<Thread>> threads;
+            Observable<List<Category>> categories;
 
             if (parent instanceof Group) {
                 Group group = (Group) parent;
-
-                Observable<List<ThreadItem>> threads = repository
-                        .getThreads(group.getGroupId())
+                threads = repository.getThreads(group.getGroupId())
                         .flatMap(Observable::from)
                         .filter(thread -> thread != null && thread.getCategoryId() == 0)
-                        .map(ThreadItem::new)
                         .toList();
-
-                Observable<List<ThreadItem>> categories = repository
-                        .getCategories(group.getGroupId())
+                categories = repository.getCategories(group.getGroupId())
                         .flatMap(Observable::from)
                         .filter(cat -> cat != null && cat.getParentCategoryId() == 0)
-                        .map(ThreadItem::new)
                         .toList();
-
-                items = Observable.zip(
-                        threads, categories, (t, c) -> Lists.newArrayList(Iterables.concat(t, c)));
             } else {
                 Category category = (Category) parent;
-
-                Observable<List<ThreadItem>> threads = repository
-                        .getThreads(category.getGroupId(), category.getCategoryId())
-                        .flatMap(Observable::from)
-                        .map(ThreadItem::new)
-                        .toList();
-
-                Observable<List<ThreadItem>> categories = repository
-                        .getCategories(category.getGroupId(), category.getCategoryId())
-                        .flatMap(Observable::from)
-                        .map(ThreadItem::new)
-                        .toList();
-
-                items = Observable.zip(
-                        threads, categories, (t, c) -> Lists.newArrayList(Iterables.concat(t, c)));
+                threads = repository.getThreads(category.getGroupId(), category.getCategoryId());
+                categories = repository.getCategories(category.getGroupId(), category.getCategoryId());
             }
 
-            return items.observeOn(AndroidSchedulers.mainThread())
-                    .map(adapter::replaceWith);
+            return Observable.zip(categories, threads, Pair<List<Category>, List<Thread>>::new)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .map(pair -> adapter.replaceWith(pair.first, pair.second));
         });
     }
 }

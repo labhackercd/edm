@@ -56,7 +56,7 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
         return groups.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         @InjectView(android.R.id.icon) ImageView iconView;
         @InjectView(android.R.id.text1) TextView textView;
 
@@ -67,7 +67,7 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
             super(view);
             this.eventBus = eventBus;
             ButterKnife.inject(this, view);
-            view.setOnClickListener(this);
+            view.setOnClickListener(this::handleClick);
         }
 
         public void bindGroup(Group group) {
@@ -92,8 +92,7 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
                     */
         }
 
-        @Override
-        public void onClick(View v) {
+        private void handleClick(View v) {
             if (group != null) {
                 eventBus.post(new MainActivity.ShowGroupEvent(group));
             }

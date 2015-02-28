@@ -58,7 +58,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         return this;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
         @InjectView(R.id.body) LinearLayout bodyView;
         @InjectView(R.id.date) TextView dateView;
@@ -72,7 +72,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         public ViewHolder(View view) {
             super(view);
             ButterKnife.inject(this, view);
-            view.setOnClickListener(this);
+            view.setOnClickListener(this::handleClick);
             this.videoThumbnailTransformation = new VideoPlayButtonTransformation(view.getContext());
         }
 
@@ -168,11 +168,8 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
              */
         }
 
-        @Override
-        public void onClick(View v) {
-            if (message != null) {
-                // TODO Do something when a message is clicked
-            }
+        public void handleClick(View v) {
+            // TODO Do something when a item is clicked
         }
 
         @OnClick(R.id.reply)

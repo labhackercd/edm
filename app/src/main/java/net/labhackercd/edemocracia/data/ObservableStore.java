@@ -1,7 +1,6 @@
 package net.labhackercd.edemocracia.data;
 
 import net.labhackercd.edemocracia.data.api.ServiceError;
-import net.labhackercd.edemocracia.data.rx.EndObserver;
 import net.labhackercd.edemocracia.data.rx.RxSupport;
 
 import java.util.LinkedHashMap;

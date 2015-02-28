@@ -13,6 +13,8 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.ocpsoft.pretty.time.PrettyTime;
 
 import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.data.api.model.Category;
+import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.ui.MainActivity;
 
 import java.util.Collections;
@@ -26,14 +28,16 @@ import de.greenrobot.event.EventBus;
 public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.ViewHolder> {
 
     private final EventBus eventBus;
-    private List<ThreadItem> items = Collections.emptyList();
+    private List<Thread> threads = Collections.emptyList();
+    private List<Category> categories = Collections.emptyList();
 
     public ThreadListAdapter(EventBus eventBus) {
         this.eventBus = eventBus;
     }
 
-    public ThreadListAdapter replaceWith(List<ThreadItem> items) {
-        this.items = items;
+    public ThreadListAdapter replaceWith(List<Category> categories, List<Thread> threads) {
+        this.threads = threads;
+        this.categories = categories;
         notifyDataSetChanged();
         return this;
     }
@@ -47,16 +51,20 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int i) {
-        holder.bindThreadItem(items.get(i));
+    public int getItemCount() {
+        return threads.size() + categories.size();
     }
 
     @Override
-    public int getItemCount() {
-        return items.size();
+    public void onBindViewHolder(ViewHolder holder, int i) {
+        int categoryCount = categories.size();
+        if (i < categoryCount)
+            holder.bindCategory(categories.get(i));
+        else
+            holder.bindThread(threads.get(i - categoryCount));
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
         @InjectView(android.R.id.text2) TextView titleView;
         @InjectView(R.id.body) TextView bodyView;
@@ -65,82 +73,100 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
         @InjectView(R.id.portrait) ImageView portraitView;
         @InjectView(android.R.id.text1) TextView userView;
 
-        private ThreadItem item;
+        private Thread thread;
+        private Category category;
         private final EventBus eventBus;
 
         public ViewHolder(View view, EventBus eventBus) {
             super(view);
             this.eventBus = eventBus;
             ButterKnife.inject(this, view);
-            view.setOnClickListener(this);
+            view.setOnClickListener(this::handleClick);
         }
 
-        @Override
-        public void onClick(View v) {
-            if (item != null) {
-                if (item.getThread() != null) {
-                    eventBus.post(new MainActivity.ShowThreadEvent(item.getThread()));
-                } else {
-                    eventBus.post(new MainActivity.ShowCategoryEvent(item.getCategory()));
-                }
-            }
+        public void bindThread(Thread thread) {
+            this.thread = thread;
+            this.category = null;
+
+            setPortrait(thread.getStatusByUserName());
+
+            setUserName(thread.getStatusByUserName());
+
+            // TODO Set the actual title.
+            setTitle(thread.toString());
+
+            // TODO Set the actual body.
+            setBody(thread.toString());
+
+            setCounter(thread.getMessageCount());
+
+            setDate(thread.getLastPostDate());
         }
 
-        public void bindThreadItem(ThreadItem item) {
-            this.item = item;
+        public void bindCategory(Category category) {
+            this.thread = null;
+            this.category = category;
 
-            // Fill the user portrait
-            String letter = item.getUserName().trim().substring(0, 1).toUpperCase();
-            TextDrawable textDrawable = TextDrawable.builder().buildRect(letter, Color.LTGRAY);
+            setPortrait(category.getUserName());
 
-            portraitView.setImageDrawable(textDrawable);
+            setUserName(category.getUserName());
 
-            /*
-            TODO Show user portraits
-            Uri userPortrait = item.getUserPortrait();
-            if (userPortrait == null) {
-                portraitView.setImageDrawable(textDrawable);
-            } else {
-                Picasso.with(context)
-                        .load(item.getUserPortrait())
-                        .placeholder(textDrawable)
-                        .resize(100, 100)
-                        .centerCrop()
-                        .into(portraitView);
-            }
-             */
+            setTitle(category.getName());
 
-            // Fill the user name
-            userView.setText(item.getUserName());
+            setBody(category.getDescription());
 
-            // Fill the main text view with the item title
-            titleView.setText(item.toString());
+            setCounter(category.getThreadCount());
 
-            // Fill the other text view with the item content, if available
-            String body = item.getBody();
-            if (body != null) {
-                bodyView.setText(body.replaceAll("\\n+", " "));
-            }
+            Date date = category.getLastPostDate();
 
+            setDate(date != null ? date : category.getCreateDate());
+        }
 
-            // Fill the item count field
-            int itemCount = item.getItemCount();
-            if (itemCount > 0) {
-                countView.setText(Integer.toString(itemCount));
-            }
+        private void handleClick(View v) {
+            if (thread != null)
+                eventBus.post(new MainActivity.ShowThreadEvent(thread));
+            else if (category != null)
+                eventBus.post(new MainActivity.ShowCategoryEvent(category));
+        }
 
-            // Fill the date view if any date is available
-            Date date = item.getLastPostDate();
-
-            if (date == null) {
-                date = item.getCreateDate();
-            }
+        private void setDate(Date date) {
+            String text = null;
 
             if (date != null) {
                 Context context = dateView.getContext();
                 PrettyTime formatter = new PrettyTime(context.getResources().getConfiguration().locale);
-                dateView.setText(formatter.format(date));
+                text = formatter.format(date);
             }
+
+            dateView.setText(text);
+        }
+
+        private void setCounter(int count) {
+            countView.setText(count <= 0 ? null : Integer.toString(count));
+        }
+
+        private void setBody(String body) {
+            if (body != null) {
+                body = body.replaceAll("\\n+", " ");
+            }
+            bodyView.setText(body);
+        }
+
+        private void setTitle(String title) {
+            titleView.setText(title);
+        }
+
+        private void setUserName(String userName) {
+            userView.setText(userName);
+        }
+
+        private void setPortrait(String user) {
+            String letter = user.substring(0, 1).toUpperCase();
+            TextDrawable textDrawable = TextDrawable.builder().buildRect(letter, Color.LTGRAY);
+
+            portraitView.setImageDrawable(textDrawable);
+
+            // TODO Load user portraits
         }
     }
 }
