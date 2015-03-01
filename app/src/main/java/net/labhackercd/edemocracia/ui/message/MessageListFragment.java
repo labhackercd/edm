@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,12 +15,10 @@ import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.DataRepository;
 import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.ui.MainActivity;
-import net.labhackercd.edemocracia.ui.UberLoader;
 import net.labhackercd.edemocracia.ui.UberRecyclerView;
 
 import javax.inject.Inject;
 
-import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
 public class MessageListFragment extends Fragment {
@@ -31,7 +28,6 @@ public class MessageListFragment extends Fragment {
     @Inject DataRepository repository;
 
     private Thread thread;
-    private UberLoader uberLoader;
     private UberRecyclerView uberRecyclerView;
 
     public static MessageListFragment newInstance(Thread thread) {
@@ -74,20 +70,17 @@ public class MessageListFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        uberLoader = new UberLoader(uberRecyclerView)
-                .install(dataSource())
-                .start();
-    }
-
-    private Observable<RecyclerView.Adapter> dataSource() {
         final MessageListAdapter adapter = new MessageListAdapter();
 
-        return Observable.defer(() -> {
-            return repository
-                    .getMessages(thread)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .map(adapter::replaceWith);
-        });
+        uberRecyclerView.refreshEvents()
+                .forEach(fresh -> {
+                    uberRecyclerView.setRefreshing(true);
+                    repository.getMessages(thread)
+                            .take(fresh ? 2 : 1).first()
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .map(adapter::replaceWith)
+                            .subscribe(uberRecyclerView.dataHandler());
+                });
     }
 
     @Override

@@ -10,9 +10,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.data.api.client.exception.AuthorizationException;
+
+import java.io.IOException;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import rx.Observable;
+import rx.Observer;
+import rx.Subscriber;
+import rx.functions.Action0;
+import rx.subscriptions.Subscriptions;
+import timber.log.Timber;
 
 public class UberRecyclerView extends SwipeRefreshLayout {
 
@@ -61,6 +70,7 @@ public class UberRecyclerView extends SwipeRefreshLayout {
         errorContainerView.findViewById(R.id.retryButton).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                Timber.i("Reload pls.");
                 onUberRefresh();
             }
         });
@@ -140,6 +150,79 @@ public class UberRecyclerView extends SwipeRefreshLayout {
     public void clearError() {
         recyclerView.setVisibility(View.VISIBLE);
         errorContainerView.setVisibility(View.GONE);
+    }
+
+    public Observable<Boolean> refreshEvents() {
+        return Observable.create(new Observable.OnSubscribe<Boolean>() {
+            @Override
+            public void call(Subscriber<? super Boolean> subscriber) {
+                final OnRefreshListener listener = new OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        subscriber.onNext(true);
+                    }
+                };
+
+                UberRecyclerView.this.setOnRefreshListener(listener);
+
+                subscriber.add(Subscriptions.create(new Action0() {
+                    @Override
+                    public void call() {
+                        UberRecyclerView.this.setOnRefreshListener(null);
+                    }
+                }));
+
+                // First refresh never cares about data freshness
+                RecyclerView.Adapter adapter = recyclerView.getAdapter();
+                if (adapter == null || adapter.getItemCount() == 0)
+                    subscriber.onNext(false);
+            }
+        });
+    }
+
+    public Observer<RecyclerView.Adapter> dataHandler() {
+        return new Observer<RecyclerView.Adapter>() {
+            @Override
+            public void onNext(RecyclerView.Adapter adapter) {
+                boolean hasItems = adapter != null && adapter.getItemCount() > 0;
+
+                // Set the adapter
+                if (adapter != getAdapter())
+                    setAdapter(adapter);
+
+                // TODO Show something when the list is empty
+
+                // Hide eventual error message
+                clearError();
+
+                // Stop the refreshing animation
+                setRefreshing(false);
+
+                // Keep the swipe-to-refresh gesture enabled only if there are any items to display
+                setSwipeRefreshEnabled(hasItems);
+            }
+
+            @Override
+            public void onCompleted() {
+                // Nothing to do
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                int errorMessage;
+                if (e instanceof IOException) {
+                    errorMessage = R.string.network_error_message;
+                } else if (e instanceof AuthorizationException) {
+                    errorMessage = R.string.authorization_error_message;
+                } else {
+                    errorMessage = R.string.load_error_message;
+                    Timber.e(e, "Failed to load list data.");
+                }
+
+                setRefreshing(false);
+                showError(errorMessage);
+            }
+        };
     }
 }
 

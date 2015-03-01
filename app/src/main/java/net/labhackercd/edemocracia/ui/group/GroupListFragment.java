@@ -3,7 +3,6 @@ package net.labhackercd.edemocracia.ui.group;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,13 +11,11 @@ import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.DataRepository;
 import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.ui.MainActivity;
-import net.labhackercd.edemocracia.ui.UberLoader;
 import net.labhackercd.edemocracia.ui.UberRecyclerView;
 
 import javax.inject.Inject;
 
 import de.greenrobot.event.EventBus;
-import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
 public class GroupListFragment extends Fragment {
@@ -26,15 +23,12 @@ public class GroupListFragment extends Fragment {
     @Inject EventBus eventBus;
     @Inject DataRepository repository;
 
-    private UberLoader uberLoader;
     private UberRecyclerView uberRecyclerView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         uberRecyclerView = (UberRecyclerView) inflater.inflate(
                 R.layout.uber_recycler_view, container, false);
-
-
         return uberRecyclerView;
     }
 
@@ -48,19 +42,21 @@ public class GroupListFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        uberLoader = new UberLoader(uberRecyclerView)
-                .install(dataSource())
-                .start();
-    }
-
-    private Observable<RecyclerView.Adapter> dataSource() {
         final GroupListAdapter adapter = new GroupListAdapter(eventBus);
 
-        return Observable.defer(() -> {
-            return repository
-                    .getGroups(user.getCompanyId())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .map(adapter::replaceWith);
-        });
+        uberRecyclerView.refreshEvents()
+                .forEach(fresh -> {
+                    uberRecyclerView.setRefreshing(true);
+                    repository.getGroups(user.getCompanyId())
+                            .take(fresh ? 2 : 1).last()
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .map(adapter::replaceWith)
+                            .subscribe(uberRecyclerView.dataHandler());
+                });
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
     }
 }
