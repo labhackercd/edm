@@ -57,8 +57,7 @@ public class SplashScreenActivity extends Activity {
 
     @SuppressWarnings("UnusedDeclaration")
     public void onEventMainThread(UserLoaded event) {
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra(MainActivity.KEY_USER, event.user);
+        Intent intent = MainActivity.createIntent(this, MainActivity.class, event.user);
         startActivity(intent);
         finish();
     }

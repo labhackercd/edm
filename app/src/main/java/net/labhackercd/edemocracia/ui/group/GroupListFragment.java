@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.DataRepository;
 import net.labhackercd.edemocracia.data.api.model.User;
-import net.labhackercd.edemocracia.ui.MainActivity;
+import net.labhackercd.edemocracia.ui.BaseActivity;
 import net.labhackercd.edemocracia.ui.UberRecyclerView;
 
 import javax.inject.Inject;
@@ -35,7 +35,7 @@ public class GroupListFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        MainActivity.get(getActivity()).getObjectGraph().inject(this);
+        BaseActivity.get2(getActivity()).getObjectGraph().inject(this);
     }
 
     @Override

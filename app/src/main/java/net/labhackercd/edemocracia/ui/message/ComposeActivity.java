@@ -9,9 +9,7 @@ import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.provider.MediaStore;
-import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,12 +20,11 @@ import android.widget.Toast;
 import com.google.common.base.Splitter;
 import com.path.android.jobqueue.JobManager;
 
-import net.labhackercd.edemocracia.EDMApplication;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.api.model.Message;
-import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.job.AddMessageJob;
 import net.labhackercd.edemocracia.job.VideoUploadJob;
+import net.labhackercd.edemocracia.ui.BaseActivity;
 import net.labhackercd.edemocracia.ui.VideoPickerActivity;
 
 import java.io.FileNotFoundException;
@@ -38,18 +35,14 @@ import javax.inject.Inject;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
-public class ComposeActivity extends ActionBarActivity {
-    public static final String BODY_EXTRA = "body";
-    public static final String PARENT_EXTRA = "parent";
-    public static final String SUBJECT_EXTRA = "subject";
-    public static final String VIDEO_ATTACHMENT_EXTRA = "videoAttachment";
-    public static final String VIDEO_ATTACHMENT_ACCOUNT_EXTRA = "videoAttachmentAccount";
+public class ComposeActivity extends BaseActivity {
+    public static final String PARAM_PARENT_MESSAGE = "parentMessage";
 
     private static final int RESULT_ATTACH_VIDEO = 17;
 
     private Uri attachedVideoUri;
     private String videoAccount;
-    private Parcelable parent;
+    private Message parentMessage;
 
     @Inject JobManager jobManager;
 
@@ -64,38 +57,19 @@ public class ComposeActivity extends ActionBarActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        EDMApplication.get(this).getObjectGraph().inject(this);
-
         setContentView(R.layout.fragment_compose);
 
         ButterKnife.inject(this);
 
         Intent intent = getIntent();
 
-        // Save the parent
-        parent = intent.getParcelableExtra(PARENT_EXTRA);
+        parentMessage = (Message) intent.getSerializableExtra(PARAM_PARENT_MESSAGE);
+        if (parentMessage == null)
+            throw new IllegalArgumentException("No parent message given.");
 
-        // Fill in the fields with their default values
-        String body = intent.getStringExtra(BODY_EXTRA);
-        if (body != null) {
-            bodyView.setText(body);
-        }
-
-        String subject = intent.getStringExtra(SUBJECT_EXTRA);
-
-        if (subject == null && parent != null) {
-            if (parent instanceof Thread) {
-                // TODO Use the subject from the root message of the Thread
-                subject = null;
-            } else if (parent instanceof Message) {
-                subject = ((Message) parent).getSubject();
-            }
-
-            if (subject != null) {
-                subject = getReplySubject(subject);
-            }
-        }
-
+        String subject = parentMessage.getSubject();
+        if (subject != null)
+            subject = getReplySubject(subject);
         if (subject != null) {
             bodyView.requestFocus();
             subjectView.setText(subject);
@@ -103,15 +77,7 @@ public class ComposeActivity extends ActionBarActivity {
             subjectView.requestFocus();
         }
 
-        // TODO Refactor this two into something *unique* or remove account entirely
-        videoAccount = intent.getStringExtra(VIDEO_ATTACHMENT_ACCOUNT_EXTRA);
-        attachedVideoUri = intent.getParcelableExtra(VIDEO_ATTACHMENT_EXTRA);
-
-        if (attachedVideoUri != null) {
-            setAttachedVideoUri(attachedVideoUri);
-        }
-
-        setVideoFrameShown(attachedVideoUri != null);
+        setVideoFrameShown(false);
     }
 
     @Override
@@ -209,15 +175,7 @@ public class ComposeActivity extends ActionBarActivity {
         String body = bodyView.getText().toString();
         String subject = subjectView.getText().toString();
 
-        Message message;
-
-        if (parent instanceof Thread) {
-            message = Message.create((Thread) parent, subject, body);
-        } else if (parent instanceof Message) {
-            message = Message.create((Message) parent, subject, body);
-        } else {
-            throw new IllegalStateException("Unexpected parent type.");
-        }
+        Message message = Message.create(parentMessage, subject, body);
 
         if (attachedVideoUri != null) {
             jobManager.addJob(new VideoUploadJob(attachedVideoUri, videoAccount, message));

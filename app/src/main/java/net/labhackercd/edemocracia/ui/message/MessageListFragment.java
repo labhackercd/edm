@@ -13,21 +13,28 @@ import android.view.ViewGroup;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.DataRepository;
+import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.Thread;
-import net.labhackercd.edemocracia.ui.MainActivity;
+import net.labhackercd.edemocracia.data.api.model.User;
+import net.labhackercd.edemocracia.ui.BaseActivity;
 import net.labhackercd.edemocracia.ui.UberRecyclerView;
 
 import javax.inject.Inject;
 
+import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.observers.Observers;
+import timber.log.Timber;
 
 public class MessageListFragment extends Fragment {
 
     private static final String ARG_THREAD = "thread";
 
+    @Inject User user;
     @Inject DataRepository repository;
 
     private Thread thread;
+    private Message rootMessage;
     private UberRecyclerView uberRecyclerView;
 
     public static MessageListFragment newInstance(Thread thread) {
@@ -63,7 +70,7 @@ public class MessageListFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        MainActivity.get(getActivity()).getObjectGraph().inject(this);
+        BaseActivity.get2(getActivity()).getObjectGraph().inject(this);
     }
 
     @Override
@@ -72,6 +79,10 @@ public class MessageListFragment extends Fragment {
 
         final MessageListAdapter adapter = new MessageListAdapter();
 
+        final Observer<? super MessageListAdapter> setRootMessage = Observers.create(newAdapter -> {
+            rootMessage = newAdapter.getRootMessage();
+        });
+
         uberRecyclerView.refreshEvents()
                 .forEach(fresh -> {
                     uberRecyclerView.setRefreshing(true);
@@ -79,6 +90,7 @@ public class MessageListFragment extends Fragment {
                             .take(fresh ? 2 : 1).first()
                             .observeOn(AndroidSchedulers.mainThread())
                             .map(adapter::replaceWith)
+                            .doOnEach(setRootMessage)
                             .subscribe(uberRecyclerView.dataHandler());
                 });
     }
@@ -99,9 +111,13 @@ public class MessageListFragment extends Fragment {
     }
 
     private boolean onReplySelected() {
-        Intent intent = new Intent(getActivity(), ComposeActivity.class);
+        if (rootMessage == null) {
+            Timber.w("No root message set.");
+            return false;
+        }
+        Intent intent = ComposeActivity.createIntent(getActivity(), ComposeActivity.class, user);
         intent.setAction(Intent.ACTION_INSERT);
-        intent.putExtra(ComposeActivity.PARENT_EXTRA, thread);
+        intent.putExtra(ComposeActivity.PARAM_PARENT_MESSAGE, rootMessage);
         startActivity(intent);
         return true;
     }

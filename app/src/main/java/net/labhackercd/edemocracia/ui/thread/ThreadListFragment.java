@@ -13,7 +13,7 @@ import net.labhackercd.edemocracia.data.DataRepository;
 import net.labhackercd.edemocracia.data.api.model.Category;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.Thread;
-import net.labhackercd.edemocracia.ui.MainActivity;
+import net.labhackercd.edemocracia.ui.BaseActivity;
 import net.labhackercd.edemocracia.ui.UberRecyclerView;
 
 import java.util.List;
@@ -79,7 +79,7 @@ public class ThreadListFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        MainActivity.get(getActivity()).getObjectGraph().inject(this);
+        BaseActivity.get2(getActivity()).getObjectGraph().inject(this);
     }
 
     @Override

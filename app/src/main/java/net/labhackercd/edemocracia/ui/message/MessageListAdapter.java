@@ -1,10 +1,8 @@
 package net.labhackercd.edemocracia.ui.message;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Parcelable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -56,6 +54,10 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         this.messages = messages;
         notifyDataSetChanged();
         return this;
+    }
+
+    public Message getRootMessage() {
+        return messages.isEmpty() ? null : messages.get(0);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -175,6 +177,8 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         @OnClick(R.id.reply)
         @SuppressWarnings("UnusedDeclaration")
         public void onReplyClick(View v) {
+            /*
+            TODO
             if (message != null) {
                 Context context = v.getContext();
                 Intent intent = new Intent(context, ComposeActivity.class);
@@ -182,6 +186,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                 intent.putExtra(ComposeActivity.PARENT_EXTRA, (Parcelable) message);
                 context.startActivity(intent);
             }
+             */
         }
     }
 }
