@@ -35,6 +35,7 @@ public class GroupListFragment extends BaseFragment {
 
     private User user;
     private ItemListView listView;
+    private GroupListAdapter adapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

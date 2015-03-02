@@ -37,6 +37,7 @@ public class ThreadListFragment extends BaseFragment {
 
     private Object parent;
     private ItemListView listView;
+    private ThreadListAdapter adapter;
 
     public static Fragment newInstance(Group group) {
         ThreadListFragment fragment = new ThreadListFragment();

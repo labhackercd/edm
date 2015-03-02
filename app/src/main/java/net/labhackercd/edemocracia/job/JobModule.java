@@ -10,6 +10,7 @@ import com.path.android.jobqueue.log.CustomLogger;
 
 import net.labhackercd.edemocracia.BuildConfig;
 import net.labhackercd.edemocracia.EDMApplication;
+import net.labhackercd.edemocracia.data.db.DatabaseProvider;
 
 import javax.inject.Singleton;
 
@@ -24,9 +25,8 @@ import timber.log.Timber;
 )
 @SuppressWarnings("UnusedDeclaration")
 public class JobModule {
-    @Provides
-    @Singleton
-    JobManager provideJobManager(final Application application) {
+    @Provides @Singleton
+    EDMJobManager provideEDMJobManager(Application application, DatabaseProvider databaseHelper) {
         //noinspection Convert2Lambda
         Configuration configuration = new Configuration.Builder(application)
                 .customLogger(new CustomLogger() {
@@ -61,6 +61,9 @@ public class JobModule {
                     }
                 })
                 .build();
-        return new JobManager(application, configuration);
+
+        JobManager jobManager = new JobManager(application, configuration);
+
+        return new EDMJobManager(jobManager, databaseHelper);
     }
 }

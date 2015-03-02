@@ -18,12 +18,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.common.base.Splitter;
-import com.path.android.jobqueue.JobManager;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.api.model.Message;
-import net.labhackercd.edemocracia.job.AddMessageJob;
-import net.labhackercd.edemocracia.job.VideoUploadJob;
+import net.labhackercd.edemocracia.data.db.model.LocalMessage;
+import net.labhackercd.edemocracia.job.EDMJobManager;
 import net.labhackercd.edemocracia.ui.BaseActivity;
 import net.labhackercd.edemocracia.ui.VideoPickerActivity;
 
@@ -36,7 +35,12 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 
 public class ComposeActivity extends BaseActivity {
+
+    /** The parent message. */
     public static final String PARAM_PARENT_MESSAGE = "parentMessage";
+
+    /** The inserted message. Used in results. */
+    public static final String PARAM_INSERTED_MESSAGE = "insertedMessage";
 
     private static final int RESULT_ATTACH_VIDEO = 17;
 
@@ -44,7 +48,7 @@ public class ComposeActivity extends BaseActivity {
     private String videoAccount;
     private Message parentMessage;
 
-    @Inject JobManager jobManager;
+    @Inject EDMJobManager jobManager;
 
     @InjectView(R.id.message) TextView bodyView;
     @InjectView(R.id.subject) TextView subjectView;
@@ -168,24 +172,20 @@ public class ComposeActivity extends BaseActivity {
 
     protected boolean sendMessage() {
         // Reset errors.
-        subjectView.setError(null);
         bodyView.setError(null);
+        subjectView.setError(null);
 
         // Store values at the time of the login attempt.
         String body = bodyView.getText().toString();
         String subject = subjectView.getText().toString();
 
-        Message message = Message.create(parentMessage, subject, body);
+        LocalMessage inserted = jobManager.addMessage(parentMessage, subject, body, attachedVideoUri, videoAccount);
 
-        if (attachedVideoUri != null) {
-            jobManager.addJob(new VideoUploadJob(attachedVideoUri, videoAccount, message));
-        } else {
-            jobManager.addJob(new AddMessageJob(message));
-        }
-
-        // FIXME We should probably trigger this from AddMessageJob.onJobAdded
         Toast.makeText(this, R.string.sending_message, Toast.LENGTH_SHORT).show();
 
+        Intent result = new Intent();
+        result.putExtra(PARAM_INSERTED_MESSAGE, inserted);
+        setResult(RESULT_OK, result);
         finish();
 
         return true;

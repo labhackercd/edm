@@ -3,6 +3,7 @@ package net.labhackercd.edemocracia.ui.message;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,40 +19,76 @@ import com.squareup.picasso.Transformation;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.api.model.Message;
+import net.labhackercd.edemocracia.data.api.model.User;
+import net.labhackercd.edemocracia.data.db.model.LocalMessage;
+import net.labhackercd.edemocracia.job.AddMessageJob;
 
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
+import de.greenrobot.event.EventBus;
 
 public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.ViewHolder> {
 
     private List<Message> messages = Collections.emptyList();
+    private List<LocalMessage> localMessages = Collections.emptyList();
 
-    @Override
+    private final User user;
+    private final EventBus eventBus;
+
+    public MessageListAdapter(User user, EventBus eventBus) {
+        this.user = user;
+        this.eventBus = eventBus;
+    }
+
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.message_list_item, viewGroup, false);
-        return new ViewHolder(view);
+        return new ViewHolder(view, user, eventBus);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, int i) {
-        viewHolder.bindMessage(messages.get(i));
+    public void onBindViewHolder(ViewHolder holder, int i) {
+        // TODO Place "not yet submitted messages" in their right place on the list
+        // (I mean, like under the message they are replying to.)
+        int remoteCount = messages.size();
+        if (i < remoteCount)
+            holder.bindMessage(messages.get(i));
+        else
+            holder.bindLocalMessage(localMessages.get(i - remoteCount));
     }
 
     @Override
     public int getItemCount() {
-        return messages.size();
+        return messages.size() + localMessages.size();
     }
 
-    public MessageListAdapter replaceWith(List<Message> messages) {
+    public int getItemPosition(LocalMessage item) {
+        // Search by id.
+        int itemIndex = 0;
+        for (LocalMessage cur : localMessages) {
+            if (item._id.equals(cur._id))
+                break;
+            else
+                itemIndex++;
+        }
+        return messages.size() + itemIndex;
+    }
+
+    public MessageListAdapter replaceWith(Pair<List<Message>, List<LocalMessage>> lists) {
+        return replaceWith(lists.first, lists.second);
+    }
+
+    public MessageListAdapter replaceWith(List<Message> messages, List<LocalMessage> localMessages) {
         this.messages = messages;
+        this.localMessages = localMessages;
         notifyDataSetChanged();
         return this;
     }
@@ -62,28 +99,139 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        @InjectView(R.id.body) LinearLayout bodyView;
         @InjectView(R.id.date) TextView dateView;
+        @InjectView(R.id.body) LinearLayout bodyView;
         @InjectView(R.id.portrait) ImageView portraitView;
         @InjectView(android.R.id.text1) TextView userView;
         @InjectView(android.R.id.text2) TextView subjectView;
 
         private Message message;
+        private LocalMessage localMessage;
         private final Transformation videoThumbnailTransformation;
+        private final User user;
+        private final EventBus eventBus;
 
-        public ViewHolder(View view) {
+        public ViewHolder(View view, User user, EventBus eventBus) {
             super(view);
             ButterKnife.inject(this, view);
             view.setOnClickListener(this::handleClick);
+            this.user = user;
+            this.eventBus = eventBus;
+            // TODO Make less instances of this transformation.
+            // I guess we could instantiate it only once at the Adapter.
             this.videoThumbnailTransformation = new VideoPlayButtonTransformation(view.getContext());
         }
 
         public void bindMessage(Message message) {
             this.message = message;
+            this.localMessage = null;
 
-            // Get the body text
-            String body = message.getBody();
+            setAuthor(message.getUserName());
 
+            setSubject(message.getSubject());
+
+            setBody(message.getBody());
+
+            setStatus(message.getCreateDate());
+
+            // TODO Display author's portrait.
+            setPortrait(message.getUserName(), null);
+        }
+
+        public void bindLocalMessage(LocalMessage message) {
+            this.message = null;
+            this.localMessage = message;
+
+            // We must react to some events.
+            if (!eventBus.isRegistered(this))
+                eventBus.register(this);
+
+            setAuthor(user.getScreenName());
+
+            setSubject(message.subject);
+
+            setBody(message.body);
+
+            setLocalMessageStatus(message.status);
+
+            // TODO Display author's portrait.
+            setPortrait(user.getScreenName(), null);
+        }
+
+        @SuppressWarnings("UnusedDeclaration")
+        public void onEventMainThread(AddMessageJob.Cancelled event) {
+            // FIXME This implementation based on EventBus is just stupid. Please, fix.
+            if (localMessage == null || !localMessage._id.equals(event.message._id))
+                return;
+            setLocalMessageStatus(event.message.status);
+        }
+
+        public void handleClick(View v) {
+            // TODO Do something when a item is clicked
+        }
+
+        @OnClick(R.id.reply)
+        @SuppressWarnings("UnusedDeclaration")
+        public void onReplyClick(View v) {
+            if (localMessage != null && localMessage.status == LocalMessage.Status.CANCELLED) {
+                // TODO Retry message submission
+            }
+        }
+
+        private void setAuthor(String author) {
+            userView.setText(author);
+        }
+
+        private void setSubject(String subject) {
+            subjectView.setText(subject);
+        }
+
+        private void setStatus(Date date) {
+            String text;
+            if (date != null) {
+                Locale locale = dateView.getResources().getConfiguration().locale;
+                text = new PrettyTime(locale).format(date);
+            } else {
+                text = null;
+            }
+            setStatus(text);
+        }
+
+        private void setStatus(String text) {
+            dateView.setText(text);
+        }
+
+        private void setStatus(int resId) {
+            dateView.setText(resId);
+        }
+
+        private void setLocalMessageStatus(LocalMessage.Status status) {
+            int statusId;
+            if (status != LocalMessage.Status.CANCELLED) {
+                statusId = R.string.sending_message;
+            } else {
+                statusId = R.string.message_submission_failed;
+            }
+            setStatus(statusId);
+        }
+
+        private void setPortrait(String author, Uri portrait) {
+            String letter = author.trim().substring(0, 1).toUpperCase();
+            TextDrawable textDrawable = TextDrawable.builder().buildRect(letter, Color.LTGRAY);
+
+            if (portrait == null) {
+                portraitView.setImageDrawable(textDrawable);
+            } else {
+                Picasso.with(portraitView.getContext().getApplicationContext())
+                        .load(portrait)
+                        .placeholder(textDrawable)
+                        .resize(100, 100)
+                        .centerCrop()
+                        .into(portraitView);
+            }
+        }
+
+        private void setBody(String body) {
             // Remove all views in *body layout*, in case there are any view remaining
             // from previously bound messages.
             bodyView.removeAllViewsInLayout();
@@ -118,7 +266,6 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                         }
                     });
 
-                    // TODO Make less instances of this transformation.
                     // TODO Ensure all the thumbnails are of the same size (if needed)
                     Picasso.with(videoThumbView.getContext())
                             .load(Uri.parse("http://img.youtube.com/vi/" + videoId + "/hqdefault.jpg"))
@@ -135,58 +282,6 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                     bodyView.addView(textView);
                 }
             }
-
-            userView.setText(message.getUserName());
-            subjectView.setText(message.getSubject());
-
-            // Set the date
-            Date date = message.getCreateDate();
-
-            if (date != null) {
-                PrettyTime formatter = new PrettyTime(dateView.getResources().getConfiguration().locale);
-                dateView.setText(formatter.format(date));
-            }
-
-            // Fill the user portrait
-            String letter = message.getUserName().trim().substring(0, 1).toUpperCase();
-            TextDrawable textDrawable = TextDrawable.builder().buildRect(letter, Color.LTGRAY);
-
-            portraitView.setImageDrawable(textDrawable);
-
-            /*
-            TODO Display user portraits
-
-            Uri portrait = message.getUserPortrait();
-            if (portrait == null) {
-                portraitView.setImageDrawable(textDrawable);
-            } else {
-                Picasso.with(context)
-                        .load(portrait)
-                        .placeholder(textDrawable)
-                        .resize(100, 100)
-                        .centerCrop()
-                        .into(portraitView);
-            }
-             */
-        }
-
-        public void handleClick(View v) {
-            // TODO Do something when a item is clicked
-        }
-
-        @OnClick(R.id.reply)
-        @SuppressWarnings("UnusedDeclaration")
-        public void onReplyClick(View v) {
-            /*
-            TODO
-            if (message != null) {
-                Context context = v.getContext();
-                Intent intent = new Intent(context, ComposeActivity.class);
-                intent.setAction(Intent.ACTION_INSERT);
-                intent.putExtra(ComposeActivity.PARENT_EXTRA, (Parcelable) message);
-                context.startActivity(intent);
-            }
-             */
         }
     }
 }

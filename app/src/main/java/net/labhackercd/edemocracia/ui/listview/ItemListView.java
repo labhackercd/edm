@@ -206,5 +206,13 @@ public class ItemListView extends SwipeRefreshLayout {
         setRefreshing(false);
         showError(errorMessage);
     }
+
+    public void scrollToPosition(int position) {
+        recyclerView.scrollToPosition(position);
+    }
+
+    public void smoothScrollToPosition(int position) {
+        recyclerView.smoothScrollToPosition(position);
+    }
 }
 

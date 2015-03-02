@@ -22,6 +22,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.List;
+import java.util.UUID;
 
 class EDMServiceImpl implements EDMService {
 
@@ -217,14 +218,13 @@ class EDMServiceImpl implements EDMService {
     }
 
     @Override
-    public Message addMessage(Message message) {
+    public Message addMessage(UUID uuid, Message parentMessage, String subject, String body) {
         try {
             JSONObject scArgs = new JSONObject();
             scArgs.put("addGuestPermissions", true);
 
-            String uuid = message.getUuid();
             if (uuid != null)
-                scArgs.put("uuid", uuid);
+                scArgs.put("uuid", uuid.toString());
 
             JSONObjectWrapper serviceContext = new JSONObjectWrapper(
                     "com.liferay.portal.service.ServiceContext", scArgs);
@@ -232,10 +232,9 @@ class EDMServiceImpl implements EDMService {
             MBMessageService service = new MBMessageService(new EDMGetSessionWrapper(session));
 
             JSONObject inserted = service.addMessage(
-                    message.getGroupId(), message.getCategoryId(), message.getThreadId(),
-                    message.getParentMessageId(), message.getSubject(), message.getBody(),
-                    message.getFormat(), new JSONArray(), message.isAnonymous(),
-                    message.getPriority(), message.allowPingbacks(), serviceContext);
+                    parentMessage.getGroupId(), parentMessage.getCategoryId(),
+                    parentMessage.getThreadId(), parentMessage.getMessageId(),
+                    subject, body, "bbcode", new JSONArray(), false, 0.0, true, serviceContext);
 
             return Message.JSON_READER.fromJSON(inserted);
         } catch (Exception e) {

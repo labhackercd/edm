@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +31,10 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
 
     private List<Thread> threads = Collections.emptyList();
     private List<Category> categories = Collections.emptyList();
+
+    public ThreadListAdapter replaceWith(Pair<List<Category>, List<Thread>> lists) {
+        return replaceWith(lists.first, lists.second);
+    }
 
     public ThreadListAdapter replaceWith(List<Category> categories, List<Thread> threads) {
         this.threads = threads;
@@ -59,6 +64,7 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
         else
             holder.bindThread(threads.get(i - categoryCount));
     }
+
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 

@@ -10,6 +10,7 @@ import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.data.api.model.User;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface EDMService {
 
@@ -39,5 +40,5 @@ public interface EDMService {
 
     List<Message> getThreadMessages(long groupId, long categoryId, long threadId);
 
-    Message addMessage(Message message);
+    Message addMessage(UUID uuid, Message message, String subject, String body);
 }

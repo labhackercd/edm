@@ -37,46 +37,6 @@ public class Message extends BaseModel {
     private String userName;
     private long messageId;
 
-    public static Message create(Thread thread, String subject, String body) {
-        return create(
-                thread.getGroupId(), thread.getCategoryId(),
-                thread.getThreadId(), thread.getRootMessageId(), subject, body);
-    }
-
-    public static Message create(Message parent, String subject, String body) {
-        return create(
-                parent.getGroupId(), parent.getCategoryId(),
-                parent.getThreadId(), parent.getMessageId(), subject, body);
-    }
-
-    public static Message create(long groupId, long categoryId, long threadId,
-                                 long parentMessageId, String subject, String body) {
-        return create(
-                groupId, categoryId, threadId,
-                parentMessageId,subject,body, "bbcode", false, 1.0, true);
-    }
-
-
-    public static Message create(
-        long groupId, long categoryId, long threadId, long parentMessageId, String subject,
-        String body, String format, boolean anonymous, double priority, boolean allowPingbacks) {
-
-        Message r = new Message();
-
-        r.groupId = groupId;
-        r.categoryId = categoryId;
-        r.threadId = threadId;
-        r.parentMessageId = parentMessageId;
-        r.subject = subject;
-        r.body = body;
-        r.format = format;
-        r.anonymous = anonymous;
-        r.priority = priority;
-        r.allowPingbacks = allowPingbacks;
-
-        return r;
-    }
-
     public int getStatus() {
         return status;
     }
@@ -216,5 +176,4 @@ public class Message extends BaseModel {
             return instance;
         }
     };
-
 }
