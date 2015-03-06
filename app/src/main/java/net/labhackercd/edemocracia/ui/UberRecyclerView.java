@@ -5,6 +5,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -159,7 +160,8 @@ public class UberRecyclerView extends SwipeRefreshLayout {
                 final OnRefreshListener listener = new OnRefreshListener() {
                     @Override
                     public void onRefresh() {
-                        subscriber.onNext(true);
+                        if (!subscriber.isUnsubscribed())
+                            subscriber.onNext(true);
                     }
                 };
 
@@ -175,7 +177,8 @@ public class UberRecyclerView extends SwipeRefreshLayout {
                 // First refresh never cares about data freshness
                 RecyclerView.Adapter adapter = recyclerView.getAdapter();
                 if (adapter == null || adapter.getItemCount() == 0)
-                    subscriber.onNext(false);
+                    if (!subscriber.isUnsubscribed())
+                        subscriber.onNext(false);
             }
         });
     }
@@ -215,8 +218,8 @@ public class UberRecyclerView extends SwipeRefreshLayout {
                 } else if (e instanceof AuthorizationException) {
                     errorMessage = R.string.authorization_error_message;
                 } else {
-                    errorMessage = R.string.load_error_message;
                     Timber.e(e, "Failed to load list data.");
+                    errorMessage = R.string.load_error_message;
                 }
 
                 setRefreshing(false);

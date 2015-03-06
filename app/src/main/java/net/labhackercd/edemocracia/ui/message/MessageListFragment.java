@@ -11,12 +11,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import net.labhackercd.edemocracia.EDMApplication;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.DataRepository;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.data.api.model.User;
-import net.labhackercd.edemocracia.ui.BaseActivity;
+import net.labhackercd.edemocracia.ui.BaseFragment;
 import net.labhackercd.edemocracia.ui.UberRecyclerView;
 
 import javax.inject.Inject;
@@ -26,11 +27,10 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.observers.Observers;
 import timber.log.Timber;
 
-public class MessageListFragment extends Fragment {
+public class MessageListFragment extends BaseFragment {
 
     private static final String ARG_THREAD = "thread";
 
-    @Inject User user;
     @Inject DataRepository repository;
 
     private Thread thread;
@@ -65,12 +65,6 @@ public class MessageListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         uberRecyclerView = (UberRecyclerView) inflater.inflate(R.layout.uber_recycler_view, container, false);
         return uberRecyclerView;
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        BaseActivity.get2(getActivity()).getObjectGraph().inject(this);
     }
 
     @Override
@@ -115,7 +109,7 @@ public class MessageListFragment extends Fragment {
             Timber.w("No root message set.");
             return false;
         }
-        Intent intent = ComposeActivity.createIntent(getActivity(), ComposeActivity.class, user);
+        Intent intent = new Intent(getActivity(), ComposeActivity.class);
         intent.setAction(Intent.ACTION_INSERT);
         intent.putExtra(ComposeActivity.PARAM_PARENT_MESSAGE, rootMessage);
         startActivity(intent);

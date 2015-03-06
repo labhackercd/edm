@@ -1,6 +1,5 @@
 package net.labhackercd.edemocracia.data;
 
-import net.labhackercd.edemocracia.data.api.ServiceError;
 import net.labhackercd.edemocracia.data.rx.RxSupport;
 
 import java.util.LinkedHashMap;
@@ -10,10 +9,11 @@ import rx.Observable;
 import rx.Observer;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
+import timber.log.Timber;
 
 public abstract class ObservableStore<V, T> {
     private final Map<V, T> cache = new LinkedHashMap<>();
-    private final Map<V, PublishSubject<T>> requests = new LinkedHashMap<V, PublishSubject<T>>();
+    private final Map<V, PublishSubject<T>> requests = new LinkedHashMap<>();
 
     /**
      * Returns an Observable<T> that can emit one or two item.
@@ -41,29 +41,26 @@ public abstract class ObservableStore<V, T> {
     public Observable<T> fresh(final V key) {
         PublishSubject<T> request = requests.get(key);
         if (request != null) {
-            // There's an in-flight network request for this section already. Join it.
             return request.asObservable();
         }
 
         request = PublishSubject.create();
         requests.put(key, request);
 
-        // We have to lift the subscription before subscribing it to the cache.
-        // Don't ask me why, tho. This is the way it is or it won't be.
-        Observable<T> observable = request.asObservable();
+        Observable<T> result = request.asObservable();
 
         request.subscribe(new Observer<T>() {
             @Override
             public void onCompleted() {
-                onEnd();
+                onTerminated();
             }
 
             @Override
             public void onError(Throwable e) {
-                onEnd();
+                onTerminated();
             }
 
-            private void onEnd() {
+            private void onTerminated() {
                 requests.remove(key);
             }
 
@@ -75,7 +72,7 @@ public abstract class ObservableStore<V, T> {
 
         fetchRx(key).subscribeOn(Schedulers.io()).subscribe(request);
 
-        return observable;
+        return result;
     }
 
     @SuppressWarnings("unchecked")
@@ -84,10 +81,9 @@ public abstract class ObservableStore<V, T> {
             @Override
             public void invoke(Callback callback) {
                 try {
-                    T result = fetch(key);
-                    callback.next(result);
-                } catch (ServiceError error) {
-                    callback.error(error);
+                    callback.next(fetch(key));
+                } catch (Throwable t) {
+                    callback.error(t);
                 }
             }
         });

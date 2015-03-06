@@ -1,5 +1,8 @@
 package net.labhackercd.edemocracia.data.api;
 
+import com.liferay.mobile.android.auth.Authentication;
+
+import net.labhackercd.edemocracia.data.api.client.Endpoint;
 import net.labhackercd.edemocracia.data.api.model.Category;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.Message;
@@ -9,6 +12,18 @@ import net.labhackercd.edemocracia.data.api.model.User;
 import java.util.List;
 
 public interface EDMService {
+
+    public interface Builder {
+        public Builder setEndpoint(Endpoint endpoint);
+
+        public Builder setAuthentication(Authentication authentication);
+
+        public Builder setErrorHandler(ErrorHandler errorHandler);
+
+        public EDMService build();
+    }
+
+    public Builder newBuilder();
 
     public User getUser();
 
@@ -25,7 +40,4 @@ public interface EDMService {
     List<Message> getThreadMessages(long groupId, long categoryId, long threadId);
 
     Message addMessage(Message message);
-
-    public static class Builder extends EDMServiceImpl.Builder {
-    }
 }

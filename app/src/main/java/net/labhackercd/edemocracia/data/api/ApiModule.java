@@ -1,9 +1,13 @@
 package net.labhackercd.edemocracia.data.api;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.app.Application;
+
 import com.liferay.mobile.android.auth.Authentication;
 import com.liferay.mobile.android.auth.basic.BasicAuthentication;
 
-import net.labhackercd.edemocracia.account.Credentials;
+import net.labhackercd.edemocracia.account.AccountUtils;
 import net.labhackercd.edemocracia.data.api.client.Endpoint;
 
 import org.apache.http.HttpRequest;
@@ -24,26 +28,21 @@ public class ApiModule {
     }
 
     @Provides @Singleton
-    Authentication provideAuthentication(final Credentials.Provider credentialsProvider) {
-        return new Authentication() {
-            @Override
-            public void authenticate(HttpRequest request) throws Exception {
-                Credentials credentials = credentialsProvider.getCredentials();
-                if (credentials != null) {
-                    String email = credentials.getEmailAddress();
-                    String password = credentials.getPassword();
-                    new BasicAuthentication(email, password).authenticate(request);
-                }
-            }
-        };
-    }
-
-    @Provides @Singleton
-    EDMService provideEDMService(Endpoint endpoint, Authentication authentication) {
-        return new EDMService.Builder()
+    EDMService provideEDMService(final Application application, Endpoint endpoint) {
+        return new EDMServiceImpl.Builder()
+                .setAuthentication(new Authentication() {
+                    @Override
+                    public void authenticate(HttpRequest request) throws Exception {
+                        Account account = AccountUtils.getAccount(application);
+                        if (account != null) {
+                            AccountManager manager = AccountManager.get(application);
+                            String email = account.name;
+                            String password = manager.getPassword(account);
+                            new BasicAuthentication(email, password).authenticate(request);
+                        }
+                    }
+                })
                 .setEndpoint(endpoint)
-                .setErrorHandler(new EDMErrorHandler())
-                .setAuthentication(authentication)
                 .build();
     }
 }

@@ -10,6 +10,7 @@ import net.labhackercd.edemocracia.data.api.model.Category;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.Thread;
+import net.labhackercd.edemocracia.data.api.model.User;
 
 import java.util.List;
 
@@ -25,6 +26,10 @@ public class DataRepository {
 
     @Inject public DataRepository(EDMService service) {
         this.service = service;
+    }
+
+    public Observable<User> getUser() {
+        return userStore.get(null);
     }
 
     public Observable<List<Group>> getGroups(long companyId) {
@@ -58,6 +63,13 @@ public class DataRepository {
     /**
      * THE STORES
      */
+    private ObservableStore<Void, User> userStore =
+            new ObservableStore<Void, User>() {
+                @Override
+                protected User fetch(Void request) {
+                    return service.getUser();
+                }
+            };
 
     private ObservableStore<Long, List<Group>> groupStore =
             new ObservableStore<Long, List<Group>>() {

@@ -2,13 +2,15 @@ package net.labhackercd.edemocracia.account;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.util.Pair;
+import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
@@ -22,9 +24,9 @@ import com.liferay.mobile.android.auth.basic.BasicAuthentication;
 
 import net.labhackercd.edemocracia.EDMApplication;
 import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.data.ObservableStore;
 import net.labhackercd.edemocracia.data.api.EDMErrorHandler;
 import net.labhackercd.edemocracia.data.api.EDMService;
-import net.labhackercd.edemocracia.data.api.client.Endpoint;
 import net.labhackercd.edemocracia.data.api.client.exception.AuthorizationException;
 import net.labhackercd.edemocracia.data.api.model.User;
 
@@ -36,9 +38,11 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.OnEditorAction;
-import de.greenrobot.event.EventBus;
-import de.greenrobot.event.util.AsyncExecutor;
-import de.greenrobot.event.util.ThrowableFailureEvent;
+import rx.Observable;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 import static android.accounts.AccountManager.KEY_ACCOUNT_NAME;
@@ -46,30 +50,29 @@ import static android.accounts.AccountManager.KEY_ACCOUNT_TYPE;
 import static android.accounts.AccountManager.KEY_AUTHTOKEN;
 import static net.labhackercd.edemocracia.account.AccountConstants.ACCOUNT_TYPE;
 
-public class SignInActivity extends Activity {
+public class SignInActivity extends ActionBarActivity {
     public static final String PARAM_EMAIL = "email";
     public static final String PARAM_AUTHTOKEN_TYPE = "authTokenType";
 
-    @Inject EventBus eventBus;
-    @Inject Endpoint apiEndpoint;
+    @Inject UserData userData;
+    @Inject EDMService service;
 
     @InjectView(R.id.email) AutoCompleteTextView emailView;
     @InjectView(R.id.password) EditText passwordView;
     @InjectView(R.id.login_form) View loginFormView;
     @InjectView(android.R.id.progress) View progressView;
 
-    private AccountManager accountManager;
-    private boolean requestNewAccount = false;
     private String authTokenType;
+    private boolean requestNewAccount = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 0);
+
         super.onCreate(savedInstanceState);
 
         EDMApplication.get(this).getObjectGraph().inject(this);
-
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 0);
 
         setContentView(R.layout.activity_sign_in);
 
@@ -77,8 +80,6 @@ public class SignInActivity extends Activity {
 
         // progress view shouldn't be visible at startup
         progressView.setVisibility(View.GONE);
-
-        accountManager = AccountManager.get(this);
 
         final Intent intent = getIntent();
         String email = intent.getStringExtra(PARAM_EMAIL);
@@ -90,18 +91,6 @@ public class SignInActivity extends Activity {
             emailView.setEnabled(false);
             emailView.setFocusable(false);
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        eventBus.register(this);
-    }
-
-    @Override
-    protected void onPause() {
-        eventBus.unregister(this);
-        super.onPause();
     }
 
     @OnEditorAction(R.id.password)
@@ -155,58 +144,61 @@ public class SignInActivity extends Activity {
             // form field with an error.
             focusView.requestFocus();
         } else {
-            showProgress(true);
+            checkCredentials(email, password)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnSubscribe(() -> showProgress(true))
+                    .doOnError(t -> showProgress(false))
+                    .map(user -> new Pair<User, String>(user, password))
+                    .subscribe(this::handleSuccess, this::handleError);
+        }
+    }
 
-            AsyncExecutor.builder().buildForScope(getClass()).execute(new AsyncExecutor.RunnableEx() {
+    private ObservableStore<Pair<String, String>, User> credentialCheckStore =
+            new ObservableStore<Pair<String, String>, User>() {
                 @Override
-                public void run() throws Exception {
-                    EDMService authService = new EDMService.Builder()
-                            .setEndpoint(apiEndpoint)
-                            .setAuthentication(new BasicAuthentication(email, password))
-                            .build();
-
-                    User user = authService.getUser();
-
-                    Account account = new Account(user.getEmailAddress(), ACCOUNT_TYPE);
-                    if (requestNewAccount) {
-                        accountManager.addAccountExplicitly(account, password, null);
-                        configureSyncFor(account);
-                    } else {
-                        accountManager.setPassword(account, password);
-                    }
-
-                    eventBus.post(new SuccessLogin(user, password));
+                protected User fetch(Pair<String, String> request) {
+                    return service.newBuilder()
+                            .setAuthentication(new BasicAuthentication(request.first, request.second))
+                            .build()
+                            .getUser();
                 }
-            });
-        }
+            };
+
+    private Observable<User> checkCredentials(String email, String password) {
+        return credentialCheckStore.fresh(new Pair<>(email, password));
     }
 
-    @SuppressWarnings("UnusedDeclaration")
-    public void onEventMainThread(SuccessLogin event) {
-        Timber.d("finishLogin");
-        finishLogin(event.user.getEmailAddress(), event.password);
-    }
+    private void handleSuccess(Pair<User, String> pair) {
+        User user = pair.first;
+        String email = user.getEmailAddress();
+        String password = pair.second;
 
-    @SuppressWarnings("UnusedDeclaration")
-    public void onEventMainThread(ThrowableFailureEvent event) {
-        if (!getClass().equals(event.getExecutionScope())) {
-            // Not our business...
-            return;
+        AccountManager manager = AccountManager.get(this);
+
+        Account account = new Account(user.getEmailAddress(), ACCOUNT_TYPE);
+        if (requestNewAccount) {
+            manager.addAccountExplicitly(account, password, null);
+            configureSyncFor(account);
+        } else {
+            manager.setPassword(account, password);
         }
 
-        Throwable t = EDMErrorHandler.getCause(event.getThrowable());
+        // Save the user.
+        userData.setUser(manager, account, user);
 
+        finishLogin(email, password);
+    }
+
+    private void handleError(Throwable throwable) {
         int errorMessage;
-        if (t instanceof IOException) {
-            // Probably a network error.
+        if (EDMErrorHandler.isNetworkError(throwable)) {
             errorMessage = R.string.network_error_message;
-        } else if (t instanceof AuthorizationException) {
+        } else if (EDMErrorHandler.isAuthorizationError(throwable)) {
             errorMessage = R.string.invalid_credentials_message;
         } else {
             errorMessage = R.string.unknown_error_message;
-            Timber.e(t, "Failed to authenticate user credentials.");
+            Timber.e(throwable, "Failed to check credentials.");
         }
-
         new AlertDialog.Builder(this)
                 .setMessage(errorMessage)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -223,9 +215,9 @@ public class SignInActivity extends Activity {
         // TODO
     }
 
-    private void finishLogin(String emailAddress, String password) {
-        final Intent intent = new Intent();
-        intent.putExtra(KEY_ACCOUNT_NAME, emailAddress);
+    private void finishLogin(String email, String password) {
+        Intent intent = new Intent();
+        intent.putExtra(KEY_ACCOUNT_NAME, email);
         intent.putExtra(KEY_ACCOUNT_TYPE, ACCOUNT_TYPE);
         if (ACCOUNT_TYPE.equals(authTokenType))
             intent.putExtra(KEY_AUTHTOKEN, password);
@@ -236,7 +228,6 @@ public class SignInActivity extends Activity {
     protected void showProgress(final boolean show) {
         loginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         progressView.setVisibility(show ? View.VISIBLE : View.GONE);
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
             loginFormView.animate().setDuration(shortAnimTime).alpha(show ? 0 : 1);
@@ -252,15 +243,5 @@ public class SignInActivity extends Activity {
     private boolean isPasswordValid(String password) {
         // Just let the users do whatever they want.
         return true;
-    }
-
-    private class SuccessLogin {
-        public final User user;
-        public final String password;
-
-        public SuccessLogin(User user, String password) {
-            this.user = user;
-            this.password = password;
-        }
     }
 }

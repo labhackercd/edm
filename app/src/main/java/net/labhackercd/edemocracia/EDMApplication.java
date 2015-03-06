@@ -37,10 +37,6 @@ public class EDMApplication extends Application {
         return objectGraph;
     }
 
-    public void inject(Object object) {
-        objectGraph.inject(object);
-    }
-
     /**
      * A Timber Tree that logs important information for crash reporting.
      */

@@ -62,33 +62,7 @@ public class AccountAuthenticator extends AbstractAccountAuthenticator {
         String password = am.getPassword(account);
         if (TextUtils.isEmpty(password)) {
             bundle.putParcelable(KEY_INTENT, createLoginIntent(response));
-            return bundle;
         }
-
-        /*
-        DefaultClient client = new DefaultClient();
-        client.setCredentials(account.name, password);
-        OAuthService service = new OAuthService(client);
-
-        String authToken;
-        try {
-            authToken = getAuthorization(service);
-            if (TextUtils.isEmpty(authToken))
-                authToken = createAuthorization(service);
-        } catch (IOException e) {
-            Log.e(TAG, "Authorization retrieval failed", e);
-            throw new NetworkErrorException(e);
-        }
-
-        if (TextUtils.isEmpty(authToken))
-            bundle.putParcelable(KEY_INTENT, createLoginIntent(response));
-        else {
-            bundle.putString(KEY_ACCOUNT_NAME, account.name);
-            bundle.putString(KEY_ACCOUNT_TYPE, ACCOUNT_TYPE);
-            bundle.putString(KEY_AUTHTOKEN, authToken);
-            am.clearPassword(account);
-        }
-        */
 
         return bundle;
     }

@@ -8,12 +8,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import net.labhackercd.edemocracia.EDMApplication;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.DataRepository;
 import net.labhackercd.edemocracia.data.api.model.Category;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.Thread;
-import net.labhackercd.edemocracia.ui.BaseActivity;
+import net.labhackercd.edemocracia.ui.BaseFragment;
 import net.labhackercd.edemocracia.ui.UberRecyclerView;
 
 import java.util.List;
@@ -24,7 +25,7 @@ import de.greenrobot.event.EventBus;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
-public class ThreadListFragment extends Fragment {
+public class ThreadListFragment extends BaseFragment {
 
     public static String ARG_PARENT = "parent";
 
@@ -74,12 +75,6 @@ public class ThreadListFragment extends Fragment {
         uberRecyclerView = (UberRecyclerView) inflater.inflate(
                 R.layout.uber_recycler_view, container, false);
         return uberRecyclerView;
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        BaseActivity.get2(getActivity()).getObjectGraph().inject(this);
     }
 
     @Override

@@ -25,8 +25,7 @@ import java.util.List;
 
 class EDMServiceImpl implements EDMService {
 
-
-    public static class Builder {
+    public static class Builder implements EDMService.Builder {
         private Endpoint endpoint;
         private ErrorHandler errorHandler;
         private Authentication authentication;

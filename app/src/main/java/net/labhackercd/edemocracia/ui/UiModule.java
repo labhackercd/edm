@@ -1,15 +1,11 @@
 package net.labhackercd.edemocracia.ui;
 
-import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.ui.group.GroupListFragment;
 import net.labhackercd.edemocracia.ui.message.ComposeActivity;
 import net.labhackercd.edemocracia.ui.message.MessageListFragment;
 import net.labhackercd.edemocracia.ui.thread.ThreadListFragment;
 
-import javax.inject.Singleton;
-
 import dagger.Module;
-import dagger.Provides;
 
 @Module(
         injects = {
@@ -17,6 +13,7 @@ import dagger.Provides;
                 ComposeActivity.class,
                 GroupListFragment.class,
                 ThreadListFragment.class,
+                SplashScreenActivity.class,
                 MessageListFragment.class
         },
         library = true,
@@ -24,14 +21,4 @@ import dagger.Provides;
 )
 @SuppressWarnings("UnusedDeclaration")
 public class UiModule {
-    private final User user;
-
-    public UiModule(User user) {
-        this.user = user;
-    }
-
-    @Provides @Singleton
-    User provideUser() {
-        return user;
-    }
 }

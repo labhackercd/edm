@@ -2,6 +2,7 @@ package net.labhackercd.edemocracia.data.rx;
 
 import rx.Observable;
 import rx.Subscriber;
+import timber.log.Timber;
 
 /**
  * Utilities for supporting RxJava Observables.
@@ -28,9 +29,8 @@ public final class RxSupport {
                     }
 
                     @Override public void error(Throwable t) {
-                        if (!subscriber.isUnsubscribed()) {
+                        if (!subscriber.isUnsubscribed())
                             subscriber.onError(t);
-                        }
                     }
                 });
             }
