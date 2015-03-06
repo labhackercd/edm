@@ -63,7 +63,7 @@ dependencies {
     compile 'io.reactivex:rxandroid:0.24.0'
     compile 'de.greenrobot:eventbus:2.4.0'
     compile 'com.jakewharton:butterknife:6.1.0'
-    compile 'com.jakewharton.timber:timber:2.5.1'
+    compile 'com.jakewharton.timber:timber:2.7.1'
     compile 'com.ocpsoft:ocpsoft-pretty-time:1.0.7'
     compile 'com.path:android-priority-jobqueue:1.1.2'
     compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
