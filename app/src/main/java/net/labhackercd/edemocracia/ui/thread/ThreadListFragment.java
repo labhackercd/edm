@@ -14,7 +14,7 @@ import net.labhackercd.edemocracia.data.api.model.Category;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.ui.BaseFragment;
-import net.labhackercd.edemocracia.ui.UberRecyclerView;
+import net.labhackercd.edemocracia.ui.listview.ItemListView;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ public class ThreadListFragment extends BaseFragment {
     @Inject DataRepository repository;
 
     private Object parent;
-    private UberRecyclerView uberRecyclerView;
+    private ItemListView listView;
 
     public static Fragment newInstance(Group group) {
         ThreadListFragment fragment = new ThreadListFragment();
@@ -71,9 +71,9 @@ public class ThreadListFragment extends BaseFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        uberRecyclerView = (UberRecyclerView) inflater.inflate(
-                R.layout.uber_recycler_view, container, false);
-        return uberRecyclerView;
+        listView = (ItemListView) inflater.inflate(
+                R.layout.item_list_view, container, false);
+        return listView;
     }
 
     @Override
@@ -82,13 +82,14 @@ public class ThreadListFragment extends BaseFragment {
 
         final ThreadListAdapter adapter = new ThreadListAdapter(eventBus);
 
-        uberRecyclerView.refreshEvents()
+        listView.refreshEvents()
+                .startWith(false)
                 .forEach(fresh -> {
-                    uberRecyclerView.setRefreshing(true);
+                    listView.setRefreshing(true);
                     getListData(fresh)
                             .observeOn(AndroidSchedulers.mainThread())
                             .map(pair -> adapter.replaceWith(pair.first, pair.second))
-                            .subscribe(uberRecyclerView.dataHandler());
+                            .subscribe(listView.dataHandler());
                 });
     }
 

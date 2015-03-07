@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.ui;
+package net.labhackercd.edemocracia.ui.listview;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -10,15 +10,15 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
 
-public class UberDivider extends RecyclerView.ItemDecoration {
+public class ListItemSeparator extends RecyclerView.ItemDecoration {
 
     private Drawable divider;
 
-    public UberDivider(Context context) {
+    public ListItemSeparator(Context context) {
         this(context, null);
     }
 
-    public UberDivider(Context context, AttributeSet attrs) {
+    public ListItemSeparator(Context context, AttributeSet attrs) {
         final TypedArray a = context
                 .obtainStyledAttributes(attrs, new int[]{android.R.attr.listDivider});
 

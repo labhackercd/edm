@@ -15,7 +15,7 @@ import net.labhackercd.edemocracia.data.DataRepository;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.ui.BaseFragment;
-import net.labhackercd.edemocracia.ui.UberRecyclerView;
+import net.labhackercd.edemocracia.ui.listview.ItemListView;
 
 import java.util.List;
 
@@ -31,13 +31,13 @@ public class GroupListFragment extends BaseFragment {
     @Inject DataRepository repository;
 
     private User user;
-    private UberRecyclerView uberRecyclerView;
+    private ItemListView listView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        uberRecyclerView = (UberRecyclerView) inflater.inflate(
-                R.layout.uber_recycler_view, container, false);
-        return uberRecyclerView;
+        listView = (ItemListView) inflater.inflate(
+                R.layout.item_list_view, container, false);
+        return listView;
     }
 
     @Override
@@ -51,14 +51,15 @@ public class GroupListFragment extends BaseFragment {
 
         user = userData.getUser(manager, account);
 
-        uberRecyclerView.refreshEvents()
+        listView.refreshEvents()
+                .startWith(false)
                 .forEach(fresh -> {
-                    uberRecyclerView.setRefreshing(true);
+                    listView.setRefreshing(true);
                     repository.getGroups(user.getCompanyId())
                             .take(fresh ? 2 : 1).last()
                             .observeOn(AndroidSchedulers.mainThread())
                             .map(adapter::replaceWith)
-                            .subscribe(uberRecyclerView.dataHandler());
+                            .subscribe(listView.dataHandler());
                 });
     }
 

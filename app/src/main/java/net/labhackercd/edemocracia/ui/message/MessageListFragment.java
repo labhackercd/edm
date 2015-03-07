@@ -15,7 +15,7 @@ import net.labhackercd.edemocracia.data.DataRepository;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.ui.BaseFragment;
-import net.labhackercd.edemocracia.ui.UberRecyclerView;
+import net.labhackercd.edemocracia.ui.listview.ItemListView;
 
 import javax.inject.Inject;
 
@@ -32,7 +32,7 @@ public class MessageListFragment extends BaseFragment {
 
     private Thread thread;
     private Message rootMessage;
-    private UberRecyclerView uberRecyclerView;
+    private ItemListView listView;
 
     public static MessageListFragment newInstance(Thread thread) {
         MessageListFragment fragment = new MessageListFragment();
@@ -60,8 +60,8 @@ public class MessageListFragment extends BaseFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        uberRecyclerView = (UberRecyclerView) inflater.inflate(R.layout.uber_recycler_view, container, false);
-        return uberRecyclerView;
+        listView = (ItemListView) inflater.inflate(R.layout.item_list_view, container, false);
+        return listView;
     }
 
     @Override
@@ -74,15 +74,16 @@ public class MessageListFragment extends BaseFragment {
             rootMessage = newAdapter.getRootMessage();
         });
 
-        uberRecyclerView.refreshEvents()
+        listView.refreshEvents()
+                .startWith(false)
                 .forEach(fresh -> {
-                    uberRecyclerView.setRefreshing(true);
+                    listView.setRefreshing(true);
                     repository.getMessages(thread)
                             .take(fresh ? 2 : 1).first()
                             .observeOn(AndroidSchedulers.mainThread())
                             .map(adapter::replaceWith)
                             .doOnEach(setRootMessage)
-                            .subscribe(uberRecyclerView.dataHandler());
+                            .subscribe(listView.dataHandler());
                 });
     }
 
