@@ -16,7 +16,12 @@ import dagger.Provides;
 @SuppressWarnings("UnusedDeclaration")
 public class DataModule {
     @Provides @Singleton
-    DataRepository provideDataRepository(EDMService service) {
-        return new DataRepository(service);
+    RequestCache provideRequestCache() {
+        return new RequestCache();
+    }
+
+    @Provides @Singleton
+    MainRepository provideMainRepository(EDMService service) {
+        return new MainRepository(service);
     }
 }

@@ -19,13 +19,10 @@ import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.liferay.mobile.android.auth.basic.BasicAuthentication;
-
 import net.labhackercd.edemocracia.EDMApplication;
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.data.ObservableStore;
+import net.labhackercd.edemocracia.data.MainRepository;
 import net.labhackercd.edemocracia.data.api.EDMErrorHandler;
-import net.labhackercd.edemocracia.data.api.EDMService;
 import net.labhackercd.edemocracia.data.api.model.User;
 
 import javax.inject.Inject;
@@ -48,7 +45,7 @@ public class SignInActivity extends ActionBarActivity {
     public static final String PARAM_AUTHTOKEN_TYPE = "authTokenType";
 
     @Inject UserData userData;
-    @Inject EDMService service;
+    @Inject MainRepository repository;
 
     @InjectView(R.id.email) AutoCompleteTextView emailView;
     @InjectView(R.id.password) EditText passwordView;
@@ -146,19 +143,8 @@ public class SignInActivity extends ActionBarActivity {
         }
     }
 
-    private ObservableStore<Pair<String, String>, User> credentialCheckStore =
-            new ObservableStore<Pair<String, String>, User>() {
-                @Override
-                protected User fetch(Pair<String, String> request) {
-                    return service.newBuilder()
-                            .setAuthentication(new BasicAuthentication(request.first, request.second))
-                            .build()
-                            .getUser();
-                }
-            };
-
     private Observable<User> checkCredentials(String email, String password) {
-        return credentialCheckStore.fresh(new Pair<>(email, password));
+        return repository.getUserWithCredentials(email, password).observable();
     }
 
     private void handleSuccess(Pair<User, String> pair) {

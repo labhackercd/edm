@@ -11,11 +11,12 @@ import android.view.ViewGroup;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.account.AccountUtils;
 import net.labhackercd.edemocracia.account.UserData;
-import net.labhackercd.edemocracia.data.DataRepository;
+import net.labhackercd.edemocracia.data.MainRepository;
+import net.labhackercd.edemocracia.data.RequestCache;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.User;
+import net.labhackercd.edemocracia.data.rx.Operators;
 import net.labhackercd.edemocracia.ui.BaseFragment;
-import net.labhackercd.edemocracia.ui.RxOperators;
 import net.labhackercd.edemocracia.ui.listview.ItemListView;
 
 import java.util.List;
@@ -25,11 +26,13 @@ import javax.inject.Inject;
 import de.greenrobot.event.EventBus;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class GroupListFragment extends BaseFragment {
     @Inject EventBus eventBus;
     @Inject UserData userData;
-    @Inject DataRepository repository;
+    @Inject RequestCache cache;
+    @Inject MainRepository repository;
 
     private User user;
     private ItemListView listView;
@@ -54,7 +57,7 @@ public class GroupListFragment extends BaseFragment {
 
         listView.refreshEvents()
                 .startWith(false)
-                .doOnEach(fresh -> listView.setRefreshing(true))
+                .doOnNext(fresh -> listView.setRefreshing(true))
                 .flatMap(this::getListData)
                 .observeOn(AndroidSchedulers.mainThread())
                 .map(adapter::replaceWith)
@@ -67,7 +70,9 @@ public class GroupListFragment extends BaseFragment {
     }
 
     public Observable<List<Group>> getListData(boolean fresh) {
-        return repository.getGroups(user.getCompanyId())
-                .compose(RxOperators.fresh(fresh));
+        return Observable.just(repository.getGroups(user.getCompanyId()))
+                .compose(Operators.requireAccount2(getActivity()))
+                .flatMap(cache.skipIf(fresh))
+                .subscribeOn(Schedulers.io());
     }
 }

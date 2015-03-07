@@ -10,8 +10,9 @@ import android.view.WindowManager;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.account.AccountUtils;
 import net.labhackercd.edemocracia.account.UserData;
-import net.labhackercd.edemocracia.data.DataRepository;
+import net.labhackercd.edemocracia.data.MainRepository;
 import net.labhackercd.edemocracia.data.api.model.User;
+import net.labhackercd.edemocracia.data.rx.Operators;
 
 import javax.inject.Inject;
 
@@ -20,7 +21,7 @@ import timber.log.Timber;
 
 public class SplashScreenActivity extends BaseActivity {
     @Inject UserData userData;
-    @Inject DataRepository repository;
+    @Inject MainRepository repository;
 
     private AccountManager manager;
 
@@ -37,16 +38,11 @@ public class SplashScreenActivity extends BaseActivity {
     }
 
     @Override
-    protected void injectObjectGraph() {
-        super.injectObjectGraph();
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
         repository.getUser()
-                .last() // Always fresh.
-                .compose(RxOperators.requireAccount(this))
+                .observable()
+                .compose(Operators.requireAccount(this))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::handleSuccess, this::handleError);
     }

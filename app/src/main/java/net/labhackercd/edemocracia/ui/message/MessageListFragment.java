@@ -1,5 +1,6 @@
 package net.labhackercd.edemocracia.ui.message;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -11,11 +12,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.data.DataRepository;
+import net.labhackercd.edemocracia.data.MainRepository;
+import net.labhackercd.edemocracia.data.RequestCache;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.Thread;
+import net.labhackercd.edemocracia.data.rx.Operators;
 import net.labhackercd.edemocracia.ui.BaseFragment;
-import net.labhackercd.edemocracia.ui.RxOperators;
 import net.labhackercd.edemocracia.ui.listview.ItemListView;
 
 import java.util.List;
@@ -24,13 +26,15 @@ import javax.inject.Inject;
 
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class MessageListFragment extends BaseFragment {
 
     private static final String ARG_THREAD = "thread";
 
-    @Inject DataRepository repository;
+    @Inject RequestCache cache;
+    @Inject MainRepository repository;
 
     private Thread thread;
     private Message rootMessage;
@@ -87,8 +91,11 @@ public class MessageListFragment extends BaseFragment {
     }
 
     private Observable<List<Message>> getListData(boolean fresh) {
-        return repository.getMessages(thread)
-                .compose(RxOperators.fresh(fresh));
+        Activity activity = getActivity();
+        return Observable.just(repository.getThreadMessages(thread))
+                .compose(Operators.requireAccount2(activity))
+                .flatMap(cache.skipIf(fresh))
+                .subscribeOn(Schedulers.io());
     }
 
     @Override

@@ -9,10 +9,6 @@ public class BaseActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        injectObjectGraph();
-    }
-
-    protected void injectObjectGraph() {
         EDMApplication.get(this).getObjectGraph().inject(this);
     }
 }

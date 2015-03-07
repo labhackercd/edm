@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.ui;
+package net.labhackercd.edemocracia.data.rx;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -6,14 +6,16 @@ import android.accounts.AccountsException;
 import android.app.Activity;
 
 import net.labhackercd.edemocracia.account.AccountUtils;
+import net.labhackercd.edemocracia.data.MainRepository.Request;
 
 import java.io.IOException;
 
 import rx.Observable;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 
-public class RxOperators {
+public class Operators {
     /**
      * Transform a request observable in such a way that it'll only emit fresh values
      * if the *fresh* flag is set to `true`. Otherwise, it'll try to emit the cached value,
@@ -57,6 +59,31 @@ public class RxOperators {
                     });
 
             return subject.asObservable();
+        };
+    }
+
+    public static <T> Observable.Transformer<Request<T>, Request<T>> requireAccount2(Activity activity) {
+        // Doesn't work with lambdas.
+        return new Observable.Transformer<Request<T>, Request<T>>() {
+            @Override
+            public Observable<Request<T>> call(Observable<Request<T>> requestObservable) {
+                return requestObservable.map(new Func1<Request<T>, Request<T>>() {
+                    @Override
+                    public Request<T> call(Request<T> request) {
+                        return new Request<T>() {
+                            @Override
+                            public Object request() {
+                                return request.request();
+                            }
+
+                            @Override
+                            public Observable<T> observable() {
+                                return request.observable().compose(requireAccount(activity));
+                            }
+                        };
+                    }
+                });
+            }
         };
     }
 }
