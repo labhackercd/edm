@@ -2,8 +2,6 @@ package net.labhackercd.edemocracia.ui;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.accounts.AccountsException;
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Window;
@@ -14,14 +12,13 @@ import net.labhackercd.edemocracia.account.AccountUtils;
 import net.labhackercd.edemocracia.account.UserData;
 import net.labhackercd.edemocracia.data.DataRepository;
 import net.labhackercd.edemocracia.data.api.model.User;
-
-import java.io.IOException;
+import net.labhackercd.edemocracia.ui.BaseActivity;
+import net.labhackercd.edemocracia.ui.MainActivity;
+import net.labhackercd.edemocracia.ui.RxOperators;
 
 import javax.inject.Inject;
 
-import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class SplashScreenActivity extends BaseActivity {
@@ -51,9 +48,8 @@ public class SplashScreenActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         repository.getUser()
-                .subscribeOn(Schedulers.io())
-                .last()
-                .compose(RxOperators.signInOnAuthorizationError(this))
+                .last() // Always fresh.
+                .compose(RxOperators.requireAccount(this))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::handleSuccess, this::handleError);
     }
@@ -67,23 +63,6 @@ public class SplashScreenActivity extends BaseActivity {
     }
 
     private void handleError(Throwable t) {
-        /*
-        if (EDMErrorHandler.isAuthorizationError(t)) {
-            requestAccount(this)
-                    .subscribeOn(Schedulers.io())
-                    .map(account -> userData.getUser(manager, account))
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(this::handleSuccess, this::handleError);
-            return;
-        } else if (EDMErrorHandler.isNetworkError(t)) {
-            Account account = AccountUtils.getAccount(this);
-            if (account != null && userData.getUser(manager, account) != null) {
-                startMainActivity();
-                return;
-            }
-        }
-        */
-
         // Log the error...
         Timber.e(t, "Failed to retrieve user.");
 
@@ -95,29 +74,5 @@ public class SplashScreenActivity extends BaseActivity {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
         finish();
-    }
-
-    private Observable<Account> requestAccount(final Activity activity) {
-        return Observable.create(subscriber -> {
-            AccountManager manager = AccountManager.get(activity);
-            try {
-                Account account = AccountUtils.getAccount(manager, activity);
-                subscriber.onNext(account);
-                subscriber.onCompleted();
-            /*
-            TODO What if?
-            } catch (IOException e) {
-                Account account = AccountUtils.getAccount(activity);
-                if (account != null) {
-                    User user = userData.getUser(manager, account);
-                    if (user != null) {
-                        startMainActivity();
-                    }
-                }
-            */
-            } catch (IOException | AccountsException e) {
-                subscriber.onError(e);
-            }
-        });
     }
 }

@@ -9,7 +9,6 @@ import rx.Observable;
 import rx.Observer;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
-import timber.log.Timber;
 
 public abstract class ObservableStore<V, T> {
     private final Map<V, T> cache = new LinkedHashMap<>();

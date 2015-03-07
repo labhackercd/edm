@@ -2,7 +2,6 @@ package net.labhackercd.edemocracia.data.rx;
 
 import rx.Observable;
 import rx.Subscriber;
-import timber.log.Timber;
 
 /**
  * Utilities for supporting RxJava Observables.

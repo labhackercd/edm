@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.support.v4.util.Pair;
 import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
@@ -27,10 +26,7 @@ import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.ObservableStore;
 import net.labhackercd.edemocracia.data.api.EDMErrorHandler;
 import net.labhackercd.edemocracia.data.api.EDMService;
-import net.labhackercd.edemocracia.data.api.client.exception.AuthorizationException;
 import net.labhackercd.edemocracia.data.api.model.User;
-
-import java.io.IOException;
 
 import javax.inject.Inject;
 
@@ -39,10 +35,7 @@ import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.OnEditorAction;
 import rx.Observable;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 import static android.accounts.AccountManager.KEY_ACCOUNT_NAME;
