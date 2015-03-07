@@ -12,9 +12,6 @@ import net.labhackercd.edemocracia.account.AccountUtils;
 import net.labhackercd.edemocracia.account.UserData;
 import net.labhackercd.edemocracia.data.DataRepository;
 import net.labhackercd.edemocracia.data.api.model.User;
-import net.labhackercd.edemocracia.ui.BaseActivity;
-import net.labhackercd.edemocracia.ui.MainActivity;
-import net.labhackercd.edemocracia.ui.RxOperators;
 
 import javax.inject.Inject;
 

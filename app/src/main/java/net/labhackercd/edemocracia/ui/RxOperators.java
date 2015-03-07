@@ -15,6 +15,18 @@ import rx.subjects.PublishSubject;
 
 public class RxOperators {
     /**
+     * Transform a request observable in such a way that it'll only emit fresh values
+     * if the *fresh* flag is set to `true`. Otherwise, it'll try to emit the cached value,
+     * but if there is no cached value it'll emit the fresh value.
+     *
+     * @param fresh Boolean.
+     * @return The transformation.
+     */
+    public static <T> Observable.Transformer<T, T> fresh(boolean fresh) {
+        return observable -> observable.take(fresh ? 2 : 1).last();
+    }
+
+    /**
      * Ensure there is an usable account in the AccountManager before making requests:
      *
      *     service.getGroups().compose(requireAccount(activity));

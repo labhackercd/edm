@@ -15,6 +15,7 @@ import net.labhackercd.edemocracia.data.DataRepository;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.ui.BaseFragment;
+import net.labhackercd.edemocracia.ui.RxOperators;
 import net.labhackercd.edemocracia.ui.listview.ItemListView;
 
 import java.util.List;
@@ -53,14 +54,11 @@ public class GroupListFragment extends BaseFragment {
 
         listView.refreshEvents()
                 .startWith(false)
-                .forEach(fresh -> {
-                    listView.setRefreshing(true);
-                    repository.getGroups(user.getCompanyId())
-                            .take(fresh ? 2 : 1).last()
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .map(adapter::replaceWith)
-                            .subscribe(listView.dataHandler());
-                });
+                .doOnEach(fresh -> listView.setRefreshing(true))
+                .flatMap(this::getListData)
+                .observeOn(AndroidSchedulers.mainThread())
+                .map(adapter::replaceWith)
+                .subscribe(listView.dataHandler());
     }
 
     @Override
@@ -68,8 +66,8 @@ public class GroupListFragment extends BaseFragment {
         super.onPause();
     }
 
-    public Observable<List<Group>> refresh(boolean fresh) {
+    public Observable<List<Group>> getListData(boolean fresh) {
         return repository.getGroups(user.getCompanyId())
-                .take(fresh ? 2 : 1).last();
+                .compose(RxOperators.fresh(fresh));
     }
 }

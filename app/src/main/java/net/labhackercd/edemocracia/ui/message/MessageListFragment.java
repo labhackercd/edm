@@ -15,13 +15,15 @@ import net.labhackercd.edemocracia.data.DataRepository;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.ui.BaseFragment;
+import net.labhackercd.edemocracia.ui.RxOperators;
 import net.labhackercd.edemocracia.ui.listview.ItemListView;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
-import rx.Observer;
+import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.observers.Observers;
 import timber.log.Timber;
 
 public class MessageListFragment extends BaseFragment {
@@ -70,21 +72,23 @@ public class MessageListFragment extends BaseFragment {
 
         final MessageListAdapter adapter = new MessageListAdapter();
 
-        final Observer<? super MessageListAdapter> setRootMessage = Observers.create(newAdapter -> {
-            rootMessage = newAdapter.getRootMessage();
-        });
-
         listView.refreshEvents()
                 .startWith(false)
-                .forEach(fresh -> {
-                    listView.setRefreshing(true);
-                    repository.getMessages(thread)
-                            .take(fresh ? 2 : 1).first()
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .map(adapter::replaceWith)
-                            .doOnEach(setRootMessage)
-                            .subscribe(listView.dataHandler());
-                });
+                .doOnNext(fresh -> listView.setRefreshing(true))
+                .flatMap(this::getListData)
+                .observeOn(AndroidSchedulers.mainThread())
+                .map(adapter::replaceWith)
+                .doOnNext(this::setRootMessage)
+                .subscribe(listView.dataHandler());
+    }
+
+    private void setRootMessage(MessageListAdapter adapter) {
+        rootMessage = adapter.getRootMessage();
+    }
+
+    private Observable<List<Message>> getListData(boolean fresh) {
+        return repository.getMessages(thread)
+                .compose(RxOperators.fresh(fresh));
     }
 
     @Override
