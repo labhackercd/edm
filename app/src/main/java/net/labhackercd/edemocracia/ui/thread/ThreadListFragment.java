@@ -10,8 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.data.Cache;
 import net.labhackercd.edemocracia.data.MainRepository;
-import net.labhackercd.edemocracia.data.RequestCache;
+import net.labhackercd.edemocracia.data.Request;
 import net.labhackercd.edemocracia.data.api.model.Category;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.Thread;
@@ -32,8 +33,8 @@ public class ThreadListFragment extends BaseFragment {
 
     public static String ARG_PARENT = "parent";
 
+    @Inject Cache cache;
     @Inject EventBus eventBus;
-    @Inject RequestCache cache;
     @Inject MainRepository repository;
 
     private Object parent;
@@ -97,8 +98,8 @@ public class ThreadListFragment extends BaseFragment {
     }
 
     private Observable<Pair<List<Category>, List<Thread>>> getListData(boolean fresh) {
-        MainRepository.Request<List<Thread>> threads;
-        MainRepository.Request<List<Category>> categories;
+        Request<List<Thread>> threads;
+        Request<List<Category>> categories;
 
         if (parent instanceof Group) {
             Group group = (Group) parent;
@@ -112,15 +113,19 @@ public class ThreadListFragment extends BaseFragment {
 
         Activity activity = getActivity();
 
-        Observable<List<Thread>> t = Observable.just(threads)
-                .compose(Operators.requireAccount2(activity))
-                .flatMap(cache.skipIf(fresh))
-                .subscribeOn(Schedulers.io());
+        Observable<List<Thread>> t = threads
+                .transform(r -> r.asObservable()
+                        .compose(Operators.requireAccount(activity))
+                        .compose(cache.cache(r.key()))
+                        .subscribeOn(Schedulers.io()))
+                .asObservable();
 
-        Observable<List<Category>> c = Observable.just(categories)
-                .compose(Operators.requireAccount2(activity))
-                .flatMap(cache.skipIf(fresh))
-                .subscribeOn(Schedulers.io());
+        Observable<List<Category>> c = categories
+                .transform(r -> r.asObservable()
+                        .compose(Operators.requireAccount(activity))
+                        .compose(cache.cache(r.key()))
+                        .subscribeOn(Schedulers.io()))
+                .asObservable();
 
         return Observable.zip(c, t, Pair::new);
     }

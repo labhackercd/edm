@@ -16,8 +16,8 @@ import dagger.Provides;
 @SuppressWarnings("UnusedDeclaration")
 public class DataModule {
     @Provides @Singleton
-    RequestCache provideRequestCache() {
-        return new RequestCache();
+    Cache provideRequestCache() {
+        return new LHMCache();
     }
 
     @Provides @Singleton

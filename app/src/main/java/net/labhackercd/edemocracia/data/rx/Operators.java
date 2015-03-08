@@ -6,7 +6,7 @@ import android.accounts.AccountsException;
 import android.app.Activity;
 
 import net.labhackercd.edemocracia.account.AccountUtils;
-import net.labhackercd.edemocracia.data.MainRepository.Request;
+import net.labhackercd.edemocracia.data.Request;
 
 import java.io.IOException;
 
@@ -72,13 +72,13 @@ public class Operators {
                     public Request<T> call(Request<T> request) {
                         return new Request<T>() {
                             @Override
-                            public Object request() {
-                                return request.request();
+                            public Object key() {
+                                return request.key();
                             }
 
                             @Override
-                            public Observable<T> observable() {
-                                return request.observable().compose(requireAccount(activity));
+                            public Observable<T> asObservable() {
+                                return request.asObservable().compose(requireAccount(activity));
                             }
                         };
                     }

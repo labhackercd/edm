@@ -41,7 +41,7 @@ public class SplashScreenActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         repository.getUser()
-                .observable()
+                .asObservable()
                 .compose(Operators.requireAccount(this))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::handleSuccess, this::handleError);

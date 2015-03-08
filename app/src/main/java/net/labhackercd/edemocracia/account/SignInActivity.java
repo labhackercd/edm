@@ -144,7 +144,7 @@ public class SignInActivity extends ActionBarActivity {
     }
 
     private Observable<User> checkCredentials(String email, String password) {
-        return repository.getUserWithCredentials(email, password).observable();
+        return repository.getUserWithCredentials(email, password).asObservable();
     }
 
     private void handleSuccess(Pair<User, String> pair) {

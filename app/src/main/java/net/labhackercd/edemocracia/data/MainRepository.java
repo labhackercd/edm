@@ -23,11 +23,6 @@ import rx.functions.Func3;
 
 public class MainRepository {
 
-    public static interface Request<T> {
-        public Object request();
-        public Observable<T> observable();
-    }
-
     private EDMService service;
 
     public MainRepository(EDMService service) {
@@ -50,11 +45,11 @@ public class MainRepository {
     }
 
     public Request<List<Thread>> getThreads(long groupId) {
-        Request<List<Thread>> request = request1("getThreads", service::getThreads, groupId);
-        return transform(request, observable -> observable
-                .flatMap(Observable::from)
-                .filter(thread -> thread != null && thread.getCategoryId() == 0)
-                .toList());
+        return request1("getThreads", service::getThreads, groupId)
+                .transform(r -> r.asObservable()
+                        .flatMap(Observable::from)
+                        .filter(thread -> thread != null && thread.getCategoryId() == 0)
+                        .toList());
     }
 
     public Request<List<Thread>> getThreads(long groupId, long categoryId) {
@@ -62,11 +57,11 @@ public class MainRepository {
     }
 
     public Request<List<Category>> getCategories(long groupId) {
-        Request<List<Category>> request = request1("getCategories", service::getCategories, groupId);
-        return transform(request, observable -> observable
-                .flatMap(Observable::from)
-                .filter(category -> category != null && category.getParentCategoryId() == 0)
-                .toList());
+        return request1("getCategories", service::getCategories, groupId)
+                .transform(r -> r.asObservable()
+                        .flatMap(Observable::from)
+                        .filter(category -> category != null && category.getParentCategoryId() == 0)
+                        .toList());
     }
 
     public Request<List<Category>> getCategories(long groupId, long categoryId) {
@@ -86,13 +81,13 @@ public class MainRepository {
     public static <T> Request<T> transform(Request<T> request, Observable.Transformer<T, T> transformer) {
         return new Request<T>() {
             @Override
-            public Object request() {
-                return request.request();
+            public Object key() {
+                return request.key();
             }
 
             @Override
-            public Observable<T> observable() {
-                return request.observable().compose(transformer);
+            public Observable<T> asObservable() {
+                return request.asObservable().compose(transformer);
             }
         };
     }
@@ -122,12 +117,12 @@ public class MainRepository {
         final Observable<T> observable = createRequestObservable(callable);
         return new Request<T>() {
             @Override
-            public Object request() {
+            public Object key() {
                 return key;
             }
 
             @Override
-            public Observable<T> observable() {
+            public Observable<T> asObservable() {
                 return observable;
             }
         };

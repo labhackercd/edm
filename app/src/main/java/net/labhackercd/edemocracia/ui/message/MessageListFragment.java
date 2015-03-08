@@ -12,8 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.data.Cache;
 import net.labhackercd.edemocracia.data.MainRepository;
-import net.labhackercd.edemocracia.data.RequestCache;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.data.rx.Operators;
@@ -33,7 +33,7 @@ public class MessageListFragment extends BaseFragment {
 
     private static final String ARG_THREAD = "thread";
 
-    @Inject RequestCache cache;
+    @Inject Cache cache;
     @Inject MainRepository repository;
 
     private Thread thread;
@@ -92,9 +92,12 @@ public class MessageListFragment extends BaseFragment {
 
     private Observable<List<Message>> getListData(boolean fresh) {
         Activity activity = getActivity();
-        return Observable.just(repository.getThreadMessages(thread))
-                .compose(Operators.requireAccount2(activity))
-                .flatMap(cache.skipIf(fresh))
+        return repository.getThreadMessages(thread)
+                .transform(r -> r.asObservable()
+                        .compose(Operators.requireAccount(activity))
+                        .compose(cache.cache(r.key()))
+                        .compose(Cache.skipIf(fresh)))
+                .asObservable()
                 .subscribeOn(Schedulers.io());
     }
 

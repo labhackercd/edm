@@ -2,6 +2,7 @@ package net.labhackercd.edemocracia.ui.group;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -11,8 +12,8 @@ import android.view.ViewGroup;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.account.AccountUtils;
 import net.labhackercd.edemocracia.account.UserData;
+import net.labhackercd.edemocracia.data.Cache;
 import net.labhackercd.edemocracia.data.MainRepository;
-import net.labhackercd.edemocracia.data.RequestCache;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.data.rx.Operators;
@@ -29,9 +30,9 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class GroupListFragment extends BaseFragment {
+    @Inject Cache cache;
     @Inject EventBus eventBus;
     @Inject UserData userData;
-    @Inject RequestCache cache;
     @Inject MainRepository repository;
 
     private User user;
@@ -70,9 +71,13 @@ public class GroupListFragment extends BaseFragment {
     }
 
     public Observable<List<Group>> getListData(boolean fresh) {
-        return Observable.just(repository.getGroups(user.getCompanyId()))
-                .compose(Operators.requireAccount2(getActivity()))
-                .flatMap(cache.skipIf(fresh))
+        Activity activity = getActivity();
+        return repository.getGroups(user.getCompanyId())
+                .transform(r -> r.asObservable()
+                        .compose(Operators.requireAccount(activity))
+                        .compose(cache.cache(r.key()))
+                        .compose(Cache.skipIf(fresh)))
+                .asObservable()
                 .subscribeOn(Schedulers.io());
     }
 }
