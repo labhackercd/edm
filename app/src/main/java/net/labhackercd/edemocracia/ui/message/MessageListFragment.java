@@ -28,7 +28,7 @@ import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.data.db.model.LocalMessage;
 import net.labhackercd.edemocracia.data.rx.Operators;
-import net.labhackercd.edemocracia.job.EDMJobManager;
+import net.labhackercd.edemocracia.data.LocalMessageRepository;
 import net.labhackercd.edemocracia.ui.BaseFragment;
 import net.labhackercd.edemocracia.ui.listview.ItemListView;
 
@@ -37,7 +37,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import de.greenrobot.event.EventBus;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -50,9 +49,8 @@ public class MessageListFragment extends BaseFragment {
 
     @Inject Cache cache;
     @Inject UserData userData;
-    @Inject EventBus eventBus;
-    @Inject EDMJobManager jobManager;
     @Inject MainRepository repository;
+    @Inject LocalMessageRepository messageRepository;
 
     private Thread thread;
     private Message rootMessage;
@@ -110,7 +108,7 @@ public class MessageListFragment extends BaseFragment {
         Account account = AccountUtils.getAccount(activity);
         User user = userData.getUser(manager, account);
 
-        final MessageListAdapter adapter = new MessageListAdapter(user, eventBus);
+        final MessageListAdapter adapter = new MessageListAdapter(user);
 
         listView.refreshEvents()
                 .startWith(false)
@@ -153,7 +151,7 @@ public class MessageListFragment extends BaseFragment {
                 .asObservable()
                 .subscribeOn(Schedulers.io());
 
-        Observable<List<LocalMessage>> localMessages = jobManager
+        Observable<List<LocalMessage>> localMessages = messageRepository
                 .getUnsentMessages(thread.getRootMessageId());
 
         return Observable.zip(

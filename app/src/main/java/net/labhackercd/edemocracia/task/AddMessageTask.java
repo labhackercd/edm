@@ -1,8 +1,7 @@
-package net.labhackercd.edemocracia.job;
+package net.labhackercd.edemocracia.task;
 
 import android.app.Application;
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -16,8 +15,6 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.youtube.YouTube;
 import com.google.common.collect.Lists;
-import com.path.android.jobqueue.Job;
-import com.path.android.jobqueue.Params;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.api.EDMService;
@@ -33,56 +30,20 @@ import java.io.InputStream;
 
 import javax.inject.Inject;
 
-import de.greenrobot.event.EventBus;
-import timber.log.Timber;
+public class AddMessageTask extends Task {
 
-public class AddMessageJob extends Job {
-
-    /**
-     * Posted into the EventBus when the job is successfully executed.
-     */
-    public static class Success {
-        /** The id of the LocalMessage which was submitted. */
-        public final long localId;
-
-        /** The actual inserted message. */
-        public final Message inserted;
-
-        public Success(long localId, Message inserted) {
-            this.localId = localId;
-            this.inserted = inserted;
-        }
-    }
-
-    /**
-     * Posted into the EventBus when a job is cancelled.
-     */
-    public class Cancelled {
-        public final LocalMessage message;
-
-        public Cancelled(LocalMessage message) {
-            this.message = message;
-        }
-    }
-
-    private static final int PRIORITY = 1;
+    /** The actual task code. */
 
     private final long messageId;
     private final String youtubeAccount;
-    private LocalMessage localMessage;
+    private transient LocalMessage localMessage;
 
-    AddMessageJob(long messageId, String youtubeAccount) {
-        super(new Params(PRIORITY).requireNetwork().persist());
+    public AddMessageTask(long messageId, String youtubeAccount) {
         this.messageId = messageId;
         this.youtubeAccount = youtubeAccount;
     }
 
-    @Override
-    public void onAdded() {
-    }
-
-    @Override
-    public void onRun() throws Throwable {
+    protected void execute() throws Throwable {
         LocalMessage message = getLocalMessage();
 
         // Upload the video attachment, if there is any.
@@ -96,10 +57,10 @@ public class AddMessageJob extends Job {
         Message inserted = service.addMessage(
                 message.uuid, message.parentMessage, message.subject, body);
 
-        // Notify everybody.
-        eventBus.post(new Success(message._id, inserted));
+        // TODO Notify the UI.
     }
 
+    /*
     @Override
     protected void onCancel() {
         LocalMessage message = getLocalMessage();
@@ -126,8 +87,9 @@ public class AddMessageJob extends Job {
 
         return true;
     }
+    */
 
-        // Grab LocalMessage from the database.
+    /** Grab the local message from the database. */
     private LocalMessage getLocalMessage() {
         if (localMessage == null) {
             localMessage = databaseHelper.getCupboard()
@@ -137,10 +99,7 @@ public class AddMessageJob extends Job {
         return localMessage;
     }
 
-    /** Ugly code. You don't want to read this. */
-
     // XXX Injected fields are declared transient in order to not be serialized
-    @Inject transient EventBus eventBus;
     @Inject transient EDMService service;
     @Inject transient Application application;
     @Inject transient DatabaseProvider databaseHelper;

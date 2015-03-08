@@ -21,7 +21,6 @@ import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.data.db.model.LocalMessage;
-import net.labhackercd.edemocracia.job.AddMessageJob;
 
 import java.util.Collections;
 import java.util.Date;
@@ -33,25 +32,21 @@ import java.util.regex.Pattern;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
-import de.greenrobot.event.EventBus;
 
 public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.ViewHolder> {
 
+    private final User user;
     private List<Message> messages = Collections.emptyList();
     private List<LocalMessage> localMessages = Collections.emptyList();
 
-    private final User user;
-    private final EventBus eventBus;
-
-    public MessageListAdapter(User user, EventBus eventBus) {
+    public MessageListAdapter(User user) {
         this.user = user;
-        this.eventBus = eventBus;
     }
 
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.message_list_item, viewGroup, false);
-        return new ViewHolder(view, user, eventBus);
+        return new ViewHolder(view, user);
     }
 
     @Override
@@ -109,14 +104,12 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         private LocalMessage localMessage;
         private final Transformation videoThumbnailTransformation;
         private final User user;
-        private final EventBus eventBus;
 
-        public ViewHolder(View view, User user, EventBus eventBus) {
+        public ViewHolder(View view, User user) {
             super(view);
             ButterKnife.inject(this, view);
             view.setOnClickListener(this::handleClick);
             this.user = user;
-            this.eventBus = eventBus;
             // TODO Make less instances of this transformation.
             // I guess we could instantiate it only once at the Adapter.
             this.videoThumbnailTransformation = new VideoPlayButtonTransformation(view.getContext());
@@ -142,10 +135,6 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             this.message = null;
             this.localMessage = message;
 
-            // We must react to some events.
-            if (!eventBus.isRegistered(this))
-                eventBus.register(this);
-
             setAuthor(user.getScreenName());
 
             setSubject(message.subject);
@@ -156,14 +145,6 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
             // TODO Display author's portrait.
             setPortrait(user.getScreenName(), null);
-        }
-
-        @SuppressWarnings("UnusedDeclaration")
-        public void onEventMainThread(AddMessageJob.Cancelled event) {
-            // FIXME This implementation based on EventBus is just stupid. Please, fix.
-            if (localMessage == null || !localMessage._id.equals(event.message._id))
-                return;
-            setLocalMessageStatus(event.message.status);
         }
 
         public void handleClick(View v) {

@@ -4,18 +4,17 @@ import android.app.Application;
 
 import net.labhackercd.edemocracia.account.AccountModule;
 import net.labhackercd.edemocracia.data.DataModule;
-import net.labhackercd.edemocracia.job.JobModule;
+import net.labhackercd.edemocracia.task.TaskModule;
 import net.labhackercd.edemocracia.ui.UiModule;
 
 import javax.inject.Singleton;
 
 import dagger.Provides;
-import de.greenrobot.event.EventBus;
 
 @dagger.Module(
         includes = {
                 UiModule.class,
-                JobModule.class,
+                TaskModule.class,
                 DataModule.class,
                 AccountModule.class
         }
@@ -31,10 +30,5 @@ public class EDMRootModule {
     @Provides @Singleton
     Application provideApplication() {
         return application;
-    }
-
-    @Provides @Singleton
-    EventBus provideEventBus() {
-        return EventBus.getDefault();
     }
 }

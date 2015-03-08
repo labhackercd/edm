@@ -1,8 +1,11 @@
 package net.labhackercd.edemocracia.data;
 
 import net.labhackercd.edemocracia.data.api.ApiModule;
+
 import net.labhackercd.edemocracia.data.api.EDMService;
+import net.labhackercd.edemocracia.data.db.DatabaseProvider;
 import net.labhackercd.edemocracia.data.db.DbModule;
+import net.labhackercd.edemocracia.task.TaskManager;
 
 import javax.inject.Singleton;
 
@@ -24,5 +27,11 @@ public class DataModule {
     @Provides @Singleton
     MainRepository provideMainRepository(EDMService service) {
         return new MainRepository(service);
+    }
+
+    @Provides @Singleton
+    LocalMessageRepository provideLocalMessageRepository(
+            TaskManager taskManager, DatabaseProvider databaseHelper) {
+        return new LocalMessageRepository(taskManager, databaseHelper);
     }
 }
