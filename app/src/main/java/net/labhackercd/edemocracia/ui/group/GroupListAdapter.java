@@ -1,6 +1,9 @@
 package net.labhackercd.edemocracia.ui.group;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,21 +20,12 @@ import net.labhackercd.edemocracia.ui.MainActivity;
 import java.util.Collections;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import de.greenrobot.event.EventBus;
 
 public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.ViewHolder> {
 
-    private final EventBus eventBus;
     private List<Group> groups = Collections.emptyList();
-
-    @Inject
-    public GroupListAdapter(EventBus eventBus) {
-        this.eventBus = eventBus;
-    }
 
     public GroupListAdapter replaceWith(List<Group> groups) {
         this.groups = groups;
@@ -43,7 +37,7 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.group_list_item, viewGroup, false);
-        return new ViewHolder(view, eventBus);
+        return new ViewHolder(view);
     }
 
     @Override
@@ -61,11 +55,9 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
         @InjectView(android.R.id.text1) TextView textView;
 
         private Group group;
-        private final EventBus eventBus;
 
-        public ViewHolder(View view, EventBus eventBus) {
+        public ViewHolder(View view) {
             super(view);
-            this.eventBus = eventBus;
             ButterKnife.inject(this, view);
             view.setOnClickListener(this::handleClick);
         }
@@ -94,7 +86,9 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
 
         private void handleClick(View v) {
             if (group != null) {
-                eventBus.post(new MainActivity.ShowGroupEvent(group));
+                Context context = v.getContext();
+                Intent intent = MainActivity.createIntent(context, group);
+                LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
             }
         }
     }

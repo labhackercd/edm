@@ -11,6 +11,8 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 
+import com.google.common.base.Joiner;
+
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.api.model.Category;
 import net.labhackercd.edemocracia.data.api.model.Group;
@@ -20,14 +22,9 @@ import net.labhackercd.edemocracia.ui.message.MessageListFragment;
 import net.labhackercd.edemocracia.ui.thread.ThreadListFragment;
 import net.labhackercd.edemocracia.youtube.Constants;
 
-import javax.inject.Inject;
-
-import de.greenrobot.event.EventBus;
-
 public class MainActivity extends BaseActivity {
-    @Inject EventBus eventBus;
 
-    private UploadBroadcastReceiver uploadBroadcastReceiver;
+    private LocalBroadcastReceiver broadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,91 +77,97 @@ public class MainActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
 
-        eventBus.register(this);
+        LocalBroadcastManager broadcastManager =
+                LocalBroadcastManager.getInstance(this);
 
-        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
-
-        if (uploadBroadcastReceiver == null) {
-            uploadBroadcastReceiver = new UploadBroadcastReceiver();
-        }
-        broadcastManager.registerReceiver(
-                uploadBroadcastReceiver, new IntentFilter(Constants.REQUEST_AUTHORIZATION_INTENT));
-
+        if (broadcastReceiver == null)
+            broadcastReceiver = new LocalBroadcastReceiver();
+        broadcastReceiver.register(broadcastManager);
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        eventBus.unregister(this);
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    public void onEventMainThread(ShowCategoryEvent event) {
-        Category category = event.getCategory();
-        replaceMainFragment(ThreadListFragment.newInstance(category));
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    public void onEventMainThread(ShowGroupEvent event) {
-        Group group = event.getGroup();
-        replaceMainFragment(ThreadListFragment.newInstance(group));
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    public void onEventMainThread(ShowThreadEvent event) {
-        Thread thread = event.getThread();
-        replaceMainFragment(MessageListFragment.newInstance(thread));
-    }
-
-    protected void replaceMainFragment(Fragment fragment) {
+    private void replaceMainFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.container, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
     }
 
+    /** Receive broadcasts from the video upload component. */
     private class UploadBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(Constants.REQUEST_AUTHORIZATION_INTENT)) {
-                Intent toRun = intent
-                        .getParcelableExtra(Constants.REQUEST_AUTHORIZATION_INTENT_PARAM);
+        }
+    }
+
+    /** Local broadcasts. Mainly used for changing the content of the MainActivity. */
+
+    /** Create an Intent to view a Group. */
+    public static Intent createIntent(Context context, Group group) {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setType(MimeTypes.GROUP);
+        intent.putExtra(EXTRA_GROUP, group);
+        return intent;
+    }
+
+    /** Create an Intent to view a Category. */
+    public static Intent createIntent(Context context, Category category) {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setType(MimeTypes.CATEGORY);
+        intent.putExtra(EXTRA_CATEGORY, category);
+        return intent;
+    }
+
+    /** Create an Intent to view a Thread. */
+    public static Intent createIntent(Context context, Thread thread) {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setType(MimeTypes.THREAD);
+        intent.putExtra(EXTRA_THREAD, thread);
+        return intent;
+    }
+
+    private static final String EXTRA_GROUP = extraName("group");
+    private static final String EXTRA_THREAD = extraName("thread");
+    private static final String EXTRA_CATEGORY = extraName("category");
+
+    private static String extraName(String key) {
+        return Joiner.on('.').join(MainActivity.class.getCanonicalName(), key);
+    }
+
+    private class LocalBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String type = intent.getType();
+            String action = intent.getAction();
+            if (type.equals(MimeTypes.GROUP)) {
+                Group group = (Group) intent.getSerializableExtra(EXTRA_GROUP);
+                replaceMainFragment(ThreadListFragment.newInstance(group));
+            } else if (type.equals(MimeTypes.CATEGORY)) {
+                Category category = (Category) intent.getSerializableExtra(EXTRA_CATEGORY);
+                replaceMainFragment(ThreadListFragment.newInstance(category));
+            } else if (type.equals(MimeTypes.THREAD)) {
+                Thread thread = (Thread) intent.getSerializableExtra(EXTRA_THREAD);
+                replaceMainFragment(MessageListFragment.newInstance(thread));
+            } else if (action.equals(Constants.REQUEST_AUTHORIZATION_INTENT)) {
+                Intent toRun = intent.getParcelableExtra(
+                        Constants.REQUEST_AUTHORIZATION_INTENT_PARAM);
                 startActivityForResult(toRun, VideoPickerActivity.REQUEST_AUTHORIZATION);
+            } else {
+                throw new IllegalArgumentException("Unexpected intent: " + intent.toString());
             }
         }
-    }
 
-    public static class ShowThreadEvent {
-        private final Thread thread;
-
-        public ShowThreadEvent(Thread thread) {
-            this.thread = thread;
-        }
-
-        public Thread getThread() {
-            return thread;
-        }
-    }
-
-    public static class ShowGroupEvent {
-        private final Group group;
-
-        public ShowGroupEvent(Group group) {
-            this.group = group;
-        }
-
-        public Group getGroup() { return group; }
-    }
-
-    public static class ShowCategoryEvent {
-        private final Category category;
-
-        public ShowCategoryEvent(Category category) {
-            this.category = category;
-        }
-
-        public Category getCategory() {
-            return category;
+        protected void register(LocalBroadcastManager manager) {
+            manager.registerReceiver(
+                    this, IntentFilter.create(Intent.ACTION_VIEW, MimeTypes.GROUP));
+            manager.registerReceiver(
+                    this, IntentFilter.create(Intent.ACTION_VIEW, MimeTypes.CATEGORY));
+            manager.registerReceiver(
+                    this, IntentFilter.create(Intent.ACTION_VIEW, MimeTypes.THREAD));
+            manager.registerReceiver(
+                    this, new IntentFilter(Constants.REQUEST_AUTHORIZATION_INTENT));
         }
     }
 }

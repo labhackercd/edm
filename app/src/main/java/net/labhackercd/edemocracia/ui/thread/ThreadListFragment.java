@@ -24,7 +24,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import de.greenrobot.event.EventBus;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -34,7 +33,6 @@ public class ThreadListFragment extends BaseFragment {
     public static String ARG_PARENT = "parent";
 
     @Inject Cache cache;
-    @Inject EventBus eventBus;
     @Inject MainRepository repository;
 
     private Object parent;
@@ -86,7 +84,7 @@ public class ThreadListFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
 
-        final ThreadListAdapter adapter = new ThreadListAdapter(eventBus);
+        final ThreadListAdapter adapter = new ThreadListAdapter();
 
         listView.refreshEvents()
                 .startWith(false)

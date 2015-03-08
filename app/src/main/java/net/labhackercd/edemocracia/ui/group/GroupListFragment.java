@@ -24,14 +24,12 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import de.greenrobot.event.EventBus;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class GroupListFragment extends BaseFragment {
     @Inject Cache cache;
-    @Inject EventBus eventBus;
     @Inject UserData userData;
     @Inject MainRepository repository;
 
@@ -49,7 +47,7 @@ public class GroupListFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
 
-        final GroupListAdapter adapter = new GroupListAdapter(eventBus);
+        final GroupListAdapter adapter = new GroupListAdapter();
 
         Account account = AccountUtils.getAccount(getActivity());
         AccountManager manager = AccountManager.get(getActivity());

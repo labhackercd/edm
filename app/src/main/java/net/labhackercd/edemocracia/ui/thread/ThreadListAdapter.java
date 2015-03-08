@@ -1,7 +1,9 @@
 package net.labhackercd.edemocracia.ui.thread;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,17 +25,11 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import de.greenrobot.event.EventBus;
 
 public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.ViewHolder> {
 
-    private final EventBus eventBus;
     private List<Thread> threads = Collections.emptyList();
     private List<Category> categories = Collections.emptyList();
-
-    public ThreadListAdapter(EventBus eventBus) {
-        this.eventBus = eventBus;
-    }
 
     public ThreadListAdapter replaceWith(List<Category> categories, List<Thread> threads) {
         this.threads = threads;
@@ -47,7 +43,7 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
         View view = LayoutInflater
                 .from(parent.getContext())
                 .inflate(R.layout.thread_list_item, parent, false);
-        return new ViewHolder(view, eventBus);
+        return new ViewHolder(view);
     }
 
     @Override
@@ -75,11 +71,9 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
 
         private Thread thread;
         private Category category;
-        private final EventBus eventBus;
 
-        public ViewHolder(View view, EventBus eventBus) {
+        public ViewHolder(View view) {
             super(view);
-            this.eventBus = eventBus;
             ButterKnife.inject(this, view);
             view.setOnClickListener(this::handleClick);
         }
@@ -122,13 +116,6 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
             setDate(date != null ? date : category.getCreateDate());
         }
 
-        private void handleClick(View v) {
-            if (thread != null)
-                eventBus.post(new MainActivity.ShowThreadEvent(thread));
-            else if (category != null)
-                eventBus.post(new MainActivity.ShowCategoryEvent(category));
-        }
-
         private void setDate(Date date) {
             String text = null;
 
@@ -167,6 +154,23 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
             portraitView.setImageDrawable(textDrawable);
 
             // TODO Load user portraits
+        }
+
+        private void handleClick(View v) {
+            if (thread != null)
+                broadcastViewThread(v.getContext(), thread);
+            else if (category != null)
+                broadcastViewCategory(v.getContext(), category);
+        }
+
+        private void broadcastViewCategory(Context context, Category category) {
+            Intent intent = MainActivity.createIntent(context, category);
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+        }
+
+        private void broadcastViewThread(Context context, Thread thread) {
+            Intent intent = MainActivity.createIntent(context, thread);
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
         }
     }
 }
