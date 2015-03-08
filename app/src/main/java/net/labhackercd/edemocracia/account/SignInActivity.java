@@ -138,7 +138,7 @@ public class SignInActivity extends ActionBarActivity {
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnSubscribe(() -> showProgress(true))
                     .doOnError(t -> showProgress(false))
-                    .map(user -> new Pair<User, String>(user, password))
+                    .map(user -> new Pair<>(user, password))
                     .subscribe(this::handleSuccess, this::handleError);
         }
     }

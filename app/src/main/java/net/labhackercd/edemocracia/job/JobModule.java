@@ -27,6 +27,7 @@ public class JobModule {
     @Provides
     @Singleton
     JobManager provideJobManager(final Application application) {
+        //noinspection Convert2Lambda
         Configuration configuration = new Configuration.Builder(application)
                 .customLogger(new CustomLogger() {
                     @Override
