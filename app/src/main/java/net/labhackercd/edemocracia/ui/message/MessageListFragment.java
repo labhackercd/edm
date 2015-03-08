@@ -95,8 +95,7 @@ public class MessageListFragment extends BaseFragment {
         return repository.getThreadMessages(thread)
                 .transform(r -> r.asObservable()
                         .compose(Operators.requireAccount(activity))
-                        .compose(cache.cache(r.key()))
-                        .compose(Cache.skipIf(fresh)))
+                        .compose(cache.cacheSkipIf(r.key(), fresh)))
                 .asObservable()
                 .subscribeOn(Schedulers.io());
     }

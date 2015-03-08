@@ -116,14 +116,14 @@ public class ThreadListFragment extends BaseFragment {
         Observable<List<Thread>> t = threads
                 .transform(r -> r.asObservable()
                         .compose(Operators.requireAccount(activity))
-                        .compose(cache.cache(r.key()))
+                        .compose(cache.cacheSkipIf(r.key(), fresh))
                         .subscribeOn(Schedulers.io()))
                 .asObservable();
 
         Observable<List<Category>> c = categories
                 .transform(r -> r.asObservable()
                         .compose(Operators.requireAccount(activity))
-                        .compose(cache.cache(r.key()))
+                        .compose(cache.cacheSkipIf(r.key(), fresh))
                         .subscribeOn(Schedulers.io()))
                 .asObservable();
 

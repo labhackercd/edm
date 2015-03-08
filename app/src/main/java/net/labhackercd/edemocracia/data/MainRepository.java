@@ -78,20 +78,6 @@ public class MainRepository {
                 groupId, categoryId, threadId);
     }
 
-    public static <T> Request<T> transform(Request<T> request, Observable.Transformer<T, T> transformer) {
-        return new Request<T>() {
-            @Override
-            public Object key() {
-                return request.key();
-            }
-
-            @Override
-            public Observable<T> asObservable() {
-                return request.asObservable().compose(transformer);
-            }
-        };
-    }
-
     /** WARNING: Black magic ahead. */
 
     private static <R> Request<R> request0(String id, Func0<R> callable) {
@@ -115,17 +101,7 @@ public class MainRepository {
     private static <T> Request<T> createRequest(Func0<T> callable, String id, Object... args) {
         final Object key = createRequestKey(id, args);
         final Observable<T> observable = createRequestObservable(callable);
-        return new Request<T>() {
-            @Override
-            public Object key() {
-                return key;
-            }
-
-            @Override
-            public Observable<T> asObservable() {
-                return observable;
-            }
-        };
+        return Request.create(key, observable);
     }
 
     private static Object createRequestKey(String id, Object[] args) {

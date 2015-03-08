@@ -75,8 +75,7 @@ public class GroupListFragment extends BaseFragment {
         return repository.getGroups(user.getCompanyId())
                 .transform(r -> r.asObservable()
                         .compose(Operators.requireAccount(activity))
-                        .compose(cache.cache(r.key()))
-                        .compose(Cache.skipIf(fresh)))
+                        .compose(cache.cacheSkipIf(r.key(), fresh)))
                 .asObservable()
                 .subscribeOn(Schedulers.io());
     }
