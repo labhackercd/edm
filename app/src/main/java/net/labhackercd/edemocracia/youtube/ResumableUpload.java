@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.job;
+package net.labhackercd.edemocracia.youtube;
 
 import android.app.NotificationManager;
 import android.content.Context;
@@ -23,7 +23,6 @@ import com.google.api.services.youtube.model.VideoSnippet;
 import com.google.api.services.youtube.model.VideoStatus;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.youtube.Constants;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
