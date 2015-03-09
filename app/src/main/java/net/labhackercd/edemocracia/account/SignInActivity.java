@@ -33,6 +33,7 @@ import butterknife.OnClick;
 import butterknife.OnEditorAction;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 import static android.accounts.AccountManager.KEY_ACCOUNT_NAME;
@@ -135,10 +136,10 @@ public class SignInActivity extends ActionBarActivity {
             focusView.requestFocus();
         } else {
             checkCredentials(email, password)
+                    .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doOnSubscribe(() -> showProgress(true))
-                    .doOnError(t -> showProgress(false))
                     .map(user -> new Pair<>(user, password))
+                    .doOnSubscribe(() -> showProgress(true))
                     .subscribe(this::handleSuccess, this::handleError);
         }
     }
@@ -169,6 +170,8 @@ public class SignInActivity extends ActionBarActivity {
     }
 
     private void handleError(Throwable throwable) {
+        showProgress(false);
+
         int errorMessage;
         if (EDMErrorHandler.isNetworkError(throwable)) {
             errorMessage = R.string.network_error_message;
@@ -178,6 +181,7 @@ public class SignInActivity extends ActionBarActivity {
             errorMessage = R.string.unknown_error_message;
             Timber.e(throwable, "Failed to check credentials.");
         }
+
         new AlertDialog.Builder(this)
                 .setMessage(errorMessage)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
