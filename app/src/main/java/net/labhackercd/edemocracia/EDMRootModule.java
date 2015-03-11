@@ -17,6 +17,9 @@ import dagger.Provides;
                 TaskModule.class,
                 DataModule.class,
                 AccountModule.class
+        },
+        injects = {
+                EDMApplication.class
         }
 )
 @SuppressWarnings("UnusedDeclaration")

@@ -17,10 +17,10 @@ import com.google.api.services.youtube.YouTube;
 import com.google.common.collect.Lists;
 
 import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.data.LocalMessageRepository;
 import net.labhackercd.edemocracia.data.api.EDMService;
 import net.labhackercd.edemocracia.data.api.model.Message;
-import net.labhackercd.edemocracia.data.db.DatabaseProvider;
-import net.labhackercd.edemocracia.data.db.model.LocalMessage;
+import net.labhackercd.edemocracia.data.db.LocalMessage;
 import net.labhackercd.edemocracia.youtube.Constants;
 import net.labhackercd.edemocracia.youtube.ResumableUpload;
 
@@ -30,88 +30,61 @@ import java.io.InputStream;
 
 import javax.inject.Inject;
 
-public class AddMessageTask extends Task {
+import timber.log.Timber;
 
-    /** The actual task code. */
+public class AddMessageTask extends Task {
 
     private final long messageId;
     private final String youtubeAccount;
-    private transient LocalMessage localMessage;
+
+    @Inject transient EDMService service;
+    @Inject transient Application application;
+    @Inject transient LocalMessageRepository messages;
+    private transient LocalMessage message;
 
     public AddMessageTask(long messageId, String youtubeAccount) {
         this.messageId = messageId;
         this.youtubeAccount = youtubeAccount;
     }
 
+    @Override
     protected void execute() throws Throwable {
-        LocalMessage message = getLocalMessage();
+        LocalMessage message = getMessage();
 
         // Upload the video attachment, if there is any.
-        String body = message.body;
-        if (message.videoAttachment != null) {
-            String videoId = uploadVideo(message.videoAttachment);
+        String body = message.body();
+        if (message.videoAttachment() != null) {
+            String videoId = uploadVideo(message.videoAttachment());
             body = attachVideo(body, videoId);
         }
 
         // Publish the message.
         Message inserted = service.addMessage(
-                message.uuid, message.parentMessage, message.subject, body);
+                message.uuid(), message.groupId(), message.categoryId(), message.threadId(),
+                message.parentMessageId(), message.subject(), body);
 
-        // TODO Notify the UI.
-    }
-
-    /*
-    @Override
-    protected void onCancel() {
-        LocalMessage message = getLocalMessage();
-
-        message.status = LocalMessage.Status.CANCELLED;
-
-        ContentValues values = new ContentValues(1);
-
-        values.put("status", String.valueOf(message.status));
-
-        databaseHelper.getCupboard()
-                .withDatabase(databaseHelper.getWritableDatabase())
-                .update(LocalMessage.class, values, "_id = ?", String.valueOf(message._id));
-
-        eventBus.post(new Cancelled(message));
+        messages.setSuccess(messageId, inserted);
     }
 
     @Override
-    protected boolean shouldReRunOnThrowable(Throwable throwable) {
-        // TODO Deal with errors.
-        // FileNotFoundException: video file doesn't exist. Should we add it again without video?
-
-        Timber.e(throwable, "Failed to add message.");
-
-        return true;
+    public boolean shouldRetry(Throwable error) {
+        return false;
     }
-    */
+
+    @Override
+    public void onCancel(Throwable error) {
+        Timber.d("Task canceled.");
+        messages.setCancel(messageId);
+    }
 
     /** Grab the local message from the database. */
-    private LocalMessage getLocalMessage() {
-        if (localMessage == null) {
-            localMessage = databaseHelper.getCupboard()
-                    .withDatabase(databaseHelper.getWritableDatabase())
-                    .get(LocalMessage.class, messageId);
-        }
-        return localMessage;
+    private LocalMessage getMessage() {
+        if (message == null)
+            message = messages.getMessage(messageId).toBlocking().first();
+        return message;
     }
 
-    // XXX Injected fields are declared transient in order to not be serialized
-    @Inject transient EDMService service;
-    @Inject transient Application application;
-    @Inject transient DatabaseProvider databaseHelper;
-
-    /**
-     * Attach a YouTube video to a message body.
-     *
-     * @param body The body of the message.
-     * @param videoId The id of the YouTube video.
-     *
-     * @return A new body, with the video attached.
-     */
+    /** Attach a YouTube video to a message body and returns a the body, with the attached video . */
     private String attachVideo(String body, String videoId) {
         return String
                 .format("[center][youtube]%s[/youtube][/center]", videoId)

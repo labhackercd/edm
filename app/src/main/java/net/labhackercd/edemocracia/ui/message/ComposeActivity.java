@@ -20,9 +20,8 @@ import android.widget.Toast;
 import com.google.common.base.Splitter;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.data.api.model.Message;
-import net.labhackercd.edemocracia.data.db.model.LocalMessage;
 import net.labhackercd.edemocracia.data.LocalMessageRepository;
+import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.ui.BaseActivity;
 import net.labhackercd.edemocracia.ui.VideoPickerActivity;
 
@@ -179,8 +178,8 @@ public class ComposeActivity extends BaseActivity {
         String body = bodyView.getText().toString();
         String subject = subjectView.getText().toString();
 
-        LocalMessage inserted = messageRepository
-                .addMessage(parentMessage, subject, body, attachedVideoUri, videoAccount);
+        long inserted = messageRepository.add(
+                parentMessage, subject, body, attachedVideoUri, videoAccount);
 
         Toast.makeText(this, R.string.sending_message, Toast.LENGTH_SHORT).show();
 

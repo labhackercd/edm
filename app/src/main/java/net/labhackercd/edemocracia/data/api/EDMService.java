@@ -28,17 +28,18 @@ public interface EDMService {
 
     public User getUser();
 
-    List<Thread> getThreads(long groupId);
+    public List<Thread> getThreads(long groupId);
 
-    List<Thread> getThreads(long groupId, long categoryId);
+    public List<Thread> getThreads(long groupId, long categoryId);
 
-    List<Category> getCategories(long groupId);
+    public List<Category> getCategories(long groupId);
 
-    List<Category> getCategories(long groupId, long categoryId);
+    public List<Category> getCategories(long groupId, long categoryId);
 
-    List<Group> getGroups(long companyId);
+    public List<Group> getGroups(long companyId);
 
-    List<Message> getThreadMessages(long groupId, long categoryId, long threadId);
+    public List<Message> getThreadMessages(long groupId, long categoryId, long threadId);
 
-    Message addMessage(UUID uuid, Message message, String subject, String body);
+    public Message addMessage(UUID uuid, long groupId, long categoryId, long threadId,
+                              long parentMessageId, String subject, String body);
 }

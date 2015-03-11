@@ -61,7 +61,9 @@ dependencies {
     }
 
     // ORM
-    compile 'nl.qbusict:cupboard:2.1.1'
+    compile 'com.squareup.sqlbrite:sqlbrite:0.1.0'
+    compile 'com.github.frankiesardo:auto-parcel:0.3'
+    provided 'com.github.frankiesardo:auto-parcel-processor:0.3'
 
     // Utility libraries
     compile 'com.google.code.gson:gson:2.3.1'

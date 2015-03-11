@@ -1,9 +1,9 @@
 package net.labhackercd.edemocracia.data;
 
-import net.labhackercd.edemocracia.data.api.ApiModule;
+import com.squareup.sqlbrite.SqlBrite;
 
+import net.labhackercd.edemocracia.data.api.ApiModule;
 import net.labhackercd.edemocracia.data.api.EDMService;
-import net.labhackercd.edemocracia.data.db.DatabaseProvider;
 import net.labhackercd.edemocracia.data.db.DbModule;
 import net.labhackercd.edemocracia.task.TaskManager;
 
@@ -30,8 +30,7 @@ public class DataModule {
     }
 
     @Provides @Singleton
-    LocalMessageRepository provideLocalMessageRepository(
-            TaskManager taskManager, DatabaseProvider databaseHelper) {
-        return new LocalMessageRepository(taskManager, databaseHelper);
+    LocalMessageRepository provideLocalMessageRepository(TaskManager taskManager, SqlBrite brite) {
+        return new LocalMessageRepository(taskManager, brite);
     }
 }

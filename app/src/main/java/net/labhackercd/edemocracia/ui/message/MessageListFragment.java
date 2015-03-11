@@ -22,13 +22,13 @@ import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.account.AccountUtils;
 import net.labhackercd.edemocracia.account.UserData;
 import net.labhackercd.edemocracia.data.Cache;
+import net.labhackercd.edemocracia.data.LocalMessageRepository;
 import net.labhackercd.edemocracia.data.MainRepository;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.data.api.model.User;
-import net.labhackercd.edemocracia.data.db.model.LocalMessage;
+import net.labhackercd.edemocracia.data.db.LocalMessage;
 import net.labhackercd.edemocracia.data.rx.Operators;
-import net.labhackercd.edemocracia.data.LocalMessageRepository;
 import net.labhackercd.edemocracia.ui.BaseFragment;
 import net.labhackercd.edemocracia.ui.listview.ItemListView;
 
@@ -55,7 +55,7 @@ public class MessageListFragment extends BaseFragment {
     private Thread thread;
     private Message rootMessage;
     private ItemListView listView;
-    private LocalMessage scrollToItem;
+    private long scrollToItem = -1;
 
     public static MessageListFragment newInstance(Thread thread) {
         MessageListFragment fragment = new MessageListFragment();
@@ -90,11 +90,9 @@ public class MessageListFragment extends BaseFragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_INSERT_MESSAGE && resultCode == Activity.RESULT_OK) {
-            LocalMessage inserted = (LocalMessage) data.getSerializableExtra(
-                    ComposeActivity.PARAM_INSERTED_MESSAGE);
-            if (inserted != null) {
+            long inserted = data.getLongExtra(ComposeActivity.PARAM_INSERTED_MESSAGE, -1);
+            if (inserted >= 0)
                 scrollToItem = inserted;
-            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -108,7 +106,7 @@ public class MessageListFragment extends BaseFragment {
         Account account = AccountUtils.getAccount(activity);
         User user = userData.getUser(manager, account);
 
-        final MessageListAdapter adapter = new MessageListAdapter(user);
+        final MessageListAdapter adapter = new MessageListAdapter(messageRepository, user);
 
         listView.refreshEvents()
                 .startWith(false)
@@ -152,7 +150,8 @@ public class MessageListFragment extends BaseFragment {
                 .subscribeOn(Schedulers.io());
 
         Observable<List<LocalMessage>> localMessages = messageRepository
-                .getUnsentMessages(thread.getRootMessageId());
+                .getUnsentMessages(thread.getRootMessageId())
+                .first();
 
         return Observable.zip(
                 remoteMessages, localMessages, MessageListFragment::combineMessageLists);
@@ -169,7 +168,7 @@ public class MessageListFragment extends BaseFragment {
 
         // Filter local messages, ignoring those which UUIDs are already in the remote server.
         Iterable<LocalMessage> filtered = Observable.from(local)
-                .filter(msg -> !remoteUUIDs.contains(msg.uuid.toString()))
+                .filter(msg -> !remoteUUIDs.contains(msg.uuid().toString()))
                 .toBlocking()
                 .toIterable();
 
@@ -179,13 +178,15 @@ public class MessageListFragment extends BaseFragment {
     }
 
     private void scrollToLastInsertedItem(MessageListAdapter adapter) {
-        if (scrollToItem != null) {
-            int position = adapter.getItemPosition(scrollToItem);
-            if (position > 10)
-                listView.scrollToPosition(position);
-            else
-                listView.smoothScrollToPosition(position);
-            scrollToItem = null;
+        if (scrollToItem >= 0) {
+            int position = adapter.getLocalMessagePositionById(scrollToItem);
+            if (position >= 0) {
+                if (position > 10)
+                    listView.scrollToPosition(position);
+                else
+                    listView.smoothScrollToPosition(position);
+            }
+            scrollToItem = -1;
         }
     }
 

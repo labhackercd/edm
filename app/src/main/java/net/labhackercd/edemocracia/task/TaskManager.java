@@ -39,7 +39,10 @@ public class TaskManager {
     }
 
     void onTaskError(Task task, Throwable error) {
-        queue.remove();
+        if (!task.shouldRetry(error)) {
+            queue.remove();
+            task.onCancel(error);
+        }
     }
 
     private static TaskQueue<AddMessageTask> createTaskQueue(

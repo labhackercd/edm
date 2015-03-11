@@ -218,7 +218,8 @@ class EDMServiceImpl implements EDMService {
     }
 
     @Override
-    public Message addMessage(UUID uuid, Message parentMessage, String subject, String body) {
+    public Message addMessage(UUID uuid, long groupId, long categoryId, long threadId,
+                              long parentMessageId, String subject, String body) {
         try {
             JSONObject scArgs = new JSONObject();
             scArgs.put("addGuestPermissions", true);
@@ -232,8 +233,7 @@ class EDMServiceImpl implements EDMService {
             MBMessageService service = new MBMessageService(new EDMGetSessionWrapper(session));
 
             JSONObject inserted = service.addMessage(
-                    parentMessage.getGroupId(), parentMessage.getCategoryId(),
-                    parentMessage.getThreadId(), parentMessage.getMessageId(),
+                    groupId, categoryId, threadId, parentMessageId,
                     subject, body, "bbcode", new JSONArray(), false, 0.0, true, serviceContext);
 
             return Message.JSON_READER.fromJSON(inserted);

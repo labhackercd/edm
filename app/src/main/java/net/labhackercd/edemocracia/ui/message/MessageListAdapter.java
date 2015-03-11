@@ -18,9 +18,10 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
 import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.data.LocalMessageRepository;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.User;
-import net.labhackercd.edemocracia.data.db.model.LocalMessage;
+import net.labhackercd.edemocracia.data.db.LocalMessage;
 
 import java.util.Collections;
 import java.util.Date;
@@ -32,21 +33,28 @@ import java.util.regex.Pattern;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
+import rx.Observable;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+import timber.log.Timber;
 
 public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.ViewHolder> {
 
     private final User user;
+    private final LocalMessageRepository messageRepository;
     private List<Message> messages = Collections.emptyList();
     private List<LocalMessage> localMessages = Collections.emptyList();
 
-    public MessageListAdapter(User user) {
+    public MessageListAdapter(LocalMessageRepository messageRepository, User user) {
         this.user = user;
+        this.messageRepository = messageRepository;
     }
 
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.message_list_item, viewGroup, false);
-        return new ViewHolder(view, user);
+        return new ViewHolder(view, user, messageRepository);
     }
 
     @Override
@@ -66,15 +74,16 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
     }
 
     public int getItemPosition(LocalMessage item) {
-        // Search by id.
-        int itemIndex = 0;
-        for (LocalMessage cur : localMessages) {
-            if (item._id.equals(cur._id))
-                break;
-            else
-                itemIndex++;
+        return messages.size() + localMessages.indexOf(item);
+    }
+
+    public int getLocalMessagePositionById(long id) {
+        int position = 0;
+        for (LocalMessage item : localMessages) {
+            if (item.id().equals(id))
+                return messages.size() + position;
         }
-        return messages.size() + itemIndex;
+        return -1;
     }
 
     public MessageListAdapter replaceWith(Pair<List<Message>, List<LocalMessage>> lists) {
@@ -102,14 +111,17 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
         private Message message;
         private LocalMessage localMessage;
-        private final Transformation videoThumbnailTransformation;
         private final User user;
+        private final LocalMessageRepository messageRepository;
+        private final Transformation videoThumbnailTransformation;
+        private Subscription subscription;
 
-        public ViewHolder(View view, User user) {
+        public ViewHolder(View view, User user, LocalMessageRepository messageRepository) {
             super(view);
             ButterKnife.inject(this, view);
             view.setOnClickListener(this::handleClick);
             this.user = user;
+            this.messageRepository = messageRepository;
             // TODO Make less instances of this transformation.
             // I guess we could instantiate it only once at the Adapter.
             this.videoThumbnailTransformation = new VideoPlayButtonTransformation(view.getContext());
@@ -134,14 +146,23 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         public void bindLocalMessage(LocalMessage message) {
             this.message = null;
             this.localMessage = message;
+            subscription = messageRepository.getMessage(localMessage.id())
+                    .subscribeOn(Schedulers.io())
+                    .startWith(Observable.just(message))
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(this::setLocalMessage);
+        }
+
+        private void setLocalMessage(LocalMessage message) {
+            Timber.d("Updating local message.");
 
             setAuthor(user.getScreenName());
 
-            setSubject(message.subject);
+            setSubject(message.subject());
 
-            setBody(message.body);
+            setBody(message.body());
 
-            setLocalMessageStatus(message.status);
+            setLocalMessageStatus(message.status());
 
             // TODO Display author's portrait.
             setPortrait(user.getScreenName(), null);
@@ -154,7 +175,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         @OnClick(R.id.reply)
         @SuppressWarnings("UnusedDeclaration")
         public void onReplyClick(View v) {
-            if (localMessage != null && localMessage.status == LocalMessage.Status.CANCELLED) {
+            if (localMessage != null && localMessage.status() == LocalMessage.Status.CANCEL) {
                 // TODO Retry message submission
             }
         }
@@ -188,11 +209,10 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
         private void setLocalMessageStatus(LocalMessage.Status status) {
             int statusId;
-            if (status != LocalMessage.Status.CANCELLED) {
+            if (!status.equals(LocalMessage.Status.CANCEL))
                 statusId = R.string.sending_message;
-            } else {
+            else
                 statusId = R.string.message_submission_failed;
-            }
             setStatus(statusId);
         }
 
