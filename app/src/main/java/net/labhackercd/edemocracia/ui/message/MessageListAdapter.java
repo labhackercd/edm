@@ -131,6 +131,8 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             this.message = message;
             this.localMessage = null;
 
+            unsubscribe();
+
             setAuthor(message.getUserName());
 
             setSubject(message.getSubject());
@@ -143,9 +145,20 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             setPortrait(message.getUserName(), null);
         }
 
+        private void unsubscribe() {
+            if (subscription != null) {
+                if (!subscription.isUnsubscribed())
+                    subscription.unsubscribe();
+                subscription = null;
+            }
+        }
+
         public void bindLocalMessage(LocalMessage message) {
             this.message = null;
             this.localMessage = message;
+
+            unsubscribe();
+
             subscription = messageRepository.getMessage(localMessage.id())
                     .subscribeOn(Schedulers.io())
                     .startWith(Observable.just(message))
@@ -162,7 +175,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
             setBody(message.body());
 
-            setLocalMessageStatus(message.status());
+            setLocalMessageStatus(message.status(), message.insertionDate());
 
             // TODO Display author's portrait.
             setPortrait(user.getScreenName(), null);
@@ -207,13 +220,17 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             dateView.setText(resId);
         }
 
-        private void setLocalMessageStatus(LocalMessage.Status status) {
-            int statusId;
-            if (!status.equals(LocalMessage.Status.CANCEL))
-                statusId = R.string.sending_message;
-            else
-                statusId = R.string.message_submission_failed;
-            setStatus(statusId);
+        private void setLocalMessageStatus(LocalMessage.Status status, Date insertionDate) {
+            if (status.equals(LocalMessage.Status.SUCCESS)) {
+                setStatus(insertionDate);
+            } else {
+                int statusId;
+                if (!status.equals(LocalMessage.Status.CANCEL))
+                    statusId = R.string.sending_message;
+                else
+                    statusId = R.string.message_submission_failed;
+                setStatus(statusId);
+            }
         }
 
         private void setPortrait(String author, Uri portrait) {

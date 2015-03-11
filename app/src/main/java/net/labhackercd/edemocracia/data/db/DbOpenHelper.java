@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 final class DbOpenHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "edm";
-    private static final int VERSION = 6;
+    private static final int VERSION = 7;
 
 
     public DbOpenHelper(Context context) {
@@ -25,6 +25,9 @@ final class DbOpenHelper extends SQLiteOpenHelper {
         db.execSQL("PRAGMA writable_schema = 1;");
         db.execSQL("DELETE FROM sqlite_master WHERE type = 'table'");
         db.execSQL("DELETE FROM sqlite_master WHERE type = 'index'");
+        db.execSQL("DROP TABLE IF EXISTS " + LocalMessage.TABLE);
+        db.execSQL("DROP INDEX IF EXISTS " + LocalMessage.INDEX_INSERTED_MESSAGE_ID);
+        db.execSQL("DROP INDEX IF EXISTS " + LocalMessage.INDEX_ROOT_MESSAGE_ID);
         db.execSQL("PRAGMA writable_schema = 0;");
         onCreate(db);
     }

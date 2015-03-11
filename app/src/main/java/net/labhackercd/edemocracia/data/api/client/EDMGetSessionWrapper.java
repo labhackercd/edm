@@ -119,7 +119,9 @@ public class EDMGetSessionWrapper implements Session {
     }
 
     public static class CustomHttpUtil extends HttpUtil {
-        protected static JSONArray invokeThroughGET(Session session, String method, List<NameValuePair> args) throws IOException, ServerException, JSONException {
+        protected static JSONArray invokeThroughGET(Session session,
+                                                    String method, List<NameValuePair> args)
+                throws IOException, ServerException, JSONException {
             String url = createMethodURL(session, method, args);
 
             HttpClient client = HttpUtil.getClient(session);
@@ -150,18 +152,9 @@ public class EDMGetSessionWrapper implements Session {
 
         private static String createMethodURL(Session session, String method, List<NameValuePair> args) {
             CharMatcher matcher = CharMatcher.anyOf("/");
-
-            String url = session.getServer();
-
-            url = matcher.trimTrailingFrom(url);
-
-            url += "/api/secure/jsonws/";
-
-            url += matcher.trimFrom(method);
-
-            url += "?" + URLEncodedUtils.format(args, "UTF-8");
-
-            return url;
+            return matcher.trimTrailingFrom(session.getServer())
+                    .concat("/").concat(matcher.trimFrom(method))
+                    .concat("?").concat(URLEncodedUtils.format(args, "UTF-8"));
         }
     }
 }

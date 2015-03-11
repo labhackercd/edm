@@ -10,6 +10,7 @@ import com.google.common.base.Joiner;
 import com.squareup.sqlbrite.SqlBrite;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,6 +28,9 @@ public abstract class LocalMessage implements Parcelable {
         RETRY
     }
 
+
+    /** XXX Please, please, don't change the order before reading AutoValues documentation. */
+
     public abstract Long id();
     @Nullable public abstract Long insertedMessageId();
     public abstract Long rootMessageId();
@@ -39,6 +43,7 @@ public abstract class LocalMessage implements Parcelable {
     @Nullable public abstract Uri videoAttachment();
     public abstract UUID uuid();
     public abstract Status status();
+    @Nullable public abstract Date insertionDate();
 
     public static final String TABLE = "LocalMessage";
 
@@ -54,21 +59,23 @@ public abstract class LocalMessage implements Parcelable {
     public static final String VIDEO_ATTACHMENT = "videoAttachment";
     public static final String UUID = "uuid";
     public static final String STATUS = "status";
+    public static final String INSERTION_DATE = "insertionDate";
 
     static final String CREATE = Joiner.on('\n').join(
             "CREATE TABLE " + TABLE + "(",
                 ID + " INTEGER NOT NULL PRIMARY KEY,",
-                INSERTED_MESSAGE_ID + " BIG INTEGER NOT NULL DEFAULT 0,",
-                ROOT_MESSAGE_ID + " BIG INTEGER NOT NULL,",
-                PARENT_MESSAGE_ID + " BIG INTEGER NOT NULL,",
-                GROUP_ID + " BIG INTEGER NOT NULL,",
-                CATEGORY_ID + " BIG INTEGER NOT NULL,",
-                THREAD_ID + " BIG INTEGER NOT NULL,",
+                INSERTED_MESSAGE_ID + " INTEGER,",
+                ROOT_MESSAGE_ID + " INTEGER NOT NULL,",
+                PARENT_MESSAGE_ID + " INTEGER NOT NULL,",
+                GROUP_ID + " INTEGER NOT NULL,",
+                CATEGORY_ID + " INTEGER NOT NULL,",
+                THREAD_ID + " INTEGER NOT NULL,",
                 BODY + " TEXT,",
                 SUBJECT + " TEXT,",
                 VIDEO_ATTACHMENT + " TEXT,",
                 UUID + " TEXT NOT NULL,",
-                STATUS + " TEXT NOT NULL"
+                STATUS + " TEXT NOT NULL,",
+                INSERTION_DATE + " INTEGER"
             + ")");
 
 
@@ -128,9 +135,15 @@ public abstract class LocalMessage implements Parcelable {
                 cursor.getString(cursor.getColumnIndexOrThrow(UUID)));
         Status status = Enum.valueOf(
                 Status.class, cursor.getString(cursor.getColumnIndexOrThrow(STATUS)));
+        Date insertionDate = nullableDate(
+                cursor.getLong(cursor.getColumnIndexOrThrow(INSERTION_DATE)));
         return new AutoParcel_LocalMessage(
                 id, insertedMessageId, rootMessageId, groupId, categoryId, threadId,
-                parentMessageId, body, subject, videoAttachment, uuid, status);
+                parentMessageId, body, subject, videoAttachment, uuid, status, insertionDate);
+    }
+
+    private static Date nullableDate(Long milliseconds) {
+        return milliseconds == null ? null : new Date(milliseconds);
     }
 
     private static Uri nullableUri(String string) {
@@ -179,10 +192,10 @@ public abstract class LocalMessage implements Parcelable {
         }
 
         public Builder body(String body) {
-            if (body == null)
-                values.putNull(BODY);
-            else
+            if (body != null)
                 values.put(BODY, body);
+            else
+                values.putNull(BODY);
             return this;
         }
 
@@ -209,6 +222,14 @@ public abstract class LocalMessage implements Parcelable {
 
         public Builder status(Status status) {
             values.put(STATUS, status.name());
+            return this;
+        }
+
+        public Builder insertionDate(Date date) {
+            if (date != null)
+                values.put(INSERTION_DATE, date.getTime());
+            else
+                values.putNull(INSERTION_DATE);
             return this;
         }
 

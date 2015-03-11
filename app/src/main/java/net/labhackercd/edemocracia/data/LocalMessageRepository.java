@@ -63,6 +63,7 @@ public class LocalMessageRepository {
     public void setSuccess(long id, Message inserted) {
         brite.update(LocalMessage.TABLE, new LocalMessage.Builder()
                         .insertedMessageId(inserted.getMessageId())
+                        .insertionDate(inserted.getCreateDate())
                         .status(LocalMessage.Status.SUCCESS)
                         .build(),
                 LocalMessage.ID + " = ?", String.valueOf(id));

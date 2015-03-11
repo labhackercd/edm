@@ -63,17 +63,19 @@ public class AddMessageTask extends Task {
                 message.uuid(), message.groupId(), message.categoryId(), message.threadId(),
                 message.parentMessageId(), message.subject(), body);
 
+        Timber.d("Task succeeded.");
         messages.setSuccess(messageId, inserted);
     }
 
     @Override
     public boolean shouldRetry(Throwable error) {
+        Timber.e(error, "Error while trying to publish message.");
         return false;
     }
 
     @Override
     public void onCancel(Throwable error) {
-        Timber.d("Task canceled.");
+        Timber.d("Task cancelled.");
         messages.setCancel(messageId);
     }
 
