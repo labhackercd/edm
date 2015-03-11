@@ -5,14 +5,12 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import com.squareup.sqlbrite.SqlBrite;
 
-import net.labhackercd.edemocracia.EDMApplication;
-
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
 
-@Module(library = true, complete = false, injects= EDMApplication.class)
+@Module(library = true, complete = false)
 @SuppressWarnings("UnusedDeclaration")
 public class DbModule {
     @Provides @Singleton

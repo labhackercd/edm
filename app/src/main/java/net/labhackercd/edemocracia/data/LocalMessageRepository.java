@@ -65,7 +65,7 @@ public class LocalMessageRepository {
                         .insertedMessageId(inserted.getMessageId())
                         .status(LocalMessage.Status.SUCCESS)
                         .build(),
-                "WHERE " + LocalMessage.ID + " = ?", String.valueOf(id));
+                LocalMessage.ID + " = ?", String.valueOf(id));
     }
 
     public void setCancel(long id) {

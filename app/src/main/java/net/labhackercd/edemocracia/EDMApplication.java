@@ -4,8 +4,6 @@ import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
-import javax.inject.Inject;
-
 import dagger.ObjectGraph;
 import timber.log.Timber;
 
@@ -22,7 +20,7 @@ public class EDMApplication extends Application {
 
         objectGraph = ObjectGraph.create(new EDMRootModule(this));
 
-            if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree() {
                 @Override
                 protected void logMessage(int priority, String tag, String message) {
