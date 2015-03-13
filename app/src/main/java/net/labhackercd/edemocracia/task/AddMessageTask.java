@@ -5,7 +5,9 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -21,6 +23,7 @@ import net.labhackercd.edemocracia.data.LocalMessageRepository;
 import net.labhackercd.edemocracia.data.api.EDMService;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.db.LocalMessage;
+import net.labhackercd.edemocracia.ui.preference.PreferenceFragment;
 import net.labhackercd.edemocracia.youtube.Constants;
 import net.labhackercd.edemocracia.youtube.ResumableUpload;
 
@@ -34,17 +37,15 @@ import timber.log.Timber;
 
 public class AddMessageTask extends Task {
 
-    private final long messageId;
-    private final String youtubeAccount;
-
     @Inject transient EDMService service;
     @Inject transient Application application;
     @Inject transient LocalMessageRepository messages;
+
+    private final long messageId;
     private transient LocalMessage message;
 
-    public AddMessageTask(long messageId, String youtubeAccount) {
+    public AddMessageTask(long messageId) {
         this.messageId = messageId;
-        this.youtubeAccount = youtubeAccount;
     }
 
     @Override
@@ -52,9 +53,18 @@ public class AddMessageTask extends Task {
         LocalMessage message = getMessage();
 
         // Upload the video attachment, if there is any.
+        Uri videoAttachment = message.videoAttachment();
         String body = message.body();
-        if (message.videoAttachment() != null) {
-            String videoId = uploadVideo(message.videoAttachment());
+        if (videoAttachment != null) {
+            // TODO Should probably be wrapped in some local PreferenceManager or something.
+            String account = PreferenceManager
+                    .getDefaultSharedPreferences(application)
+                    .getString(PreferenceFragment.PREF_YOUTUBE_ACCOUNT, null);
+            if (account == null)
+                throw new AssertionError("No YouTube account configured.");
+            String videoId = uploadVideo(message.videoAttachment(), account);
+            if (TextUtils.isEmpty(videoId) || "null".equals(videoId))
+                throw new AssertionError("videoId is empty or null");
             body = attachVideo(body, videoId);
         }
 
@@ -70,6 +80,9 @@ public class AddMessageTask extends Task {
     @Override
     public boolean shouldRetry(Throwable error) {
         Timber.e(error, "Error while trying to publish message.");
+
+        // TODO Deal with it!
+
         return false;
     }
 
@@ -93,12 +106,11 @@ public class AddMessageTask extends Task {
                 .concat(body);
     }
 
-    private String uploadVideo(Uri video) throws FileNotFoundException {
+    private String uploadVideo(Uri video, String youtubeAccount) throws FileNotFoundException {
         Context context = application.getApplicationContext();
 
         GoogleAccountCredential credential = GoogleAccountCredential
                 .usingOAuth2(context, Lists.newArrayList(Constants.AUTH_SCOPES));
-
         credential.setSelectedAccountName(youtubeAccount);
         credential.setBackOff(new ExponentialBackOff());
 

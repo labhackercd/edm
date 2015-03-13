@@ -3,6 +3,7 @@ package net.labhackercd.edemocracia.ui;
 import net.labhackercd.edemocracia.ui.group.GroupListFragment;
 import net.labhackercd.edemocracia.ui.message.ComposeActivity;
 import net.labhackercd.edemocracia.ui.message.MessageListFragment;
+import net.labhackercd.edemocracia.ui.preference.PreferenceActivity;
 import net.labhackercd.edemocracia.ui.thread.ThreadListFragment;
 
 import dagger.Module;
@@ -12,9 +13,10 @@ import dagger.Module;
                 MainActivity.class,
                 ComposeActivity.class,
                 GroupListFragment.class,
+                PreferenceActivity.class,
                 ThreadListFragment.class,
-                SplashScreenActivity.class,
-                MessageListFragment.class
+                MessageListFragment.class,
+                SplashScreenActivity.class
         },
         library = true,
         complete = false

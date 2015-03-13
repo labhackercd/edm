@@ -7,6 +7,8 @@ import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.content.Context;
 
+import net.labhackercd.edemocracia.data.api.model.User;
+
 import java.io.IOException;
 
 import timber.log.Timber;
@@ -43,5 +45,11 @@ public class AccountUtils {
         }
 
         return account;
+    }
+
+    public static User getUser(UserData userData, Context context) {
+        Account account = getAccount(context);
+        AccountManager manager = AccountManager.get(context);
+        return userData.getUser(manager, account);
     }
 }

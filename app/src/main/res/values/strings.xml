@@ -29,4 +29,13 @@
     <string name="load_error_message">Ops! Something went wrong while trying to load this resource.</string>
     <string name="authorization_error_message">You must sign in to access this resource.</string>
     <string name="message_submission_failed">Failed to submit message</string>
+    <string name="open_drawer">Open</string>
+    <string name="close_drawer">Close</string>
+    <string name="title_group_list">Groups</string>
+    <string name="title_preferences">Settings</string>
+    <string name="title_about">About</string>
+    <string name="pref_title_youtube_account">Youtube account</string>
+    <string name="pref_summary_youtube_account">The Youtube account that will be used to upload videos</string>
+    <string name="missing_youtube_account_dialog_title">Missing YouTube account</string>
+    <string name="missing_youtube_account_dialog_message">You must specify an YouTube account to which your video messages will be uploaded.\n\nWould you like to select your YouTube account now?</string>
 </resources>

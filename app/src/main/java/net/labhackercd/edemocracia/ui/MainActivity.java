@@ -4,27 +4,56 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBar;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
 import com.google.common.base.Joiner;
 
 import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.account.AccountUtils;
+import net.labhackercd.edemocracia.account.UserData;
 import net.labhackercd.edemocracia.data.api.model.Category;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.Thread;
+import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.ui.group.GroupListFragment;
 import net.labhackercd.edemocracia.ui.message.MessageListFragment;
 import net.labhackercd.edemocracia.ui.thread.ThreadListFragment;
 import net.labhackercd.edemocracia.youtube.Constants;
 
+import javax.inject.Inject;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import timber.log.Timber;
+
 public class MainActivity extends BaseActivity {
 
+    @Inject UserData userData;
+    private ActionBarDrawerToggle drawerToggle;
     private LocalBroadcastReceiver broadcastReceiver;
+
+    @InjectView(R.id.drawer) DrawerLayout drawer;
+    @InjectView(R.id.drawer_list) RecyclerView drawerList;
+    @InjectView(R.id.user_name) TextView userNameView;
+    @InjectView(R.id.user_email) TextView userEmailView;
+
+    private static final java.lang.String STATE_SELECTED_POSITION = "selectedNavItem";
+
+    private static final int REQUEST_GOOGLE_CREDENTIAL_AUTHORIZATION = 45189;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,26 +61,16 @@ public class MainActivity extends BaseActivity {
 
         setContentView(R.layout.activity_main);
 
-        final ActionBar actionBar = getSupportActionBar();
+        ButterKnife.inject(this);
 
-        if (actionBar != null) {
-            actionBar.setHomeButtonEnabled(true);
-            actionBar.setDisplayShowHomeEnabled(true);
-            actionBar.setDisplayHomeAsUpEnabled(false);
-        }
+        // Setup the drawer list.
+        drawerList.setLayoutManager(new LinearLayoutManager(
+                drawerList.getContext(), LinearLayoutManager.VERTICAL, false));
 
+        // TODO Use Home button to navigate up, just like GMail does.
+
+        // Insert the default fragment
         final FragmentManager fragmentManager = getSupportFragmentManager();
-
-        getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
-            @Override
-            public void onBackStackChanged() {
-                final boolean showBackButton = fragmentManager.getBackStackEntryCount() > 0;
-                if (actionBar != null) {
-                    actionBar.setDisplayHomeAsUpEnabled(showBackButton);
-                    actionBar.setDisplayShowHomeEnabled(!showBackButton);
-                }
-            }
-        });
 
         if (savedInstanceState == null) {
             FragmentTransaction transaction = fragmentManager.beginTransaction();
@@ -61,28 +80,100 @@ public class MainActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onSupportNavigateUp() {
-        // Pop back stack (go to previous fragment) until we get to home,
-        // then close the application.
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        if (fragmentManager.getBackStackEntryCount() > 0) {
-            fragmentManager.popBackStack();
-            return true;
-        } else {
-            return super.onSupportNavigateUp();
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+
+        drawerToggle = new ActionBarDrawerToggle(
+                this, drawer, R.string.open_drawer, R.string.close_drawer) {
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+                invalidateOptionsMenu();
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                /* TODO USER_HAS_LEARNED_DRAWER
+                if (!userHasLearnedDrawer) {
+                    userHasLearnedDrawer = true;
+                    saveSharedStateSetting(activity, PREFERENCE_USER_HAS_LEARNED_DRAWER, true);
+                }
+                 */
+                invalidateOptionsMenu();
+            }
+        };
+
+        drawer.post(drawerToggle::syncState);
+        drawer.setDrawerListener(drawerToggle);
+
+        /* TODO USER_HAS_LEARNED_DRAWER
+        if (!userHasLearnedDrawer && !savedInstanceState)
+            drawer.openDrawer();
+         */
+
+        NavigationDrawerAdapter adapter = new NavigationDrawerAdapter();
+        adapter.setSelectionListener(new NavigationDrawerAdapter.SelectionListener() {
+            @Override
+            public void onItemSelected(View view, int position) {
+                // TODO This really shouldn't be tied to the gravity only.
+                drawer.closeDrawer(GravityCompat.START);
+            }
+        });
+
+        if (savedInstanceState != null) {
+            int selected = savedInstanceState.getInt(STATE_SELECTED_POSITION);
+            if (adapter.getSelectedItemPosition() != selected)
+                adapter.setSelectedItem(selected);
         }
+
+        drawerList.setAdapter(adapter);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        drawerToggle.onConfigurationChanged(newConfig);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        LocalBroadcastManager broadcastManager =
-                LocalBroadcastManager.getInstance(this);
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
 
         if (broadcastReceiver == null)
             broadcastReceiver = new LocalBroadcastReceiver();
+
         broadcastReceiver.register(broadcastManager);
+
+        User user = AccountUtils.getUser(userData, this);
+
+        userNameView.setText(getUserDisplayName(user));
+        userEmailView.setText(user.getEmailAddress());
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(STATE_SELECTED_POSITION,
+                ((NavigationDrawerAdapter) drawerList.getAdapter()).getSelectedItemPosition());
+    }
+
+    private String getUserDisplayName(User user) {
+        String userName = Joiner.on(' ').join(
+                user.getFirstName(), user.getMiddleName(), user.getLastName());
+        if (TextUtils.isEmpty(userName.trim()))
+            userName = user.getScreenName();
+        return userName;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // If the DrawerToggle can handle this item, we just let it.
+        if (drawerToggle.onOptionsItemSelected(item))
+            return true;
+        return super.onOptionsItemSelected(item);
     }
 
     private void replaceMainFragment(Fragment fragment) {
@@ -92,14 +183,14 @@ public class MainActivity extends BaseActivity {
         transaction.commit();
     }
 
-    /** Receive broadcasts from the video upload component. */
-    private class UploadBroadcastReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-        }
-    }
-
     /** Local broadcasts. Mainly used for changing the content of the MainActivity. */
+
+    /** Create an intent to view the group list. */
+    public static Intent createIntent(Context context) {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setAction(Intent.ACTION_DEFAULT);
+        return intent;
+    }
 
     /** Create an Intent to view a Group. */
     public static Intent createIntent(Context context, Group group) {
@@ -141,19 +232,23 @@ public class MainActivity extends BaseActivity {
         public void onReceive(Context context, Intent intent) {
             String type = intent.getType();
             String action = intent.getAction();
-            if (type.equals(MimeTypes.GROUP)) {
+            if (MimeTypes.GROUP.equals(type)) {
                 Group group = (Group) intent.getSerializableExtra(EXTRA_GROUP);
                 replaceMainFragment(ThreadListFragment.newInstance(group));
-            } else if (type.equals(MimeTypes.CATEGORY)) {
+            } else if (MimeTypes.CATEGORY.equals(type)) {
                 Category category = (Category) intent.getSerializableExtra(EXTRA_CATEGORY);
                 replaceMainFragment(ThreadListFragment.newInstance(category));
-            } else if (type.equals(MimeTypes.THREAD)) {
+            } else if (MimeTypes.THREAD.equals(type)) {
                 Thread thread = (Thread) intent.getSerializableExtra(EXTRA_THREAD);
                 replaceMainFragment(MessageListFragment.newInstance(thread));
-            } else if (action.equals(Constants.REQUEST_AUTHORIZATION_INTENT)) {
+            } else if (Constants.REQUEST_AUTHORIZATION_INTENT.equals(action)) {
+                Timber.d("Request authorization broadcast received. What should we do with it?");
                 Intent toRun = intent.getParcelableExtra(
                         Constants.REQUEST_AUTHORIZATION_INTENT_PARAM);
-                startActivityForResult(toRun, VideoPickerActivity.REQUEST_AUTHORIZATION);
+                startActivityForResult(toRun, REQUEST_GOOGLE_CREDENTIAL_AUTHORIZATION);
+            } else if (Intent.ACTION_DEFAULT.equals(action)) {
+                // TODO Only if it's not the current fragment already?
+                replaceMainFragment(new GroupListFragment());
             } else {
                 throw new IllegalArgumentException("Unexpected intent: " + intent.toString());
             }
@@ -168,6 +263,8 @@ public class MainActivity extends BaseActivity {
                     this, IntentFilter.create(Intent.ACTION_VIEW, MimeTypes.THREAD));
             manager.registerReceiver(
                     this, new IntentFilter(Constants.REQUEST_AUTHORIZATION_INTENT));
+            manager.registerReceiver(this,
+                    new IntentFilter(Intent.ACTION_DEFAULT));
         }
     }
 }

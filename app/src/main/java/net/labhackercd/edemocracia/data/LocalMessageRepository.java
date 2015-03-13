@@ -23,8 +23,7 @@ public class LocalMessageRepository {
         this.taskManager = taskManager;
     }
 
-    public long add(Message parentMessage,  String subject, String body, Uri videoAttachment,
-                    String youtubeAccount) {
+    public long add(Message parentMessage, String subject, String body, Uri videoAttachment) {
         brite.beginTransaction();
         Throwable error = null;
         try {
@@ -40,7 +39,7 @@ public class LocalMessageRepository {
                     .uuid(UUID.randomUUID())
                     .status(LocalMessage.Status.QUEUE)
                     .build());
-            taskManager.add(new AddMessageTask(id, youtubeAccount));
+            taskManager.add(new AddMessageTask(id));
             return id;
         } catch (Throwable throwable) {
             error = throwable;
