@@ -62,7 +62,18 @@ public class AddMessageTask extends Task {
                     .getString(PreferenceFragment.PREF_YOUTUBE_ACCOUNT, null);
             if (account == null)
                 throw new AssertionError("No YouTube account configured.");
-            String videoId = uploadVideo(message.videoAttachment(), account);
+
+            // FIXME Please.
+            String url = "https://edemocracia.camara.gov.br"
+                    + "/c/message_boards/find_message?p_l_id=&messageId="
+                    + String.valueOf(message.parentMessageId());
+
+            String description = application.getResources()
+                    .getString(R.string.youtube_video_description);
+            description = String.format(description, url);
+
+            String videoId = uploadVideo(
+                    message.videoAttachment(), account, message.subject(), description);
             if (TextUtils.isEmpty(videoId) || "null".equals(videoId))
                 throw new AssertionError("videoId is empty or null");
             body = attachVideo(body, videoId);
@@ -106,7 +117,8 @@ public class AddMessageTask extends Task {
                 .concat(body);
     }
 
-    private String uploadVideo(Uri video, String youtubeAccount) throws FileNotFoundException {
+    private String uploadVideo(Uri video, String youtubeAccount, String title, String description)
+            throws FileNotFoundException {
         Context context = application.getApplicationContext();
 
         GoogleAccountCredential credential = GoogleAccountCredential
@@ -134,8 +146,7 @@ public class AddMessageTask extends Task {
             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             cursor.moveToFirst();
             return ResumableUpload.upload(
-                    youtube, fileInputStream, fileSize,
-                    video, cursor.getString(column_index), context);
+                    youtube, fileInputStream, fileSize, context, title, description);
         } finally {
             if (fileInputStream != null) {
                 try {
