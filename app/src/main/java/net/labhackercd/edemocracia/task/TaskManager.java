@@ -40,8 +40,12 @@ public class TaskManager {
 
     void onTaskError(Task task, Throwable error) {
         if (!task.shouldRetry(error)) {
-            queue.remove();
+            // TODO Should all be done in the same *transaction*
+            // XXX But until there, we run task.onCancel first, then remove. This way,
+            // if the first code block fails somehow, the task will automatically be
+            // executed again later.
             task.onCancel(error);
+            queue.remove();
         }
     }
 
