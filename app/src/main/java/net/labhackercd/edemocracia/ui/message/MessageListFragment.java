@@ -32,6 +32,8 @@ import net.labhackercd.edemocracia.data.rx.Operators;
 import net.labhackercd.edemocracia.ui.BaseFragment;
 import net.labhackercd.edemocracia.ui.listview.ItemListView;
 
+import org.kefirsf.bb.TextProcessor;
+
 import java.util.List;
 import java.util.Set;
 
@@ -50,6 +52,7 @@ public class MessageListFragment extends BaseFragment {
     @Inject Cache cache;
     @Inject UserData userData;
     @Inject MainRepository repository;
+    @Inject TextProcessor textProcessor;
     @Inject LocalMessageRepository messageRepository;
 
     private Thread thread;
@@ -106,7 +109,7 @@ public class MessageListFragment extends BaseFragment {
         Account account = AccountUtils.getAccount(activity);
         User user = userData.getUser(manager, account);
 
-        final MessageListAdapter adapter = new MessageListAdapter(messageRepository, user);
+        final MessageListAdapter adapter = new MessageListAdapter(messageRepository, user, textProcessor);
 
         listView.refreshEvents()
                 .startWith(false)

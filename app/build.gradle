@@ -60,6 +60,9 @@ dependencies {
         exclude module: 'httpclient'
     }
 
+    // BBCode parser
+    compile 'org.kefirsf:kefirbb:1.0'
+
     // ORM
     compile 'com.squareup.sqlbrite:sqlbrite:0.1.0'
     compile 'com.github.frankiesardo:auto-parcel:0.3'

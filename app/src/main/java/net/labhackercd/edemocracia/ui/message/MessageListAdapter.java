@@ -1,21 +1,20 @@
 package net.labhackercd.edemocracia.ui.message;
 
-import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.ocpsoft.pretty.time.PrettyTime;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Transformation;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.LocalMessageRepository;
@@ -23,12 +22,12 @@ import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.data.db.LocalMessage;
 
+import org.kefirsf.bb.TextProcessor;
+
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -37,24 +36,25 @@ import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
-import timber.log.Timber;
 
 public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.ViewHolder> {
 
     private final User user;
+    private final TextProcessor textProcessor;
     private final LocalMessageRepository messageRepository;
     private List<Message> messages = Collections.emptyList();
     private List<LocalMessage> localMessages = Collections.emptyList();
 
-    public MessageListAdapter(LocalMessageRepository messageRepository, User user) {
+    public MessageListAdapter(LocalMessageRepository messageRepository, User user, TextProcessor textProcessor) {
         this.user = user;
+        this.textProcessor = textProcessor;
         this.messageRepository = messageRepository;
     }
 
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.message_list_item, viewGroup, false);
-        return new ViewHolder(view, user, messageRepository);
+        return new ViewHolder(view);
     }
 
     @Override
@@ -101,30 +101,22 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         return messages.isEmpty() ? null : messages.get(0);
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
         @InjectView(R.id.date) TextView dateView;
-        @InjectView(R.id.body) LinearLayout bodyView;
+        @InjectView(R.id.body) MessageView bodyView;
         @InjectView(R.id.portrait) ImageView portraitView;
         @InjectView(android.R.id.text1) TextView userView;
         @InjectView(android.R.id.text2) TextView subjectView;
 
         private Message message;
         private LocalMessage localMessage;
-        private final User user;
-        private final LocalMessageRepository messageRepository;
-        private final Transformation videoThumbnailTransformation;
         private Subscription subscription;
 
-        public ViewHolder(View view, User user, LocalMessageRepository messageRepository) {
+        public ViewHolder(View view) {
             super(view);
             ButterKnife.inject(this, view);
             view.setOnClickListener(this::handleClick);
-            this.user = user;
-            this.messageRepository = messageRepository;
-            // TODO Make less instances of this transformation.
-            // I guess we could instantiate it only once at the Adapter.
-            this.videoThumbnailTransformation = new VideoPlayButtonTransformation(view.getContext());
         }
 
         public void bindMessage(Message message) {
@@ -167,8 +159,6 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         }
 
         private void setLocalMessage(LocalMessage message) {
-            Timber.d("Updating local message.");
-
             setAuthor(user.getScreenName());
 
             setSubject(message.subject());
@@ -250,55 +240,12 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         }
 
         private void setBody(String body) {
-            // Remove all views in *body layout*, in case there are any view remaining
-            // from previously bound messages.
-            bodyView.removeAllViewsInLayout();
-
-            // TODO Parse, support or ignore other bbcode tags.
-            if (body != null) {
-                // Find all youtube tags.
-                Pattern p = Pattern.compile("\\[youtube\\](.*?)\\[\\/youtube\\]");
-                Matcher m = p.matcher(body);
-
-                // Do this for all video thumbnails in the body.
-                while (m.find()) {
-                    final String videoId = m.group(1);
-                    String prevText = body.substring(0, m.start());
-
-                    body = body.substring(m.end());
-
-                    // Create a text view with any text preceding the video and show that.
-                    TextView textView = new TextView(bodyView.getContext(), null, R.style.Widget_BodyTextChunk);
-                    textView.setText(prevText);
-
-                    bodyView.addView(textView);
-
-                    // Add the video thumbnail
-                    ImageView videoThumbView = new ImageView(bodyView.getContext());
-                    videoThumbView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Intent intent = new Intent(Intent.ACTION_VIEW,
-                                    Uri.parse("http://www.youtube.com/watch?v=" + videoId));
-                            v.getContext().startActivity(intent);
-                        }
-                    });
-
-                    // TODO Ensure all the thumbnails are of the same size (if needed)
-                    Picasso.with(videoThumbView.getContext())
-                            .load(Uri.parse("http://img.youtube.com/vi/" + videoId + "/hqdefault.jpg"))
-                            .transform(videoThumbnailTransformation)
-                            .into(videoThumbView);
-
-                    bodyView.addView(videoThumbView);
-                }
-
-                // If there is any text *after* the video, add that too.
-                if (body.length() > 0) {
-                    TextView textView = new TextView(bodyView.getContext(), null, R.style.Widget_BodyTextChunk);
-                    textView.setText(body);
-                    bodyView.addView(textView);
-                }
+            if (!TextUtils.isEmpty(body)) {
+                bodyView.setHTMLText(textProcessor.process(body));
+                bodyView.setLinksClickable(true);
+                bodyView.setMovementMethod(LinkMovementMethod.getInstance());
+            } else {
+                bodyView.setText(null);
             }
         }
     }
