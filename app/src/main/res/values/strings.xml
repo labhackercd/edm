@@ -39,4 +39,5 @@
     <string name="missing_youtube_account_dialog_title">Missing YouTube account</string>
     <string name="missing_youtube_account_dialog_message">You must specify an YouTube account to which your video messages will be uploaded.\n\nWould you like to select your YouTube account now?</string>
     <string name="youtube_video_description">This video was uploaded as an attachment to a message in the edemocracia forums.\\n\\nThe full discussion is available at %1$s.</string>
+    <string name="placeholder_lorem_ipsum">Lorem Ipsum</string>
 </resources>

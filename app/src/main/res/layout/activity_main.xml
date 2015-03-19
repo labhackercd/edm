@@ -20,7 +20,7 @@
             />
 
         <include
-            layout="@layout/navigation_drawer"
+            layout="@layout/navdrawer"
             android:layout_width="@dimen/drawer_width"
             android:layout_height="match_parent"
             android:layout_gravity="start"

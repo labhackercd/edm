@@ -24,29 +24,21 @@ import butterknife.InjectView;
 public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDrawerAdapter.ViewHolder> {
 
     private List<Item> items = Lists.newArrayList(
-            new Item(R.drawable.ic_reply_black_24dp, R.string.title_group_list) {
-                @Override
-                public boolean onSelected(View view) {
-                    Context context = view.getContext();
-                    Intent intent = MainActivity.createIntent(context);
-                    return LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-                }
-            },
-            new Item(R.drawable.ic_reply_black_24dp, R.string.title_preferences) {
-                @Override
-                public boolean onSelected(View view) {
-                    Context context = view.getContext();
-                    Intent intent = new Intent(context, PreferenceActivity.class);
-                    context.startActivity(intent);
-                    return true;
-                }
-            },
-            new Item(R.drawable.ic_reply_black_24dp, R.string.title_about) {
-                @Override
-                public boolean onSelected(View view) {
-                    return false;
-                }
-            }
+            Item.create(R.string.title_group_list, R.drawable.ic_forum_black_24dp, view -> {
+                Context context = view.getContext();
+                Intent intent = MainActivity.createIntent(context);
+                return LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+            }),
+            Item.create(R.string.title_preferences, R.drawable.ic_settings_black_24dp, view -> {
+                Context context = view.getContext();
+                Intent intent = new Intent(context, PreferenceActivity.class);
+                context.startActivity(intent);
+                return true;
+            }),
+            Item.create(R.string.title_about, R.drawable.ic_info_black_24dp, view -> {
+                // TODO About screen.
+                return true;
+            })
     );
 
     private int selectedPosition;
@@ -56,7 +48,7 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater
                 .from(parent.getContext())
-                .inflate(R.layout.navigation_drawer_item, parent, false);
+                .inflate(R.layout.navdrawer_item, parent, false);
         return new ViewHolder(view);
     }
 
@@ -96,12 +88,25 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
         public final int icon;
         public final int label;
 
-        public Item(int icon, int label) {
+        public Item(int label, int icon) {
             this.icon = icon;
             this.label = label;
         }
 
         public abstract boolean onSelected(View view);
+
+        public static Item create(int label, int icon, OnSelectCallback callback) {
+            return new Item(label, icon) {
+                @Override
+                public boolean onSelected(View view) {
+                    return callback.onSelect(view);
+                }
+            };
+        }
+
+        public interface OnSelectCallback {
+            public boolean onSelect(View view);
+        }
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

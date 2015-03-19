@@ -48,8 +48,8 @@ public class MainActivity extends BaseActivity {
 
     @InjectView(R.id.drawer) DrawerLayout drawer;
     @InjectView(R.id.drawer_list) RecyclerView drawerList;
-    @InjectView(R.id.user_name) TextView userNameView;
-    @InjectView(R.id.user_email) TextView userEmailView;
+    @InjectView(R.id.profile_name_text) TextView userNameView;
+    @InjectView(R.id.profile_email_text) TextView userEmailView;
 
     private static final java.lang.String STATE_SELECTED_POSITION = "selectedNavItem";
 
