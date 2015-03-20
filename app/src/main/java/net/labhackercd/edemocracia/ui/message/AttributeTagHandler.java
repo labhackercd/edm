@@ -10,8 +10,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import timber.log.Timber;
-
 /**
  * A {@link Html.TagHandler} that can extract tag arguments through black magic.
  *
@@ -20,7 +18,9 @@ import timber.log.Timber;
 public abstract class AttributeTagHandler implements Html.TagHandler {
     @Override
     public void handleTag(boolean opening, String tag, Editable output, XMLReader xmlReader) {
-        handleTag(opening, tag, opening ? getAttributes(xmlReader) : Collections.emptyMap(), output);
+        Map<String, String> attrs = getAttributes(xmlReader);
+        if (attrs == null) attrs = Collections.emptyMap();
+        handleTag(opening, tag, attrs, output);
     }
 
     protected abstract void handleTag(boolean opening, String tag, Map<String, String> attrs, Editable output);
@@ -32,7 +32,7 @@ public abstract class AttributeTagHandler implements Html.TagHandler {
             Object element = elementField.get(xmlReader);
 
             if (element == null)
-                return Collections.emptyMap();
+                return null;
 
             Field attsField = element.getClass().getDeclaredField("theAtts");
             attsField.setAccessible(true);
@@ -57,8 +57,7 @@ public abstract class AttributeTagHandler implements Html.TagHandler {
 
             return attributes;
         } catch (Exception e) {
-            Timber.e(e, "Error while fetching attributes.");
-            return Collections.emptyMap();
+            return null;
         }
     }
 }

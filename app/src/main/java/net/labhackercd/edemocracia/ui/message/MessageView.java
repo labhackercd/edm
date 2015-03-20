@@ -33,7 +33,7 @@ public class MessageView extends TextView {
     }
 
     public void setHTMLText(String html) {
-        Spanned spanned = Html.fromHtml(html);
+        Spanned spanned = Html.fromHtml(html, null, new MessageTagHandler());
         SpannableStringBuilder spannable = new SpannableStringBuilder(spanned);
 
         // Make youtube thumbnails

@@ -96,6 +96,7 @@
         <coderef name="i"/>
         <coderef name="color"/>
         <coderef name="size"/>
+        <coderef name="center" />
 
         <!-- Quotes -->
         <coderef name="code"/>
@@ -112,11 +113,10 @@
         <coderef name="url4"/>
         <coderef name="url5"/>
         <coderef name="url6"/>
+        <coderef name="youtube" />
 
         <!-- Table -->
         <coderef name="table"/>
-
-        <coderef name="youtube" />
     </scope>
 
     <!-- Simple formatting -->
@@ -242,6 +242,11 @@
     <code name="youtube">
         <pattern ignoreCase="true">[youtube]<var scope="escapeXml" />[/youtube]</pattern>
         <template>&lt;a href=&quot;https://youtube.com/watch?v=<var />&quot;&gt;https://youtube.com/watch?v=<var />&lt;/a&gt;</template>
+    </code>
+
+    <code name="center">
+        <pattern ignoreCase="true">[center]<var inherit="true" />[/center]</pattern>
+        <template>&lt;span class=&quot;center&quot;&gt;<var/>&lt;/span&gt;</template>
     </code>
 </configuration>
 
