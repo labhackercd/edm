@@ -13,7 +13,13 @@ import java.util.Map;
 /**
  * A {@link Html.TagHandler} that can extract tag arguments through black magic.
  *
- * It's not used right now, but it will be pretty handy when we start to support more bbcodes.
+ * I know black magic makes ponies sad, but the only alternative to this is to copy-paste-change
+ * the whole Html.java file just to make the attributes accessible to TagHandlers. And, as you
+ * may already know by now, I have no time for that. So yeah, I'll just leave a note here:
+ *
+ * FIXME Make ponies happy **
+ *
+ * [**] Oh, there's also a reason beyond the ponies happiness: reflection is slow and can break anytime.
  */
 public abstract class AttributeTagHandler implements Html.TagHandler {
     @Override
