@@ -7,6 +7,8 @@ import org.json.JSONObject;
 
 public class Group extends BaseModel {
 
+    public static final String CLOSED = "closed";
+
     private String friendlyURL;
     private long classPK;
     private String description;
@@ -21,6 +23,7 @@ public class Group extends BaseModel {
     private int type;
     private long groupId;
     private String name;
+    private boolean closed;
 
     public String getFriendlyURL() {
         return friendlyURL;
@@ -78,6 +81,10 @@ public class Group extends BaseModel {
         return name;
     }
 
+    public boolean isClosed() {
+        return closed;
+    }
+
     public static final JSONReader<Group> JSON_READER = new JSONReader<Group>() {
         @Override
         public Group fromJSON(JSONObject json) throws JSONException {
@@ -97,6 +104,7 @@ public class Group extends BaseModel {
             instance.type = json.getInt("type");
             instance.groupId = json.getLong("groupId");
             instance.name = json.getString("name");
+            instance.closed = json.getBoolean(CLOSED);
 
             return instance;
         }

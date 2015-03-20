@@ -1,5 +1,6 @@
 package net.labhackercd.edemocracia.data.api;
 
+import com.google.common.collect.Lists;
 import com.liferay.mobile.android.auth.Authentication;
 import com.liferay.mobile.android.service.JSONObjectWrapper;
 import com.liferay.mobile.android.service.Session;
@@ -9,9 +10,11 @@ import com.liferay.mobile.android.v62.mbmessage.MBMessageService;
 import com.liferay.mobile.android.v62.mbthread.MBThreadService;
 
 import net.labhackercd.edemocracia.data.api.client.CustomService;
+import net.labhackercd.edemocracia.data.api.client.EDMBatchSession;
 import net.labhackercd.edemocracia.data.api.client.EDMGetSessionWrapper;
 import net.labhackercd.edemocracia.data.api.client.EDMSession;
 import net.labhackercd.edemocracia.data.api.client.Endpoint;
+import net.labhackercd.edemocracia.data.api.client.exception.NotFoundException;
 import net.labhackercd.edemocracia.data.api.model.Category;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.Message;
@@ -19,10 +22,13 @@ import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.data.api.model.User;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
 import java.util.UUID;
+
+import rx.Observable;
 
 class EDMServiceImpl implements EDMService {
 
@@ -198,12 +204,99 @@ class EDMServiceImpl implements EDMService {
     @Override
     public List<Group> getGroups(long companyId) {
         try {
-            JSONArray json = getGroupService().search(
-                    companyId, "%", "%", new JSONArray(), -1, -1);
+            JSONArray json = new RetryHelper<JSONArray>() {
+                @Override
+                public JSONArray call() throws Throwable {
+                    return getGroupsArray(companyId);
+                }
+
+                @Override
+                protected boolean shouldRetry(Throwable t) {
+                    return (t instanceof NotFoundException
+                            && t.getMessage().toLowerCase().contains("group"));
+                }
+            }.call(3);
             return json == null ? null : Group.JSON_READER.fromJSON(json);
         } catch (Exception e) {
             throw handleException(e);
         }
+    }
+
+    private static abstract class RetryHelper<T> {
+        public abstract T call() throws Throwable;
+
+        public T call(int attempts) {
+            RuntimeException lastException = null;
+            for (int i = 0; i < attempts; i++) {
+                try {
+                    return call();
+                } catch (Throwable t) {
+                    lastException = handleException(t);
+                    if (!shouldRetry(t))
+                        break;
+                }
+            }
+            throw lastException;
+        }
+
+        protected boolean shouldRetry(Throwable t) {
+            return true;
+        }
+
+        private RuntimeException handleException(Throwable t) {
+            return new RuntimeException(t);
+        }
+    }
+
+    private JSONArray getGroupsArray(long companyId) throws Exception {
+        EDMBatchSession batch = new EDMBatchSession(session);
+
+        for (Long groupId : getGroupIds(companyId)) {
+            String field = "groupId";
+            String alias = "group" + groupId;
+            batch.invoke(new JSONObject("{" +
+                    "  \"$" + alias + " = /group/get-group\": {" +
+                    "    \"groupId\": " + groupId + "," +
+                    "    \"$" + Group.CLOSED + " = /expandovalue/get-data.5\": {" +
+                    "      \"companyId\": " + companyId + "," +
+                    "      \"className\": \"com.liferay.portal.model.Group\"," +
+                    "      \"tableName\": \"CUSTOM_FIELDS\"," +
+                    "      \"columnName\": \"Encerrada\"," +
+                    "      \"@classPk\": \"$" + alias + "." + field  + "\"" +
+                    "    }" +
+                    "  }" +
+                    "}"));
+        }
+
+        return batch.invoke();
+    }
+
+    private List<Long> getGroupIds(long companyId) throws Exception {
+        JSONArray json = getGroupService().search(companyId, "%", "%", new JSONArray(), -1, -1);
+        return Lists.newArrayList(
+                createObjectObservable(json)
+                        .map(o -> o.optLong("groupId"))
+                        .filter(id -> id > 0)
+                        .toBlocking()
+                        .toIterable());
+    }
+
+    private static Observable<JSONObject> createObjectObservable(JSONArray json) {
+        return Observable.create(f -> {
+            for (int i = 0; i < json.length(); i++) {
+                if (f.isUnsubscribed()) {
+                    break;
+                } else {
+                    try {
+                        f.onNext(json.getJSONObject(i));
+                    } catch (JSONException e) {
+                        f.onError(e);
+                    }
+                }
+            }
+            if (!f.isUnsubscribed())
+                f.onCompleted();
+        });
     }
 
     @Override

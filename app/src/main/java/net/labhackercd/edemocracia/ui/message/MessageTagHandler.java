@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import timber.log.Timber;
-
 public class MessageTagHandler extends AttributeTagHandler {
     private final List<Span> spanStack = new ArrayList<>();
 

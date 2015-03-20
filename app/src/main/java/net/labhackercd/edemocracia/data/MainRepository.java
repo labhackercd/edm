@@ -41,7 +41,11 @@ public class MainRepository {
     }
 
     public Request<List<Group>> getGroups(long companyId) {
-        return request1("getGroups", service::getGroups, companyId);
+        return request1("getGroups", service::getGroups, companyId)
+                .transform(r -> r.asObservable()
+                        .flatMap(Observable::from)
+                        .filter(group -> group != null && !group.isClosed())
+                        .toList());
     }
 
     public Request<List<Thread>> getThreads(long groupId) {
