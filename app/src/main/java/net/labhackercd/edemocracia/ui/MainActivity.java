@@ -18,6 +18,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.common.base.Joiner;
@@ -25,6 +26,7 @@ import com.google.common.base.Joiner;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.account.AccountUtils;
 import net.labhackercd.edemocracia.account.UserData;
+import net.labhackercd.edemocracia.data.ImageLoader;
 import net.labhackercd.edemocracia.data.api.model.Category;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.Thread;
@@ -43,6 +45,7 @@ import timber.log.Timber;
 public class MainActivity extends BaseActivity {
 
     @Inject UserData userData;
+    @Inject ImageLoader imageLoader;
     private ActionBarDrawerToggle drawerToggle;
     private LocalBroadcastReceiver broadcastReceiver;
 
@@ -50,6 +53,7 @@ public class MainActivity extends BaseActivity {
     @InjectView(R.id.drawer_list) RecyclerView drawerList;
     @InjectView(R.id.profile_name_text) TextView userNameView;
     @InjectView(R.id.profile_email_text) TextView userEmailView;
+    @InjectView(R.id.profile_image) ImageView userImageView;
 
     private static final java.lang.String STATE_SELECTED_POSITION = "selectedNavItem";
 
@@ -151,6 +155,11 @@ public class MainActivity extends BaseActivity {
 
         userNameView.setText(getUserDisplayName(user));
         userEmailView.setText(user.getEmailAddress());
+
+        imageLoader.userPortrait(user.getPortraitId())
+                .fit()
+                .centerCrop()
+                .into(userImageView);
     }
 
     @Override

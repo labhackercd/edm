@@ -20,4 +20,9 @@ public class ImageLoader {
         String url = String.format("%s/documents/%d/0/icone", portal.url(), groupId);
         return picasso.load(Uri.parse(url));
     }
+
+    public RequestCreator userPortrait(long portraitId) {
+        String url = String.format("%s/image/user_male_portrait?img_id=%d", portal.url(), portraitId);
+        return picasso.load(Uri.parse(url));
+    }
 }
