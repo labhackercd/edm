@@ -19,7 +19,6 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
-import timber.log.Timber;
 
 @Module(
         library = true,
@@ -49,8 +48,9 @@ public class DataModule {
     Picasso providePicasso(Application application, OkHttpClient client) {
         return new Picasso.Builder(application)
                 .downloader(new OkHttpDownloader(client))
-                .listener((picasso, uri, exception) ->
-                        Timber.w(exception, "Failed to load image: %s", uri))
+                // XXX This is really annoying.
+                //.listener((picasso, uri, exception) ->
+                //        Timber.w(exception, "Failed to load image: %s", uri))
                 .build();
     }
 
