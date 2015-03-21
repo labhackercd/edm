@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.amulyakhare.textdrawable.TextDrawable;
 
 import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.data.ImageLoader;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.ui.MainActivity;
 
@@ -25,7 +26,12 @@ import butterknife.InjectView;
 
 public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.ViewHolder> {
 
+    private final ImageLoader imageLoader;
     private List<Group> groups = Collections.emptyList();
+
+    public GroupListAdapter(ImageLoader imageLoader) {
+        this.imageLoader = imageLoader;
+    }
 
     public GroupListAdapter replaceWith(List<Group> groups) {
         this.groups = groups;
@@ -50,11 +56,11 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
         return groups.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        private Group group;
+
         @InjectView(android.R.id.icon) ImageView iconView;
         @InjectView(android.R.id.text1) TextView textView;
-
-        private Group group;
 
         public ViewHolder(View view) {
             super(view);
@@ -65,23 +71,23 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
         public void bindGroup(Group group) {
             this.group = group;
 
-            textView.setText(group.getName());
+            setName(group.getName());
 
-            String letter = group.getName().trim().substring(0, 1).toUpperCase();
+            setImage(group.getName(), group.getGroupId());
+        }
 
-            TextDrawable textDrawable = TextDrawable.builder().buildRect(letter, Color.LTGRAY);
+        private void setName(String name) {
+            textView.setText(name);
+        }
 
-            iconView.setImageDrawable(textDrawable);
-
-            /*
-            TODO Display group icons
-            Picasso.with(context)
-                    .load(group.getGroupImage())
-                    .placeholder(textDrawable)
+        private void setImage(String name, long groupId) {
+            String firstLetter = name.trim().substring(0, 1).toUpperCase();
+            TextDrawable placeholder = TextDrawable.builder().buildRect(firstLetter, Color.LTGRAY);
+            imageLoader.group(groupId)
+                    .placeholder(placeholder)
                     .resize(128, 128)
                     .centerCrop()
                     .into(iconView);
-                    */
         }
 
         private void handleClick(View v) {

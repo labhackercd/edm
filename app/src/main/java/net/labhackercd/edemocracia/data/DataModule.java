@@ -1,9 +1,13 @@
 package net.labhackercd.edemocracia.data;
 
+import android.app.Application;
+
+import com.squareup.picasso.Picasso;
 import com.squareup.sqlbrite.SqlBrite;
 
 import net.labhackercd.edemocracia.data.api.ApiModule;
 import net.labhackercd.edemocracia.data.api.EDMService;
+import net.labhackercd.edemocracia.data.api.Portal;
 import net.labhackercd.edemocracia.data.db.DbModule;
 import net.labhackercd.edemocracia.task.TaskManager;
 
@@ -27,6 +31,16 @@ public class DataModule {
     @Provides @Singleton
     MainRepository provideMainRepository(EDMService service) {
         return new MainRepository(service);
+    }
+
+    @Provides @Singleton
+    Picasso providePicasso(Application application) {
+        return Picasso.with(application);
+    }
+
+    @Provides @Singleton
+    ImageLoader provideImageLoader(Portal portal, Picasso picasso) {
+        return new ImageLoader(portal, picasso);
     }
 
     @Provides @Singleton

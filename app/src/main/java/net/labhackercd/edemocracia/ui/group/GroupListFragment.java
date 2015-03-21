@@ -13,6 +13,7 @@ import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.account.AccountUtils;
 import net.labhackercd.edemocracia.account.UserData;
 import net.labhackercd.edemocracia.data.Cache;
+import net.labhackercd.edemocracia.data.ImageLoader;
 import net.labhackercd.edemocracia.data.MainRepository;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.User;
@@ -31,11 +32,11 @@ import rx.schedulers.Schedulers;
 public class GroupListFragment extends BaseFragment {
     @Inject Cache cache;
     @Inject UserData userData;
+    @Inject ImageLoader imageLoader;
     @Inject MainRepository repository;
 
     private User user;
     private ItemListView listView;
-    private GroupListAdapter adapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -48,7 +49,7 @@ public class GroupListFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
 
-        final GroupListAdapter adapter = new GroupListAdapter();
+        final GroupListAdapter adapter = new GroupListAdapter(imageLoader);
 
         Account account = AccountUtils.getAccount(getActivity());
         AccountManager manager = AccountManager.get(getActivity());
@@ -62,11 +63,6 @@ public class GroupListFragment extends BaseFragment {
                 .observeOn(AndroidSchedulers.mainThread())
                 .map(adapter::replaceWith)
                 .subscribe(listView.dataHandler());
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
     }
 
     public Observable<List<Group>> getListData(boolean fresh) {
