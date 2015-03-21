@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.Cache;
+import net.labhackercd.edemocracia.data.ImageLoader;
 import net.labhackercd.edemocracia.data.MainRepository;
 import net.labhackercd.edemocracia.data.Request;
 import net.labhackercd.edemocracia.data.api.model.Category;
@@ -33,11 +34,11 @@ public class ThreadListFragment extends BaseFragment {
     public static String ARG_PARENT = "parent";
 
     @Inject Cache cache;
+    @Inject ImageLoader imageLoader;
     @Inject MainRepository repository;
 
     private Object parent;
     private ItemListView listView;
-    private ThreadListAdapter adapter;
 
     public static Fragment newInstance(Group group) {
         ThreadListFragment fragment = new ThreadListFragment();
@@ -85,7 +86,7 @@ public class ThreadListFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
 
-        final ThreadListAdapter adapter = new ThreadListAdapter();
+        final ThreadListAdapter adapter = new ThreadListAdapter(imageLoader);
 
         listView.refreshEvents()
                 .startWith(false)

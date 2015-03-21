@@ -55,8 +55,8 @@ public class DataModule {
     }
 
     @Provides @Singleton
-    ImageLoader provideImageLoader(Portal portal, Picasso picasso) {
-        return new ImageLoader(portal, picasso);
+    ImageLoader provideImageLoader(Portal portal, Picasso picasso, MainRepository repository, Cache cache) {
+        return new ImageLoader(portal, picasso, repository, cache);
     }
 
     @Provides @Singleton

@@ -3,6 +3,7 @@ package net.labhackercd.edemocracia.ui.thread;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
@@ -16,6 +17,7 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.ocpsoft.pretty.time.PrettyTime;
 
 import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.data.ImageLoader;
 import net.labhackercd.edemocracia.data.api.model.Category;
 import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.ui.MainActivity;
@@ -26,14 +28,19 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.ViewHolder> {
+
+    private final ImageLoader imageLoader;
 
     private List<Thread> threads = Collections.emptyList();
     private List<Category> categories = Collections.emptyList();
 
-    public ThreadListAdapter replaceWith(Pair<List<Category>, List<Thread>> lists) {
-        return replaceWith(lists.first, lists.second);
+    public ThreadListAdapter(ImageLoader imageLoader) {
+        this.imageLoader = imageLoader;
     }
 
     public ThreadListAdapter replaceWith(List<Category> categories, List<Thread> threads) {
@@ -66,7 +73,7 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
     }
 
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
         @InjectView(android.R.id.text2) TextView titleView;
         @InjectView(R.id.body) TextView bodyView;
@@ -77,6 +84,7 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
 
         private Thread thread;
         private Category category;
+        private Subscription portraitSubscription = null;
 
         public ViewHolder(View view) {
             super(view);
@@ -84,11 +92,27 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
             view.setOnClickListener(this::handleClick);
         }
 
-        public void bindThread(Thread thread) {
-            this.thread = thread;
-            this.category = null;
+        public void bindCategory(Category category) {
+            beforeBind(category, null);
 
-            setPortrait(thread.getStatusByUserName());
+            setPortrait(category.getUserName(), category.getUserId());
+
+            setUserName(category.getUserName());
+
+            setTitle(category.getName());
+
+            setBody(category.getDescription());
+
+            setCounter(category.getThreadCount());
+
+            Date date = category.getLastPostDate();
+            setDate(date != null ? date : category.getCreateDate());
+        }
+
+        public void bindThread(Thread thread) {
+            beforeBind(null, thread);
+
+            setPortrait(thread.getStatusByUserName(), thread.getRootMessageUserId());
 
             setUserName(thread.getStatusByUserName());
 
@@ -103,23 +127,13 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
             setDate(thread.getLastPostDate());
         }
 
-        public void bindCategory(Category category) {
-            this.thread = null;
+        private void beforeBind(Category category, Thread thread) {
+            this.thread = thread;
             this.category = category;
-
-            setPortrait(category.getUserName());
-
-            setUserName(category.getUserName());
-
-            setTitle(category.getName());
-
-            setBody(category.getDescription());
-
-            setCounter(category.getThreadCount());
-
-            Date date = category.getLastPostDate();
-
-            setDate(date != null ? date : category.getCreateDate());
+            if (portraitSubscription != null) {
+                portraitSubscription.unsubscribe();
+                portraitSubscription = null;
+            }
         }
 
         private void setDate(Date date) {
@@ -153,13 +167,20 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
             userView.setText(userName);
         }
 
-        private void setPortrait(String user) {
-            String letter = user.substring(0, 1).toUpperCase();
-            TextDrawable textDrawable = TextDrawable.builder().buildRect(letter, Color.LTGRAY);
+        private void setPortrait(String userName, long userId) {
+            Drawable placeholder = portraitPlaceholder(userName);
+            portraitView.setImageDrawable(placeholder);
+            portraitSubscription = imageLoader.userPortrait2(userId)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(r -> r.fit().centerCrop()
+                            .placeholder(placeholder)
+                            .into(portraitView));
+        }
 
-            portraitView.setImageDrawable(textDrawable);
-
-            // TODO Load user portraits
+        private Drawable portraitPlaceholder(String userName) {
+            String letter = userName.trim().substring(0, 1).toUpperCase();
+            return TextDrawable.builder().buildRect(letter, Color.LTGRAY);
         }
 
         private void handleClick(View v) {

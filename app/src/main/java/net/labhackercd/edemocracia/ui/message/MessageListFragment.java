@@ -22,6 +22,7 @@ import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.account.AccountUtils;
 import net.labhackercd.edemocracia.account.UserData;
 import net.labhackercd.edemocracia.data.Cache;
+import net.labhackercd.edemocracia.data.ImageLoader;
 import net.labhackercd.edemocracia.data.LocalMessageRepository;
 import net.labhackercd.edemocracia.data.MainRepository;
 import net.labhackercd.edemocracia.data.api.model.Message;
@@ -51,6 +52,7 @@ public class MessageListFragment extends BaseFragment {
 
     @Inject Cache cache;
     @Inject UserData userData;
+    @Inject ImageLoader imageLoader;
     @Inject MainRepository repository;
     @Inject TextProcessor textProcessor;
     @Inject LocalMessageRepository messageRepository;
@@ -109,7 +111,8 @@ public class MessageListFragment extends BaseFragment {
         Account account = AccountUtils.getAccount(activity);
         User user = userData.getUser(manager, account);
 
-        final MessageListAdapter adapter = new MessageListAdapter(messageRepository, user, textProcessor);
+        final MessageListAdapter adapter = new MessageListAdapter(
+                messageRepository, user, textProcessor, imageLoader);
 
         listView.refreshEvents()
                 .startWith(false)

@@ -8,6 +8,7 @@ import com.liferay.mobile.android.v62.group.GroupService;
 import com.liferay.mobile.android.v62.mbcategory.MBCategoryService;
 import com.liferay.mobile.android.v62.mbmessage.MBMessageService;
 import com.liferay.mobile.android.v62.mbthread.MBThreadService;
+import com.liferay.mobile.android.v62.user.UserService;
 
 import net.labhackercd.edemocracia.data.api.client.CustomService;
 import net.labhackercd.edemocracia.data.api.client.EDMBatchSession;
@@ -31,6 +32,7 @@ import java.util.UUID;
 import rx.Observable;
 
 class EDMServiceImpl implements EDMService {
+
 
     public static class Builder implements EDMService.Builder {
         private Endpoint endpoint;
@@ -114,6 +116,7 @@ class EDMServiceImpl implements EDMService {
         return throwable;
     }
 
+    private UserService userService;
     private GroupService groupService;
     private CustomService customService;
     private MBThreadService threadService;
@@ -150,11 +153,27 @@ class EDMServiceImpl implements EDMService {
         return customService;
     }
 
+    private UserService getUserService() {
+        if (userService == null)
+            userService = new UserService(session);
+        return userService;
+    }
+
     @Override
     public User getUser() {
         try {
             JSONObject command = new JSONObject("{\"/user/get-user-by-id\": {}}");
             JSONObject json = session.invoke(command).getJSONObject(0);
+            return json == null ? null : User.JSON_READER.fromJSON(json);
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
+    @Override
+    public User getUser(long userId) {
+        try {
+            JSONObject json = getUserService().getUserById(userId);
             return json == null ? null : User.JSON_READER.fromJSON(json);
         } catch (Exception e) {
             throw handleException(e);

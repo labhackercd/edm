@@ -33,6 +33,10 @@ public class MainRepository {
         return request0("getUser", service::getUser);
     }
 
+    public Request<User> getUser(long userId) {
+        return request1("getUser", service::getUser, userId);
+    }
+
     public Request<User> getUserWithCredentials(String email, String password) {
         EDMService newService = service.newBuilder()
                 .setAuthentication(new BasicAuthentication(email, password))

@@ -28,6 +28,8 @@ public interface EDMService {
 
     public User getUser();
 
+    public User getUser(long userId);
+
     public List<Thread> getThreads(long groupId);
 
     public List<Thread> getThreads(long groupId, long categoryId);

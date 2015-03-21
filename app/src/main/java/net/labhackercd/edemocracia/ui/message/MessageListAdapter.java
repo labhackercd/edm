@@ -1,7 +1,7 @@
 package net.labhackercd.edemocracia.ui.message;
 
 import android.graphics.Color;
-import android.net.Uri;
+import android.graphics.drawable.Drawable;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -14,9 +14,10 @@ import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.ocpsoft.pretty.time.PrettyTime;
-import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
 
 import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.data.ImageLoader;
 import net.labhackercd.edemocracia.data.LocalMessageRepository;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.User;
@@ -40,13 +41,15 @@ import rx.schedulers.Schedulers;
 public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.ViewHolder> {
 
     private final User user;
+    private final ImageLoader imageLoader;
     private final TextProcessor textProcessor;
     private final LocalMessageRepository messageRepository;
     private List<Message> messages = Collections.emptyList();
     private List<LocalMessage> localMessages = Collections.emptyList();
 
-    public MessageListAdapter(LocalMessageRepository messageRepository, User user, TextProcessor textProcessor) {
+    public MessageListAdapter(LocalMessageRepository messageRepository, User user, TextProcessor textProcessor, ImageLoader imageLoader) {
         this.user = user;
+        this.imageLoader = imageLoader;
         this.textProcessor = textProcessor;
         this.messageRepository = messageRepository;
     }
@@ -120,10 +123,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         }
 
         public void bindMessage(Message message) {
-            this.message = message;
-            this.localMessage = null;
-
-            unsubscribe();
+            beforeBind(message, null);
 
             setAuthor(message.getUserName());
 
@@ -134,41 +134,40 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             setStatus(message.getCreateDate());
 
             // TODO Display author's portrait.
-            setPortrait(message.getUserName(), null);
+            setPortrait2(message.getUserName(), message.getUserId());
         }
 
-        private void unsubscribe() {
+        public void bindLocalMessage(LocalMessage localMessage) {
+            beforeBind(null, localMessage);
+
+            // Note: we startWith the given localMessage, but subscribe for when
+            // it's updated somewhere else
+            subscription = messageRepository.getMessage(localMessage.id())
+                    .subscribeOn(Schedulers.io())
+                    .startWith(Observable.just(localMessage))
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe((LocalMessage message) -> {
+                        setAuthor(user.getScreenName());
+
+                        setSubject(message.subject());
+
+                        setBody(message.body());
+
+                        setLocalMessageStatus(message.status(), message.insertionDate());
+
+                        setPortrait(user.getScreenName(), user.getPortraitId());
+                    });
+        }
+
+        private void beforeBind(Message message, LocalMessage localMessage) {
+            this.message = message;
+            this.localMessage = localMessage;
+
             if (subscription != null) {
-                if (!subscription.isUnsubscribed())
+                if (subscription.isUnsubscribed())
                     subscription.unsubscribe();
                 subscription = null;
             }
-        }
-
-        public void bindLocalMessage(LocalMessage message) {
-            this.message = null;
-            this.localMessage = message;
-
-            unsubscribe();
-
-            subscription = messageRepository.getMessage(localMessage.id())
-                    .subscribeOn(Schedulers.io())
-                    .startWith(Observable.just(message))
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(this::setLocalMessage);
-        }
-
-        private void setLocalMessage(LocalMessage message) {
-            setAuthor(user.getScreenName());
-
-            setSubject(message.subject());
-
-            setBody(message.body());
-
-            setLocalMessageStatus(message.status(), message.insertionDate());
-
-            // TODO Display author's portrait.
-            setPortrait(user.getScreenName(), null);
         }
 
         public void handleClick(View v) {
@@ -223,20 +222,29 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             }
         }
 
-        private void setPortrait(String author, Uri portrait) {
-            String letter = author.trim().substring(0, 1).toUpperCase();
-            TextDrawable textDrawable = TextDrawable.builder().buildRect(letter, Color.LTGRAY);
+        private void setPortrait(String userName, long portraitId) {
+            Drawable placeholder = getPortraitPlaceholder(userName);
+            setPortrait(imageLoader.userPortrait(portraitId).placeholder(placeholder));
+        }
 
-            if (portrait == null) {
-                portraitView.setImageDrawable(textDrawable);
-            } else {
-                Picasso.with(portraitView.getContext().getApplicationContext())
-                        .load(portrait)
-                        .placeholder(textDrawable)
-                        .resize(100, 100)
-                        .centerCrop()
-                        .into(portraitView);
-            }
+        private void setPortrait2(String userName, long userId) {
+            Drawable placeholder = getPortraitPlaceholder(userName);
+            portraitView.setImageDrawable(placeholder);
+            imageLoader.userPortrait2(userId)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(request -> {
+                        setPortrait(request.placeholder(placeholder));
+                    });
+        }
+
+        private void setPortrait(RequestCreator requestCreator) {
+            requestCreator.fit().centerCrop().into(portraitView);
+        }
+
+        private Drawable getPortraitPlaceholder(String userName) {
+            String letter = userName.trim().substring(0, 1).toUpperCase();
+            return TextDrawable.builder().buildRect(letter, Color.LTGRAY);
         }
 
         private void setBody(String body) {
