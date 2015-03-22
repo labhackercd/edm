@@ -267,7 +267,10 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
         private void setPortrait(String userName, long portraitId) {
             Drawable placeholder = getPortraitPlaceholder(userName);
-            setPortrait(imageLoader.userPortrait(portraitId).placeholder(placeholder));
+            if (portraitId <= 0)
+                setPortrait(placeholder);
+            else
+                setPortrait(imageLoader.userPortrait(portraitId).placeholder(placeholder));
         }
 
         private void setPortrait2(String userName, long userId) {
@@ -283,6 +286,10 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
         private void setPortrait(RequestCreator requestCreator) {
             requestCreator.fit().centerCrop().into(portraitView);
+        }
+
+        private void setPortrait(Drawable drawable) {
+            portraitView.setImageDrawable(drawable);
         }
 
         private Drawable getPortraitPlaceholder(String userName) {

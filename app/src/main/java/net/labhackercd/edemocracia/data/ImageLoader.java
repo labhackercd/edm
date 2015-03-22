@@ -41,7 +41,12 @@ public class ImageLoader {
                 .transform(r -> r.asObservable()
                         .compose(cache.cache(r.key())))
                 .asObservable()
-                .map(user -> picasso.load(Uri.parse(userPortraitUrl(user.getPortraitId()))));
+                .map(user -> {
+                    long portraitId = user.getPortraitId();
+                    return portraitId <= 0 ? null :
+                            picasso.load(Uri.parse(userPortraitUrl(portraitId)));
+                })
+                .filter(r -> r != null);
     }
 
     private String userPortraitUrl(long portraitId) {
