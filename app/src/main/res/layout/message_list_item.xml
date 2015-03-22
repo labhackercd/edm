@@ -92,7 +92,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8sp"
                     android:id="@+id/error_button"
-                    android:src="@drawable/ic_error_black_18dp"
+                    android:src="@drawable/ic_error_red_18dp"
                     android:alpha="1"
                     android:visibility="gone"
                     />
