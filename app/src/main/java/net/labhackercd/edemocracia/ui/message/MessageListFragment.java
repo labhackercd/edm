@@ -5,7 +5,9 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -25,6 +27,7 @@ import net.labhackercd.edemocracia.data.Cache;
 import net.labhackercd.edemocracia.data.ImageLoader;
 import net.labhackercd.edemocracia.data.LocalMessageRepository;
 import net.labhackercd.edemocracia.data.MainRepository;
+import net.labhackercd.edemocracia.data.Request;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.data.api.model.User;
@@ -40,6 +43,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import auto.parcel.AutoParcel;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -47,7 +51,9 @@ import timber.log.Timber;
 
 public class MessageListFragment extends BaseFragment {
 
-    private static final String ARG_THREAD = "thread";
+    private static final String ARG_THREAD_DATA = "threadData";
+    private static final String ARG_SCROLL_TO_ITEM = "scrollToItemById";
+
     private static final int REQUEST_INSERT_MESSAGE = 1;
 
     @Inject Cache cache;
@@ -57,19 +63,29 @@ public class MessageListFragment extends BaseFragment {
     @Inject TextProcessor textProcessor;
     @Inject LocalMessageRepository messageRepository;
 
-    private Thread thread;
+    private ThreadData data;
     private Message rootMessage;
     private ItemListView listView;
     private long scrollToItem = -1;
 
     public static MessageListFragment newInstance(Thread thread) {
+        return newInstance(ThreadData.create(thread));
+    }
+
+    public static Fragment newInstance(LocalMessage message) {
+        return newInstance(ThreadData.create(message), message.id());
+    }
+
+    private static MessageListFragment newInstance(ThreadData data) {
+        return newInstance(data, -1);
+    }
+
+    private static MessageListFragment newInstance(ThreadData data, long localMessageId) {
         MessageListFragment fragment = new MessageListFragment();
-
         Bundle args = new Bundle();
-        args.putSerializable(ARG_THREAD, thread);
-
+        args.putParcelable(ARG_THREAD_DATA, data);
+        args.putLong(ARG_SCROLL_TO_ITEM, localMessageId);
         fragment.setArguments(args);
-
         return fragment;
     }
 
@@ -80,10 +96,8 @@ public class MessageListFragment extends BaseFragment {
         setHasOptionsMenu(true);
 
         Bundle args = getArguments();
-
-        if (args != null) {
-            thread = (Thread) args.getSerializable(ARG_THREAD);
-        }
+        data = args.getParcelable(ARG_THREAD_DATA);
+        scrollToItem = args.getLong(ARG_SCROLL_TO_ITEM, -1);
     }
 
     @Override
@@ -148,7 +162,8 @@ public class MessageListFragment extends BaseFragment {
     private Observable<Pair<List<Message>, List<LocalMessage>>> getListData(boolean fresh) {
         Activity activity = getActivity();
 
-        Observable<List<Message>> remoteMessages = repository.getThreadMessages(thread)
+        Observable<List<Message>> remoteMessages = repository
+                .getThreadMessages(data.getGroupId(), data.getCategoryId(), data.getThreadId())
                 .transform(r -> r.asObservable()
                         .compose(Operators.requireAccount(activity))
                         .compose(cache.cacheSkipIf(r.key(), fresh)))
@@ -156,7 +171,7 @@ public class MessageListFragment extends BaseFragment {
                 .subscribeOn(Schedulers.io());
 
         Observable<List<LocalMessage>> localMessages = messageRepository
-                .getUnsentMessages(thread.getRootMessageId())
+                .getUnsentMessages(data.getRootMessageId())
                 .first();
 
         return Observable.zip(
@@ -206,5 +221,27 @@ public class MessageListFragment extends BaseFragment {
         intent.putExtra(ComposeActivity.PARAM_PARENT_MESSAGE, rootMessage);
         startActivityForResult(intent, REQUEST_INSERT_MESSAGE);
         return true;
+    }
+
+    @AutoParcel
+    static abstract class ThreadData implements Parcelable {
+        public abstract long getGroupId();
+        public abstract long getCategoryId();
+        public abstract long getThreadId();
+        public abstract long getRootMessageId();
+
+        static ThreadData create(Thread thread) {
+            return create(thread.getGroupId(), thread.getCategoryId(), thread.getThreadId(),
+                    thread.getRootMessageId());
+        }
+
+        static ThreadData create(LocalMessage localMessage) {
+            return create(localMessage.groupId(), localMessage.categoryId(),
+                    localMessage.threadId(), localMessage.rootMessageId());
+        }
+
+        private static ThreadData create(long groupId, long categoryId, long threadId, long rootMessageId) {
+            return new AutoParcel_MessageListFragment_ThreadData(groupId, categoryId, threadId, rootMessageId);
+        }
     }
 }

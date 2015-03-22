@@ -23,6 +23,7 @@ import net.labhackercd.edemocracia.data.LocalMessageRepository;
 import net.labhackercd.edemocracia.data.api.EDMService;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.db.LocalMessage;
+import net.labhackercd.edemocracia.ui.MainActivity;
 import net.labhackercd.edemocracia.ui.preference.PreferenceFragment;
 import net.labhackercd.edemocracia.youtube.Constants;
 import net.labhackercd.edemocracia.youtube.ResumableUpload;
@@ -99,8 +100,11 @@ public class AddMessageTask extends Task {
 
     @Override
     public void onCancel(Throwable error) {
-        Timber.d("Task cancelled.");
         messages.setCancel(messageId);
+
+        Timber.e(error, "Message submission failed.");
+
+        MainActivity.notifyMessageSubmissionFailure(application, getMessage(), error);
     }
 
     /** Grab the local message from the database. */

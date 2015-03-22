@@ -1,5 +1,8 @@
 package net.labhackercd.edemocracia.ui;
 
+import android.app.Activity;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +12,9 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -31,6 +37,7 @@ import net.labhackercd.edemocracia.data.api.model.Category;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.data.api.model.User;
+import net.labhackercd.edemocracia.data.db.LocalMessage;
 import net.labhackercd.edemocracia.ui.group.GroupListFragment;
 import net.labhackercd.edemocracia.ui.message.MessageListFragment;
 import net.labhackercd.edemocracia.ui.thread.ThreadListFragment;
@@ -80,6 +87,17 @@ public class MainActivity extends BaseActivity {
             FragmentTransaction transaction = fragmentManager.beginTransaction();
             transaction.add(R.id.container, new GroupListFragment());
             transaction.commit();
+        }
+
+        // TODO Dedup this.
+        Intent intent = getIntent();
+
+        String type = intent.getType();
+        String action = intent.getAction();
+
+        if (MimeTypes.MESSAGE.equals(type)) {
+            LocalMessage message = intent.getParcelableExtra(EXTRA_MESSAGE);
+            replaceMainFragment(MessageListFragment.newInstance(message));
         }
     }
 
@@ -192,6 +210,28 @@ public class MainActivity extends BaseActivity {
         transaction.commit();
     }
 
+    /** App notifications will be place here for now. */
+
+    public static void notifyMessageSubmissionFailure(Context context, LocalMessage message, Throwable error) {
+        Intent intent = createIntent(context, message);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+                .setContentTitle(context.getString(R.string.app_name))
+                .setContentText(context.getString(R.string.message_submission_failed))
+                .setSmallIcon(R.drawable.ic_videocam_white_36dp)
+                .setContentIntent(pendingIntent);
+
+        getSupportNotificationManager(context).notify(0, builder.build());
+    }
+
+    private static NotificationManager getSupportNotificationManager(Context context) {
+        return (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+    }
+
     /** Local broadcasts. Mainly used for changing the content of the MainActivity. */
 
     /** Create an intent to view the group list. */
@@ -228,8 +268,19 @@ public class MainActivity extends BaseActivity {
         return intent;
     }
 
+
+    /** Create an Intent to view a LocalMessage. */
+    private static Intent createIntent(Context context, LocalMessage message) {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setType(MimeTypes.MESSAGE);
+        intent.putExtra(EXTRA_MESSAGE, message);
+        return intent;
+    }
+
     private static final String EXTRA_GROUP = extraName("group");
     private static final String EXTRA_THREAD = extraName("thread");
+    private static final String EXTRA_MESSAGE = extraName("message");
     private static final String EXTRA_CATEGORY = extraName("category");
 
     private static String extraName(String key) {
@@ -241,6 +292,7 @@ public class MainActivity extends BaseActivity {
         public void onReceive(Context context, Intent intent) {
             String type = intent.getType();
             String action = intent.getAction();
+            Timber.d("Received intent for %s, %s.", type, action);
             if (MimeTypes.GROUP.equals(type)) {
                 Group group = (Group) intent.getSerializableExtra(EXTRA_GROUP);
                 replaceMainFragment(ThreadListFragment.newInstance(group));
@@ -250,6 +302,10 @@ public class MainActivity extends BaseActivity {
             } else if (MimeTypes.THREAD.equals(type)) {
                 Thread thread = (Thread) intent.getSerializableExtra(EXTRA_THREAD);
                 replaceMainFragment(MessageListFragment.newInstance(thread));
+            } else if (MimeTypes.MESSAGE.equals(type)) {
+                Timber.d("Displaying message...");
+                LocalMessage message = intent.getParcelableExtra(EXTRA_MESSAGE);
+                replaceMainFragment(MessageListFragment.newInstance(message));
             } else if (Constants.REQUEST_AUTHORIZATION_INTENT.equals(action)) {
                 Timber.d("Request authorization broadcast received. What should we do with it?");
                 Intent toRun = intent.getParcelableExtra(
@@ -257,6 +313,7 @@ public class MainActivity extends BaseActivity {
                 startActivityForResult(toRun, REQUEST_GOOGLE_CREDENTIAL_AUTHORIZATION);
             } else if (Intent.ACTION_DEFAULT.equals(action)) {
                 // TODO Only if it's not the current fragment already?
+                Timber.d("Default action.");
                 replaceMainFragment(new GroupListFragment());
             } else {
                 throw new IllegalArgumentException("Unexpected intent: " + intent.toString());
@@ -270,6 +327,8 @@ public class MainActivity extends BaseActivity {
                     this, IntentFilter.create(Intent.ACTION_VIEW, MimeTypes.CATEGORY));
             manager.registerReceiver(
                     this, IntentFilter.create(Intent.ACTION_VIEW, MimeTypes.THREAD));
+            manager.registerReceiver(
+                    this, IntentFilter.create(Intent.ACTION_VIEW, MimeTypes.MESSAGE));
             manager.registerReceiver(
                     this, new IntentFilter(Constants.REQUEST_AUTHORIZATION_INTENT));
             manager.registerReceiver(this,
