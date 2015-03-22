@@ -6,4 +6,5 @@
     <color name="lime">#60A145</color>
     <color name="primary">#616F58</color>
     <color name="primary_dark">#4d5846</color>
+    <color name="red">#ff0000</color>
 </resources>

@@ -51,6 +51,31 @@ public class LocalMessageRepository {
         }
     }
 
+    public void retry(LocalMessage localMessage) {
+        if (localMessage.id() == null)
+            throw new AssertionError("Can't retry a detached message instance.");
+
+        if (!LocalMessage.Status.CANCEL.equals(localMessage.status()))
+            throw new AssertionError("Can't retry a non-cancelled message instance.");
+
+        brite.beginTransaction();
+        Throwable error = null;
+        try {
+            brite.update(LocalMessage.TABLE, new LocalMessage.Builder()
+                            .status(LocalMessage.Status.RETRY)
+                            .build(),
+                    LocalMessage.ID + " = ?", String.valueOf(localMessage.id()));
+            taskManager.add(new AddMessageTask(localMessage.id()));
+        } catch (Throwable throwable) {
+            error = throwable;
+            throw new RuntimeException(error);
+        } finally {
+            if (error == null)
+                brite.setTransactionSuccessful();
+            brite.endTransaction();
+        }
+    }
+
     public Observable<List<LocalMessage>> getUnsentMessages(long rootMessageId) {
         return LocalMessage.getUnsentMessages(brite, rootMessageId);
     }

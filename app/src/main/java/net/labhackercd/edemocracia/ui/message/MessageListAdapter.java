@@ -1,6 +1,10 @@
 package net.labhackercd.edemocracia.ui.message;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
@@ -106,11 +110,12 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        @InjectView(R.id.date) TextView dateView;
+        @InjectView(R.id.date) StatusView dateView;
         @InjectView(R.id.body) MessageView bodyView;
         @InjectView(R.id.portrait) ImageView portraitView;
         @InjectView(android.R.id.text1) TextView userView;
         @InjectView(android.R.id.text2) TextView subjectView;
+        @InjectView(R.id.error_button) ImageView errorIcon;
 
         private Message message;
         private LocalMessage localMessage;
@@ -120,6 +125,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             super(view);
             ButterKnife.inject(this, view);
             view.setOnClickListener(this::handleClick);
+            errorIcon.setOnClickListener(this::handleErrorClick);
         }
 
         public void bindMessage(Message message) {
@@ -174,6 +180,23 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             // TODO Do something when a item is clicked
         }
 
+        private void handleErrorClick(View view) {
+            new AlertDialog.Builder(view.getContext())
+                    .setTitle(R.string.message_submission_failed)
+                    .setMessage(R.string.message_submission_failed_description)
+                    .setNegativeButton(R.string.cancel_message_submission, (dialog, which) -> {
+                        // TODO Stop lying to the user!
+                        dialog.dismiss();
+                    })
+                    .setPositiveButton(R.string.retry_message_submission, (dialog, which) -> {
+                        if (localMessage != null)
+                            messageRepository.retry(localMessage);
+                        dialog.dismiss();
+                    })
+                    .create()
+                    .show();
+        }
+
         @OnClick(R.id.reply)
         @SuppressWarnings("UnusedDeclaration")
         public void onReplyClick(View v) {
@@ -206,19 +229,39 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         }
 
         private void setStatus(int resId) {
+            setStatus(resId, false);
+        }
+
+        private void setStatus(int resId, boolean error) {
             dateView.setText(resId);
+            dateView.setMessageSubmissionError(error);
+
+            /*
+            TODO The text get BOLD only when there is an error.
+            Typeface tf = dateView.getTypeface();
+            int style = tf.getStyle();
+            if (error)
+                style |= Typeface.BOLD;
+            else
+                style &= Typeface.BOLD;
+            dateView.setTypeface(tf, style);
+            */
+
+            setErrorIconVisible(error);
+        }
+
+        private void setErrorIconVisible(boolean show) {
+            errorIcon.setVisibility(show ? View.VISIBLE : View.GONE);
         }
 
         private void setLocalMessageStatus(LocalMessage.Status status, Date insertionDate) {
             if (status.equals(LocalMessage.Status.SUCCESS)) {
                 setStatus(insertionDate);
             } else {
-                int statusId;
-                if (!status.equals(LocalMessage.Status.CANCEL))
-                    statusId = R.string.sending_message;
+                if (status.equals(LocalMessage.Status.CANCEL))
+                    setStatus(R.string.message_submission_failed, true);
                 else
-                    statusId = R.string.message_submission_failed;
-                setStatus(statusId);
+                    setStatus(R.string.sending_message);
             }
         }
 

@@ -25,52 +25,80 @@
             />
 
         <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
             android:layout_marginLeft="8sp"
-            android:layout_weight="1">
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
 
             <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_weight="1">
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
 
-                <TextView
-                    tools:text="Equipe e-Democracia"
-                    android:id="@android:id/text1"
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <TextView
+                        tools:text="Equipe e-Democracia"
+                        android:id="@android:id/text1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:singleLine="true" />
+
+                    <TextView
+                        tools:text="O rato roeu a roupa do rei de Roma"
+                        android:id="@android:id/text2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:singleLine="true" />
+
+                </LinearLayout>
+
+                <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:singleLine="true" />
-
-                <TextView
-                    tools:text="O rato roeu a roupa do rei de Roma"
-                    android:id="@android:id/text2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:singleLine="true" />
-
-
-                <TextView
-                    tools:text="7 horas atrás"
-                    android:id="@+id/date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                    android:layout_marginLeft="8sp"
+                    android:id="@+id/reply"
+                    android:src="@drawable/ic_reply_black_24dp"
+                    android:alpha="0.4" />
 
             </LinearLayout>
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8sp"
-                android:id="@+id/reply"
-                android:src="@drawable/ic_reply_black_24dp"
-                android:alpha="0.4" />
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="18dp">
+
+                <net.labhackercd.edemocracia.ui.message.StatusView
+                    tools:text="7 horas atrás"
+                    android:id="@+id/date"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:textColor="@color/message_status_color"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                <!-- TODO Should actually be red. -->
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8sp"
+                    android:id="@+id/error_button"
+                    android:src="@drawable/ic_error_black_18dp"
+                    android:alpha="1"
+                    android:visibility="gone"
+                    />
+
+            </LinearLayout>
+
         </LinearLayout>
 
     </LinearLayout>

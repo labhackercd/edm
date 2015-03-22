@@ -5,4 +5,8 @@
         <attr name="borderDrawable" format="reference" />
         <attr name="desaturateOnPress" format="boolean" />
     </declare-styleable>
+
+    <declare-styleable name="MessageSubmissionState">
+        <attr name="state_message_submission_error" format="boolean" />
+    </declare-styleable>
 </resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res/net.labhackercd.edemocracia"
+    >
+    <item android:color="@color/red"
+        custom:state_message_submission_error="true" />
+    <item android:color="@color/secondary_text_default_material_light"
+        custom:state_message_submission_error="false" />
+</selector>
