@@ -162,12 +162,9 @@ public class MainActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
 
-        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
-
         if (broadcastReceiver == null)
             broadcastReceiver = new LocalBroadcastReceiver();
-
-        broadcastReceiver.register(broadcastManager);
+        broadcastReceiver.register(LocalBroadcastManager.getInstance(this));
 
         User user = AccountUtils.getUser(userData, this);
 
@@ -178,6 +175,13 @@ public class MainActivity extends BaseActivity {
                 .fit()
                 .centerCrop()
                 .into(userImageView);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (broadcastReceiver != null)
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
     }
 
     @Override
