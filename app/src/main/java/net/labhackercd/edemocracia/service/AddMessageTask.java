@@ -1,4 +1,4 @@
-package net.labhackercd.edemocracia.task;
+package net.labhackercd.edemocracia.service;
 
 import android.app.Application;
 import android.content.ContentResolver;
@@ -9,8 +9,10 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 
+import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
@@ -19,7 +21,7 @@ import com.google.api.services.youtube.YouTube;
 import com.google.common.collect.Lists;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.data.LocalMessageRepository;
+import net.labhackercd.edemocracia.data.LocalMessageStore;
 import net.labhackercd.edemocracia.data.api.EDMService;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.db.LocalMessage;
@@ -28,7 +30,6 @@ import net.labhackercd.edemocracia.ui.preference.PreferenceFragment;
 import net.labhackercd.edemocracia.youtube.Constants;
 import net.labhackercd.edemocracia.youtube.ResumableUpload;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -36,23 +37,20 @@ import javax.inject.Inject;
 
 import timber.log.Timber;
 
-public class AddMessageTask extends Task {
+public class AddMessageTask {
 
-    @Inject transient EDMService service;
-    @Inject transient Application application;
-    @Inject transient LocalMessageRepository messages;
+    @Inject EDMService service;
+    @Inject Application application;
+    @Inject
+    LocalMessageStore messages;
 
-    private final long messageId;
-    private transient LocalMessage message;
+    private final LocalMessage message;
 
-    public AddMessageTask(long messageId) {
-        this.messageId = messageId;
+    public AddMessageTask(LocalMessage message) {
+        this.message = message;
     }
 
-    @Override
     protected void execute() throws Throwable {
-        LocalMessage message = getMessage();
-
         // Upload the video attachment, if there is any.
         Uri videoAttachment = message.videoAttachment();
         String body = message.body();
@@ -85,33 +83,29 @@ public class AddMessageTask extends Task {
                 message.uuid(), message.groupId(), message.categoryId(), message.threadId(),
                 message.parentMessageId(), message.subject(), body);
 
-        Timber.d("Task succeeded.");
-        messages.setSuccess(messageId, inserted);
+        Timber.d("Message published.");
+
+        messages.setSuccess(message.id(), inserted);
     }
 
-    @Override
-    public boolean shouldRetry(Throwable error) {
-        Timber.e(error, "Error while trying to publish message.");
+    public void onError(Throwable error) {
+        LocalMessage.Status status = LocalMessage.Status.CANCEL;
 
-        // TODO Deal with it!
+        // YEAH :D
+        while (error instanceof UserRecoverableAuthIOException) {
+            error = ((UserRecoverableAuthIOException) error).getCause();
+        }
 
-        return false;
-    }
+        if (error instanceof UserRecoverableAuthException) {
+            status = LocalMessage.Status.CANCEL_RECOVERABLE_AUTH_ERROR;
+            MainActivity.notifyUserRecoverableAuthException(
+                    application, message, (UserRecoverableAuthException) error);
+        } else {
+            Timber.e(error, "Message submission failed.");
+            MainActivity.notifyMessageSubmissionFailure(application, message, error);
+        }
 
-    @Override
-    public void onCancel(Throwable error) {
-        messages.setCancel(messageId);
-
-        Timber.e(error, "Message submission failed.");
-
-        MainActivity.notifyMessageSubmissionFailure(application, getMessage(), error);
-    }
-
-    /** Grab the local message from the database. */
-    private LocalMessage getMessage() {
-        if (message == null)
-            message = messages.getMessage(messageId).toBlocking().first();
-        return message;
+        messages.setStatus(message.id(), status);
     }
 
     /** Attach a YouTube video to a message body and returns a the body, with the attached video . */
@@ -122,7 +116,7 @@ public class AddMessageTask extends Task {
     }
 
     private String uploadVideo(Uri video, String youtubeAccount, String title, String description)
-            throws FileNotFoundException {
+            throws UserRecoverableAuthException, IOException {
         Context context = application.getApplicationContext();
 
         GoogleAccountCredential credential = GoogleAccountCredential
@@ -149,6 +143,7 @@ public class AddMessageTask extends Task {
             Cursor cursor = contentResolver.query(video, projection, null, null, null);
             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             cursor.moveToFirst();
+
             return ResumableUpload.upload(
                     youtube, fileInputStream, fileSize, context, title, description);
         } finally {

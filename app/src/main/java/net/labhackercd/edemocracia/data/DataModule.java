@@ -11,7 +11,6 @@ import net.labhackercd.edemocracia.data.api.ApiModule;
 import net.labhackercd.edemocracia.data.api.EDMService;
 import net.labhackercd.edemocracia.data.api.Portal;
 import net.labhackercd.edemocracia.data.db.DbModule;
-import net.labhackercd.edemocracia.task.TaskManager;
 
 import java.io.File;
 
@@ -60,8 +59,8 @@ public class DataModule {
     }
 
     @Provides @Singleton
-    LocalMessageRepository provideLocalMessageRepository(TaskManager taskManager, SqlBrite brite) {
-        return new LocalMessageRepository(taskManager, brite);
+    LocalMessageStore provideLocalMessageRepository(Application application, SqlBrite brite) {
+        return new LocalMessageStore(application, brite);
     }
 
     private static OkHttpClient createOkHttpClient(Application application) {

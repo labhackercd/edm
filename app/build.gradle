@@ -75,7 +75,6 @@ dependencies {
     compile 'com.google.guava:guava-jdk5:17.0'
 
     // More utility
-    compile 'com.squareup:tape:1.2.3'
     compile 'io.reactivex:rxjava:1.0.7'
     compile 'io.reactivex:rxandroid:0.24.0'
     compile 'com.jakewharton:butterknife:6.1.0'

@@ -25,7 +25,7 @@ public abstract class LocalMessage implements Parcelable {
         QUEUE,
         SUCCESS,
         CANCEL,
-        RETRY
+        CANCEL_RECOVERABLE_AUTH_ERROR
     }
 
 
@@ -103,7 +103,7 @@ public abstract class LocalMessage implements Parcelable {
                 .map(READ_SINGLE);
     }
 
-    private static Func1<Cursor, List<LocalMessage>> READ_LIST = cursor -> {
+    public static Func1<Cursor, List<LocalMessage>> READ_LIST = cursor -> {
         try {
             List<LocalMessage> list = new ArrayList<>(cursor.getCount());
             while (cursor.moveToNext())
@@ -114,7 +114,7 @@ public abstract class LocalMessage implements Parcelable {
         }
     };
 
-    private static final Func1<Cursor, LocalMessage> READ_SINGLE = cursor -> {
+    public static final Func1<Cursor, LocalMessage> READ_SINGLE = cursor -> {
         List<LocalMessage> result = READ_LIST.call(cursor);
         return result.size() > 0 ? result.get(0) : null;
     };
@@ -148,6 +148,10 @@ public abstract class LocalMessage implements Parcelable {
 
     private static Uri nullableUri(String string) {
         return string == null ? null : Uri.parse(string);
+    }
+
+    public static String getStatusValue(Status status) {
+        return status.name();
     }
 
     public static final class Builder {
@@ -221,7 +225,7 @@ public abstract class LocalMessage implements Parcelable {
         }
 
         public Builder status(Status status) {
-            values.put(STATUS, status.name());
+            values.put(STATUS, getStatusValue(status));
             return this;
         }
 

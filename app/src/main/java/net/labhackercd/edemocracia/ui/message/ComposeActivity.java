@@ -27,7 +27,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 import net.labhackercd.edemocracia.R;
-import net.labhackercd.edemocracia.data.LocalMessageRepository;
+import net.labhackercd.edemocracia.data.LocalMessageStore;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.ui.BaseActivity;
 import net.labhackercd.edemocracia.ui.preference.PreferenceActivity;
@@ -54,7 +54,8 @@ public class ComposeActivity extends BaseActivity {
     private Uri attachedVideoUri;
     private Message parentMessage;
 
-    @Inject LocalMessageRepository messageRepository;
+    @Inject
+    LocalMessageStore messageRepository;
 
     @InjectView(R.id.message) TextView bodyView;
     @InjectView(R.id.subject) TextView subjectView;
@@ -275,7 +276,7 @@ public class ComposeActivity extends BaseActivity {
         String body = bodyView.getText().toString();
         String subject = subjectView.getText().toString();
 
-        long inserted = messageRepository.add(parentMessage, subject, body, attachedVideoUri);
+        long inserted = messageRepository.insert(parentMessage, subject, body, attachedVideoUri);
 
         Toast.makeText(this, R.string.sending_message, Toast.LENGTH_SHORT).show();
 

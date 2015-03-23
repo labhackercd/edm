@@ -7,6 +7,7 @@ import net.labhackercd.edemocracia.ui.group.GroupListFragment;
 import net.labhackercd.edemocracia.ui.message.ComposeActivity;
 import net.labhackercd.edemocracia.ui.message.MessageListFragment;
 import net.labhackercd.edemocracia.ui.preference.PreferenceActivity;
+import net.labhackercd.edemocracia.ui.preference.PreferenceFragment;
 import net.labhackercd.edemocracia.ui.thread.ThreadListFragment;
 
 import org.kefirsf.bb.BBProcessorFactory;
@@ -24,6 +25,7 @@ import dagger.Provides;
                 MainActivity.class,
                 ComposeActivity.class,
                 GroupListFragment.class,
+                PreferenceFragment.class,
                 PreferenceActivity.class,
                 ThreadListFragment.class,
                 MessageListFragment.class,

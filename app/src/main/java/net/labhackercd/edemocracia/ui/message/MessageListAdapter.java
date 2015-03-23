@@ -1,10 +1,7 @@
 package net.labhackercd.edemocracia.ui.message;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
@@ -22,7 +19,7 @@ import com.squareup.picasso.RequestCreator;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.ImageLoader;
-import net.labhackercd.edemocracia.data.LocalMessageRepository;
+import net.labhackercd.edemocracia.data.LocalMessageStore;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.data.db.LocalMessage;
@@ -47,11 +44,11 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
     private final User user;
     private final ImageLoader imageLoader;
     private final TextProcessor textProcessor;
-    private final LocalMessageRepository messageRepository;
+    private final LocalMessageStore messageRepository;
     private List<Message> messages = Collections.emptyList();
     private List<LocalMessage> localMessages = Collections.emptyList();
 
-    public MessageListAdapter(LocalMessageRepository messageRepository, User user, TextProcessor textProcessor, ImageLoader imageLoader) {
+    public MessageListAdapter(LocalMessageStore messageRepository, User user, TextProcessor textProcessor, ImageLoader imageLoader) {
         this.user = user;
         this.imageLoader = imageLoader;
         this.textProcessor = textProcessor;
@@ -255,14 +252,12 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         }
 
         private void setLocalMessageStatus(LocalMessage.Status status, Date insertionDate) {
-            if (status.equals(LocalMessage.Status.SUCCESS)) {
+            if (status.equals(LocalMessage.Status.SUCCESS))
                 setStatus(insertionDate);
-            } else {
-                if (status.equals(LocalMessage.Status.CANCEL))
-                    setStatus(R.string.message_submission_failed, true);
-                else
-                    setStatus(R.string.sending_message);
-            }
+            else if (status.equals(LocalMessage.Status.QUEUE))
+                setStatus(R.string.sending_message);
+            else
+                setStatus(R.string.message_submission_failed, true);
         }
 
         private void setPortrait(String userName, long portraitId) {

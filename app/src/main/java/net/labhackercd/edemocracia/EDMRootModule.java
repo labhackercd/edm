@@ -4,7 +4,7 @@ import android.app.Application;
 
 import net.labhackercd.edemocracia.account.AccountModule;
 import net.labhackercd.edemocracia.data.DataModule;
-import net.labhackercd.edemocracia.task.TaskModule;
+import net.labhackercd.edemocracia.service.ServiceModule;
 import net.labhackercd.edemocracia.ui.UiModule;
 
 import javax.inject.Singleton;
@@ -14,9 +14,9 @@ import dagger.Provides;
 @dagger.Module(
         includes = {
                 UiModule.class,
-                TaskModule.class,
                 DataModule.class,
-                AccountModule.class
+                AccountModule.class,
+                ServiceModule.class
         }
 )
 @SuppressWarnings("UnusedDeclaration")

@@ -25,9 +25,8 @@ import net.labhackercd.edemocracia.account.AccountUtils;
 import net.labhackercd.edemocracia.account.UserData;
 import net.labhackercd.edemocracia.data.Cache;
 import net.labhackercd.edemocracia.data.ImageLoader;
-import net.labhackercd.edemocracia.data.LocalMessageRepository;
+import net.labhackercd.edemocracia.data.LocalMessageStore;
 import net.labhackercd.edemocracia.data.MainRepository;
-import net.labhackercd.edemocracia.data.Request;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.data.api.model.User;
@@ -61,7 +60,8 @@ public class MessageListFragment extends BaseFragment {
     @Inject ImageLoader imageLoader;
     @Inject MainRepository repository;
     @Inject TextProcessor textProcessor;
-    @Inject LocalMessageRepository messageRepository;
+    @Inject
+    LocalMessageStore messageRepository;
 
     private ThreadData data;
     private Message rootMessage;

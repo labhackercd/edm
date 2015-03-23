@@ -24,9 +24,7 @@ import java.util.Arrays;
  * TODO Trigger OAuth approval process (dialog) when the account is changed.
  */
 public class GoogleAccountPreference extends Preference {
-    public static final int REQUEST_CODE = 236481276;
-
-    private GoogleAccountCredential credential;
+   private GoogleAccountCredential credential;
 
     public GoogleAccountPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -50,9 +48,8 @@ public class GoogleAccountPreference extends Preference {
         super.onSetInitialValue(restorePersistedValue, defaultValue);
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK
-                && data != null && data.getExtras() != null) {
+    public void onChooseAccountResult(int resultCode, Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
             String account = data.getExtras()
                     .getString(AccountManager.KEY_ACCOUNT_NAME);
             if (account != null) {
@@ -64,5 +61,9 @@ public class GoogleAccountPreference extends Preference {
 
     public Intent newChooseAccountIntent() {
         return credential.newChooseAccountIntent();
+    }
+
+    public GoogleAccountCredential getCredential() {
+        return credential;
     }
 }

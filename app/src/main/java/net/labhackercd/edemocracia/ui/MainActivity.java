@@ -1,6 +1,5 @@
 package net.labhackercd.edemocracia.ui;
 
-import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -13,7 +12,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
@@ -27,6 +25,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.common.base.Joiner;
 
 import net.labhackercd.edemocracia.R;
@@ -40,8 +39,8 @@ import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.data.db.LocalMessage;
 import net.labhackercd.edemocracia.ui.group.GroupListFragment;
 import net.labhackercd.edemocracia.ui.message.MessageListFragment;
+import net.labhackercd.edemocracia.ui.preference.PreferenceFragment;
 import net.labhackercd.edemocracia.ui.thread.ThreadListFragment;
-import net.labhackercd.edemocracia.youtube.Constants;
 
 import javax.inject.Inject;
 
@@ -216,7 +215,8 @@ public class MainActivity extends BaseActivity {
 
     /** App notifications will be place here for now. */
 
-    public static void notifyMessageSubmissionFailure(Context context, LocalMessage message, Throwable error) {
+    public static void notifyMessageSubmissionFailure(
+            Context context, LocalMessage message, Throwable error) {
         Intent intent = createIntent(context, message);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
@@ -230,6 +230,32 @@ public class MainActivity extends BaseActivity {
                 .setContentIntent(pendingIntent);
 
         getSupportNotificationManager(context).notify(0, builder.build());
+    }
+
+    public static void notifyUserRecoverableAuthException(
+            Context context, LocalMessage message, UserRecoverableAuthException exception) {
+        Intent intent = PreferenceFragment.newRecoverIntent(context, exception);
+
+        // TODO What I want here is:
+        // [.. Everything the user would do to navigate to the message ...]
+        //     > Message > PreferenceActivity > AUTHORIZE
+        // Once the authorization is done the user should be redirected to the message.
+        // I really don't know if this is the way to do that, but what can I do?
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+        stackBuilder.addParentStack(MainActivity.class);
+        stackBuilder.addNextIntent(createIntent(context, message));
+        stackBuilder.addNextIntent(intent);
+
+        PendingIntent pendingIntent = stackBuilder
+                .getPendingIntent(1, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+                .setContentTitle(context.getString(R.string.app_name))
+                .setContentText(context.getString(R.string.message_submission_failed))
+                .setSmallIcon(R.drawable.ic_videocam_white_36dp)
+                .setContentIntent(pendingIntent);
+
+        getSupportNotificationManager(context).notify(1, builder.build());
     }
 
     private static NotificationManager getSupportNotificationManager(Context context) {
@@ -310,11 +336,6 @@ public class MainActivity extends BaseActivity {
                 Timber.d("Displaying message...");
                 LocalMessage message = intent.getParcelableExtra(EXTRA_MESSAGE);
                 replaceMainFragment(MessageListFragment.newInstance(message));
-            } else if (Constants.REQUEST_AUTHORIZATION_INTENT.equals(action)) {
-                Timber.d("Request authorization broadcast received. What should we do with it?");
-                Intent toRun = intent.getParcelableExtra(
-                        Constants.REQUEST_AUTHORIZATION_INTENT_PARAM);
-                startActivityForResult(toRun, REQUEST_GOOGLE_CREDENTIAL_AUTHORIZATION);
             } else if (Intent.ACTION_DEFAULT.equals(action)) {
                 // TODO Only if it's not the current fragment already?
                 Timber.d("Default action.");
@@ -334,9 +355,7 @@ public class MainActivity extends BaseActivity {
             manager.registerReceiver(
                     this, IntentFilter.create(Intent.ACTION_VIEW, MimeTypes.MESSAGE));
             manager.registerReceiver(
-                    this, new IntentFilter(Constants.REQUEST_AUTHORIZATION_INTENT));
-            manager.registerReceiver(this,
-                    new IntentFilter(Intent.ACTION_DEFAULT));
+                    this, new IntentFilter(Intent.ACTION_DEFAULT));
         }
     }
 }
