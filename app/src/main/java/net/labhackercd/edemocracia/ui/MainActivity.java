@@ -98,7 +98,12 @@ public class MainActivity extends BaseActivity {
     }
 
     private boolean handleViewIntent(Intent intent) {
-        switch (intent.getType()) {
+        String type = intent.getType();
+
+        if (type == null)
+            return false;
+
+        switch (type) {
             case EDMContract.Group.CONTENT_TYPE:
                 replaceContent(new GroupListFragment());
                 return true;
