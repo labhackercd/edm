@@ -51,7 +51,8 @@ public class MainRepository {
                         .filter(group -> group != null)
                         .filter(group -> group.isActive())
                         .filter(group -> !group.isClosed())
-                        .filter(group -> group.getType() == 1)
+                        // TODO Define a proper policy for *unlisted groups*?
+                        .filter(group -> group.getType() != 2)
                         .toList());
     }
 
