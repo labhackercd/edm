@@ -81,18 +81,12 @@ public class MainActivity extends BaseActivity {
                 drawerList.getContext(), LinearLayoutManager.VERTICAL, false));
 
         Intent intent = getIntent();
-        if (intent == null) {
-            Timber.w("Activity called without an Intent.");
+        if (intent == null || intent.getAction() == null && intent.getType() == null
+                && getComponentName().equals(intent.getComponent())) {
             intent = createIntent(this);
         }
 
-        String action = intent.getAction();
-        if (!Intent.ACTION_VIEW.equals(action)) {
-            Timber.w("Activity called with unsupported action: " + action);
-            action = Intent.ACTION_VIEW;
-        }
-
-        if (!(Intent.ACTION_VIEW.equals(action) && handleViewIntent(intent))) {
+        if (!(Intent.ACTION_VIEW.equals(intent.getAction()) && handleViewIntent(intent))) {
             throw new UnsupportedOperationException(String.format("Unable to handle intent: %s", intent));
         }
     }
