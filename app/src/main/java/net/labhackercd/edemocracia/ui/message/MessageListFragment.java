@@ -128,6 +128,21 @@ public class MessageListFragment extends BaseFragment {
         final MessageListAdapter adapter = new MessageListAdapter(
                 messageRepository, user, textProcessor, imageLoader);
 
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                if (scrollToItem > 0) {
+                    int position = adapter.getLocalMessagePositionById(scrollToItem);
+                    if (position > 0) {
+                        Timber.d("Scrolling to last inserted item %d", position);
+                        scrollToPosition(position);
+                    }
+                    scrollToItem = -1;
+                }
+            }
+        });
+
         listView.refreshEvents()
                 .startWith(false)
                 .doOnNext(fresh -> listView.setRefreshing(true))
@@ -135,8 +150,6 @@ public class MessageListFragment extends BaseFragment {
                 .observeOn(AndroidSchedulers.mainThread())
                 .map(adapter::replaceWith)
                 .doOnNext(this::setRootMessage)
-                .doOnNext(this::scrollToLastInsertedItem)
-                .cast(RecyclerView.Adapter.class)
                 .subscribe(listView.dataHandler());
     }
 
@@ -198,17 +211,11 @@ public class MessageListFragment extends BaseFragment {
         return new Pair<>(remote, filteredList);
     }
 
-    private void scrollToLastInsertedItem(MessageListAdapter adapter) {
-        if (scrollToItem >= 0) {
-            int position = adapter.getLocalMessagePositionById(scrollToItem);
-            if (position >= 0) {
-                if (position > 10)
-                    listView.scrollToPosition(position);
-                else
-                    listView.smoothScrollToPosition(position);
-            }
-            scrollToItem = -1;
-        }
+    private void scrollToPosition(int position) {
+        if (position > 10)
+            listView.scrollToPosition(position);
+        else
+            listView.smoothScrollToPosition(position);
     }
 
     private boolean onReplySelected() {

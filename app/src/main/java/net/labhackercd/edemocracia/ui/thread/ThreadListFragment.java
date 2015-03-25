@@ -1,6 +1,8 @@
 package net.labhackercd.edemocracia.ui.thread;
 
 import android.app.Activity;
+import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,7 +14,6 @@ import android.view.ViewGroup;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.Cache;
 import net.labhackercd.edemocracia.data.ImageLoader;
-import net.labhackercd.edemocracia.data.MainRepository;
 import net.labhackercd.edemocracia.data.Request;
 import net.labhackercd.edemocracia.data.api.model.Category;
 import net.labhackercd.edemocracia.data.api.model.Group;
@@ -29,22 +30,31 @@ import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public class ThreadListFragment extends BaseFragment {
+public abstract class ThreadListFragment extends BaseFragment {
 
-    public static String ARG_PARENT = "parent";
+    public static final String EXTRA_GROUP =
+            ThreadListFragment.class.getCanonicalName().concat(".extra.group");
+    public static final String EXTRA_CATEGORY =
+            ThreadListFragment.class.getCanonicalName().concat(".extra.category");
+
+    private static final String ARG_DATA =
+            ThreadListFragment.class.getCanonicalName().concat(".arg.data");
+    protected static final String ARG_GROUP =
+            ThreadListFragment.class.getCanonicalName().concat(".arg.group");
+    protected static final String ARG_CATEGORY =
+            ThreadListFragment.class.getCanonicalName().concat(".arg.category");
 
     @Inject Cache cache;
     @Inject ImageLoader imageLoader;
-    @Inject MainRepository repository;
 
-    private Object parent;
     private ItemListView listView;
 
+
     public static Fragment newInstance(Group group) {
-        ThreadListFragment fragment = new ThreadListFragment();
+        ThreadListFragment fragment = new GroupThreadListFragment();
 
         Bundle args = new Bundle();
-        args.putSerializable(ARG_PARENT, group);
+        args.putSerializable(ARG_GROUP, group);
 
         fragment.setArguments(args);
 
@@ -52,27 +62,33 @@ public class ThreadListFragment extends BaseFragment {
     }
 
     public static Fragment newInstance(Category category) {
-        ThreadListFragment fragment = new ThreadListFragment();
+        ThreadListFragment fragment = new CategoryThreadListFragment();
 
         Bundle args = new Bundle();
-        args.putSerializable(ARG_PARENT, category);
+        args.putSerializable(ARG_CATEGORY, category);
 
         fragment.setArguments(args);
 
         return fragment;
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public static Fragment newInstance(Context context, Uri uri) {
+        String type = context.getContentResolver().getType(uri);
 
-        setHasOptionsMenu(true);
+        ThreadListFragment fragment;
+        if (GroupThreadListFragment.canHandleUriOfType(type))
+            fragment = new GroupThreadListFragment();
+        else if (CategoryThreadListFragment.canHandleUriOfType(type))
+            fragment = new CategoryThreadListFragment();
+        else
+            throw new IllegalArgumentException("Can't display content of type " + type);
 
-        Bundle args = getArguments();
+        Bundle args = new Bundle();
+        args.putParcelable(ARG_DATA, uri);
 
-        if (args != null) {
-            parent = args.getSerializable(ARG_PARENT);
-        }
+        fragment.setArguments(args);
+
+        return fragment;
     }
 
     @Override
@@ -98,18 +114,8 @@ public class ThreadListFragment extends BaseFragment {
     }
 
     private Observable<Pair<List<Category>, List<Thread>>> getListData(boolean fresh) {
-        Request<List<Thread>> threads;
-        Request<List<Category>> categories;
-
-        if (parent instanceof Group) {
-            Group group = (Group) parent;
-            threads = repository.getThreads(group.getGroupId());
-            categories = repository.getCategories(group.getGroupId());
-        } else {
-            Category category = (Category) parent;
-            threads = repository.getThreads(category.getGroupId(), category.getCategoryId());
-            categories = repository.getCategories(category.getGroupId(), category.getCategoryId());
-        }
+        Request<List<Thread>> threads = getListThreadsRequest();
+        Request<List<Category>> categories = getListCategoriesRequest();
 
         Activity activity = getActivity();
 
@@ -129,4 +135,7 @@ public class ThreadListFragment extends BaseFragment {
 
         return Observable.zip(c, t, Pair::new);
     }
+
+    protected abstract Request<List<Thread>> getListThreadsRequest();
+    protected abstract Request<List<Category>> getListCategoriesRequest();
 }

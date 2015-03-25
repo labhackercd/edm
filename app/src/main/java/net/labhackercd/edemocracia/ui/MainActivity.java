@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -37,6 +38,7 @@ import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.data.db.LocalMessage;
+import net.labhackercd.edemocracia.data.provider.EDMContract;
 import net.labhackercd.edemocracia.ui.group.GroupListFragment;
 import net.labhackercd.edemocracia.ui.message.MessageListFragment;
 import net.labhackercd.edemocracia.ui.preference.PreferenceFragment;
@@ -48,6 +50,7 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import timber.log.Timber;
 
+// TODO Use Home button to navigate up, just like GMail does.
 public class MainActivity extends BaseActivity {
 
     @Inject UserData userData;
@@ -63,9 +66,9 @@ public class MainActivity extends BaseActivity {
 
     private static final java.lang.String STATE_SELECTED_POSITION = "selectedNavItem";
 
-    private static final int REQUEST_GOOGLE_CREDENTIAL_AUTHORIZATION = 45189;
+    // TODO Change to android.R.id.content
+    private static final int CONTENT_RESOURCE_ID = R.id.container;
 
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -77,27 +80,83 @@ public class MainActivity extends BaseActivity {
         drawerList.setLayoutManager(new LinearLayoutManager(
                 drawerList.getContext(), LinearLayoutManager.VERTICAL, false));
 
-        // TODO Use Home button to navigate up, just like GMail does.
-
-        // Insert the default fragment
-        final FragmentManager fragmentManager = getSupportFragmentManager();
-
-        if (savedInstanceState == null) {
-            FragmentTransaction transaction = fragmentManager.beginTransaction();
-            transaction.add(R.id.container, new GroupListFragment());
-            transaction.commit();
-        }
-
-        // TODO Dedup this.
         Intent intent = getIntent();
-
-        String type = intent.getType();
-        String action = intent.getAction();
-
-        if (MimeTypes.MESSAGE.equals(type)) {
-            LocalMessage message = intent.getParcelableExtra(EXTRA_MESSAGE);
-            replaceMainFragment(MessageListFragment.newInstance(message));
+        if (intent == null) {
+            Timber.w("Activity called without an Intent.");
+            intent = createIntent(this);
         }
+
+        String action = intent.getAction();
+        if (!Intent.ACTION_VIEW.equals(action)) {
+            Timber.w("Activity called with unsupported action: " + action);
+            action = Intent.ACTION_VIEW;
+        }
+
+        if (!(Intent.ACTION_VIEW.equals(action) && handleViewIntent(intent))) {
+            throw new UnsupportedOperationException(String.format("Unable to handle intent: %s", intent));
+        }
+    }
+
+    private boolean handleViewIntent(Intent intent) {
+        switch (intent.getType()) {
+            case EDMContract.Group.CONTENT_TYPE:
+                replaceContent(new GroupListFragment());
+                return true;
+            case EDMContract.Group.CONTENT_ITEM_TYPE:
+            case EDMContract.Category.CONTENT_ITEM_TYPE:
+                replaceContent(createThreadListFragment(this, intent));
+                return true;
+            case EDMContract.Thread.CONTENT_ITEM_TYPE:
+            case EDMContract.Message.CONTENT_ITEM_TYPE:
+                replaceContent(createMessageListFragment(this, intent));
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static Fragment createThreadListFragment(Context context, Intent intent) {
+        Group group = (Group) intent.getSerializableExtra(EXTRA_GROUP);
+        if (group != null) {
+            return ThreadListFragment.newInstance(group);
+        } else {
+            Category category = (Category) intent.getSerializableExtra(EXTRA_CATEGORY);
+            if (category != null) {
+                return ThreadListFragment.newInstance(category);
+            } else {
+                Uri uri = intent.getData();
+                if (uri != null) {
+                    return ThreadListFragment.newInstance(context, uri);
+                } else {
+                    throw new IllegalStateException("Unable to create fragment from intent: " + intent);
+                }
+            }
+        }
+    }
+
+    private static Fragment createMessageListFragment(Context context, Intent intent) {
+        Thread thread = (Thread) intent.getSerializableExtra(EXTRA_THREAD);
+        if (thread != null) {
+            return MessageListFragment.newInstance(thread);
+        } else {
+            LocalMessage localMessage = intent.getParcelableExtra(EXTRA_LOCAL_MESSAGE);
+            if (localMessage != null) {
+                return MessageListFragment.newInstance(localMessage);
+            } else {
+                // TODO
+                throw new UnsupportedOperationException();
+            }
+        }
+    }
+
+    private int replaceContent(Fragment fragment) {
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.replace(CONTENT_RESOURCE_ID, fragment);
+        // TODO Parametrize the addition to the back stack.
+        // TODO Also allow the user to build a *custom* back stack.
+        transaction.addToBackStack(null);
+        return transaction.commit();
     }
 
     @Override
@@ -206,13 +265,6 @@ public class MainActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void replaceMainFragment(Fragment fragment) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.container, fragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
-    }
-
     /** App notifications will be place here for now. */
 
     public static void notifyMessageSubmissionFailure(
@@ -264,10 +316,22 @@ public class MainActivity extends BaseActivity {
 
     /** Local broadcasts. Mainly used for changing the content of the MainActivity. */
 
+    private static final String EXTRA_GROUP = extraName("group");
+    private static final String EXTRA_THREAD = extraName("thread");
+    private static final String EXTRA_MESSAGE = extraName("message");
+    private static final String EXTRA_CATEGORY = extraName("category");
+    private static final String EXTRA_LOCAL_MESSAGE = extraName("localName");
+
+    private static String extraName(String key) {
+        return MainActivity.class.getCanonicalName().concat(".extra.").concat(key);
+    }
+
     /** Create an intent to view the group list. */
     public static Intent createIntent(Context context) {
         Intent intent = new Intent(context, MainActivity.class);
-        intent.setAction(Intent.ACTION_DEFAULT);
+        intent.setAction(Intent.ACTION_VIEW);
+        //intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.setType(EDMContract.Group.CONTENT_TYPE);
         return intent;
     }
 
@@ -275,7 +339,8 @@ public class MainActivity extends BaseActivity {
     public static Intent createIntent(Context context, Group group) {
         Intent intent = new Intent(context, MainActivity.class);
         intent.setAction(Intent.ACTION_VIEW);
-        intent.setType(MimeTypes.GROUP);
+        //intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.setType(EDMContract.Group.CONTENT_ITEM_TYPE);
         intent.putExtra(EXTRA_GROUP, group);
         return intent;
     }
@@ -284,7 +349,8 @@ public class MainActivity extends BaseActivity {
     public static Intent createIntent(Context context, Category category) {
         Intent intent = new Intent(context, MainActivity.class);
         intent.setAction(Intent.ACTION_VIEW);
-        intent.setType(MimeTypes.CATEGORY);
+        //intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.setType(EDMContract.Category.CONTENT_ITEM_TYPE);
         intent.putExtra(EXTRA_CATEGORY, category);
         return intent;
     }
@@ -293,7 +359,8 @@ public class MainActivity extends BaseActivity {
     public static Intent createIntent(Context context, Thread thread) {
         Intent intent = new Intent(context, MainActivity.class);
         intent.setAction(Intent.ACTION_VIEW);
-        intent.setType(MimeTypes.THREAD);
+        //intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.setType(EDMContract.Thread.CONTENT_ITEM_TYPE);
         intent.putExtra(EXTRA_THREAD, thread);
         return intent;
     }
@@ -303,59 +370,30 @@ public class MainActivity extends BaseActivity {
     private static Intent createIntent(Context context, LocalMessage message) {
         Intent intent = new Intent(context, MainActivity.class);
         intent.setAction(Intent.ACTION_VIEW);
-        intent.setType(MimeTypes.MESSAGE);
-        intent.putExtra(EXTRA_MESSAGE, message);
+        //intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.setType(EDMContract.Message.CONTENT_ITEM_TYPE);
+        intent.putExtra(EXTRA_LOCAL_MESSAGE, message);
         return intent;
-    }
-
-    private static final String EXTRA_GROUP = extraName("group");
-    private static final String EXTRA_THREAD = extraName("thread");
-    private static final String EXTRA_MESSAGE = extraName("message");
-    private static final String EXTRA_CATEGORY = extraName("category");
-
-    private static String extraName(String key) {
-        return Joiner.on('.').join(MainActivity.class.getCanonicalName(), key);
     }
 
     private class LocalBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String type = intent.getType();
-            String action = intent.getAction();
-            Timber.d("Received intent for %s, %s.", type, action);
-            if (MimeTypes.GROUP.equals(type)) {
-                Group group = (Group) intent.getSerializableExtra(EXTRA_GROUP);
-                replaceMainFragment(ThreadListFragment.newInstance(group));
-            } else if (MimeTypes.CATEGORY.equals(type)) {
-                Category category = (Category) intent.getSerializableExtra(EXTRA_CATEGORY);
-                replaceMainFragment(ThreadListFragment.newInstance(category));
-            } else if (MimeTypes.THREAD.equals(type)) {
-                Thread thread = (Thread) intent.getSerializableExtra(EXTRA_THREAD);
-                replaceMainFragment(MessageListFragment.newInstance(thread));
-            } else if (MimeTypes.MESSAGE.equals(type)) {
-                Timber.d("Displaying message...");
-                LocalMessage message = intent.getParcelableExtra(EXTRA_MESSAGE);
-                replaceMainFragment(MessageListFragment.newInstance(message));
-            } else if (Intent.ACTION_DEFAULT.equals(action)) {
-                // TODO Only if it's not the current fragment already?
-                Timber.d("Default action.");
-                replaceMainFragment(new GroupListFragment());
-            } else {
-                throw new IllegalArgumentException("Unexpected intent: " + intent.toString());
-            }
+            if (Intent.ACTION_VIEW.equals(intent.getAction()) && handleViewIntent(intent))
+                Timber.d("Intent handled: %s", intent);
+            else
+                Timber.w("Unhandled intent: %s", intent);
         }
 
         protected void register(LocalBroadcastManager manager) {
             manager.registerReceiver(
-                    this, IntentFilter.create(Intent.ACTION_VIEW, MimeTypes.GROUP));
+                    this, IntentFilter.create(Intent.ACTION_VIEW, EDMContract.Group.CONTENT_TYPE));
             manager.registerReceiver(
-                    this, IntentFilter.create(Intent.ACTION_VIEW, MimeTypes.CATEGORY));
+                    this, IntentFilter.create(Intent.ACTION_VIEW, EDMContract.Group.CONTENT_ITEM_TYPE));
             manager.registerReceiver(
-                    this, IntentFilter.create(Intent.ACTION_VIEW, MimeTypes.THREAD));
+                    this, IntentFilter.create(Intent.ACTION_VIEW, EDMContract.Category.CONTENT_ITEM_TYPE));
             manager.registerReceiver(
-                    this, IntentFilter.create(Intent.ACTION_VIEW, MimeTypes.MESSAGE));
-            manager.registerReceiver(
-                    this, new IntentFilter(Intent.ACTION_DEFAULT));
+                    this, IntentFilter.create(Intent.ACTION_VIEW, EDMContract.Thread.CONTENT_ITEM_TYPE));
         }
     }
 }

@@ -8,6 +8,8 @@ import net.labhackercd.edemocracia.ui.message.ComposeActivity;
 import net.labhackercd.edemocracia.ui.message.MessageListFragment;
 import net.labhackercd.edemocracia.ui.preference.PreferenceActivity;
 import net.labhackercd.edemocracia.ui.preference.PreferenceFragment;
+import net.labhackercd.edemocracia.ui.thread.CategoryThreadListFragment;
+import net.labhackercd.edemocracia.ui.thread.GroupThreadListFragment;
 import net.labhackercd.edemocracia.ui.thread.ThreadListFragment;
 
 import org.kefirsf.bb.BBProcessorFactory;
@@ -29,7 +31,9 @@ import dagger.Provides;
                 PreferenceActivity.class,
                 ThreadListFragment.class,
                 MessageListFragment.class,
-                SplashScreenActivity.class
+                SplashScreenActivity.class,
+                GroupThreadListFragment.class,
+                CategoryThreadListFragment.class
         },
         library = true,
         complete = false
