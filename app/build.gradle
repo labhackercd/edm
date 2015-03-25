@@ -9,8 +9,8 @@ android {
         applicationId "net.labhackercd.edemocracia"
         minSdkVersion 15
         targetSdkVersion 21
-        versionCode 1
-        versionName "1.0.1-SNAPSHOT"
+        versionCode 2
+        versionName "1.0.0-SNAPSHOT"
         multiDexEnabled = true
     }
 
