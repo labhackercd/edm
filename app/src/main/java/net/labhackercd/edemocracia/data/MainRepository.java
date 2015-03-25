@@ -48,7 +48,10 @@ public class MainRepository {
         return request1("getGroups", service::getGroups, companyId)
                 .transform(r -> r.asObservable()
                         .flatMap(Observable::from)
-                        .filter(group -> group != null && !group.isClosed())
+                        .filter(group -> group != null)
+                        .filter(group -> group.isActive())
+                        .filter(group -> !group.isClosed())
+                        .filter(group -> group.getType() == 1)
                         .toList());
     }
 
