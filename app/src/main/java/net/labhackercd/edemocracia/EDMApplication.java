@@ -4,7 +4,10 @@ import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+
 import dagger.ObjectGraph;
+import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
 public class EDMApplication extends Application {
@@ -29,6 +32,7 @@ public class EDMApplication extends Application {
                 }
             });
         } else {
+            Fabric.with(this, new Crashlytics());
             Timber.plant(new CrashReportingTree());
         }
     }
@@ -41,6 +45,24 @@ public class EDMApplication extends Application {
      * A Timber Tree that logs important information for crash reporting.
      */
     private static class CrashReportingTree extends Timber.HollowTree {
-        // TODO Override methods, integrate into some crash reporting service.
+        @Override
+        public void e(String message, Object... args) {
+            Fabric.getLogger().e("Timber", String.format(message, args));
+        }
+
+        @Override
+        public void e(Throwable t, String message, Object... args) {
+            Fabric.getLogger().e("Timber", String.format(message, args), t);
+        }
+
+        @Override
+        public void w(String message, Object... args) {
+            Fabric.getLogger().w("Timber", String.format(message, args));
+        }
+
+        @Override
+        public void w(Throwable t, String message, Object... args) {
+            Fabric.getLogger().w("Timber", String.format(message, args), t);
+        }
     }
 }

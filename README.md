@@ -1,3 +1,13 @@
+Building
+--------
+
+Before building you must specify a Fabric API key in your `local.properties` file.
+
+```
+[...]
+fabric.api.key=YourFabricApiKeyShouldGoHere
+```
+
 Running Tests
 -------------
 

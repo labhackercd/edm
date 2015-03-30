@@ -1,5 +1,19 @@
+buildscript {
+    repositories {
+        maven { url 'https://maven.fabric.io/public' }
+    }
+
+    dependencies {
+        classpath 'io.fabric.tools:gradle:1.+'
+    }
+}
+
 apply plugin: 'com.android.application'
 apply plugin: 'me.tatarka.retrolambda'
+apply plugin: 'io.fabric'
+
+def localProperties = new Properties()
+localProperties.load(new FileInputStream(file('../local.properties')))
 
 android {
     compileSdkVersion 21
@@ -12,6 +26,7 @@ android {
         versionCode 2
         versionName "1.0.0-SNAPSHOT"
         multiDexEnabled = true
+        manifestPlaceholders = [ fabricApiKey: localProperties.getProperty('fabric.api.key') ]
     }
 
     buildTypes {
@@ -38,6 +53,7 @@ repositories {
     maven {
         url 'http://dl.bintray.com/amulyakhare/maven'
     }
+    maven { url 'https://maven.fabric.io/public' }
 }
 
 dependencies {
@@ -94,4 +110,7 @@ dependencies {
         exclude module: 'google-http-client'
     }
     compile 'com.google.apis:google-api-services-youtube:v3-rev125-1.19.1'
+    compile('com.crashlytics.sdk.android:crashlytics:2.2.2@aar') {
+        transitive = true;
+    }
 }
