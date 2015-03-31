@@ -31,7 +31,6 @@ import dagger.Provides;
                 PreferenceActivity.class,
                 ThreadListFragment.class,
                 MessageListFragment.class,
-                SplashScreenActivity.class,
                 GroupThreadListFragment.class,
                 CategoryThreadListFragment.class
         },

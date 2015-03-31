@@ -41,15 +41,13 @@ import rx.schedulers.Schedulers;
 
 public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.ViewHolder> {
 
-    private final User user;
     private final ImageLoader imageLoader;
     private final TextProcessor textProcessor;
     private final LocalMessageStore messageRepository;
     private List<Message> messages = Collections.emptyList();
     private List<LocalMessage> localMessages = Collections.emptyList();
 
-    public MessageListAdapter(LocalMessageStore messageRepository, User user, TextProcessor textProcessor, ImageLoader imageLoader) {
-        this.user = user;
+    public MessageListAdapter(LocalMessageStore messageRepository, TextProcessor textProcessor, ImageLoader imageLoader) {
         this.imageLoader = imageLoader;
         this.textProcessor = textProcessor;
         this.messageRepository = messageRepository;
@@ -150,7 +148,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                     .startWith(Observable.just(localMessage))
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe((LocalMessage message) -> {
-                        setAuthor(user.getScreenName());
+                        //setAuthor(user.getScreenName());
 
                         setSubject(message.subject());
 
@@ -158,7 +156,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
                         setLocalMessageStatus(message.status(), message.insertionDate());
 
-                        setPortrait(user.getScreenName(), user.getPortraitId());
+                        //setPortrait(user.getScreenName(), user.getPortraitId());
                     });
         }
 

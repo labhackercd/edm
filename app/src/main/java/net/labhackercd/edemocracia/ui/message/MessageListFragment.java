@@ -1,7 +1,5 @@
 package net.labhackercd.edemocracia.ui.message;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,16 +20,13 @@ import com.google.common.collect.Sets;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.account.AccountUtils;
-import net.labhackercd.edemocracia.account.UserData;
 import net.labhackercd.edemocracia.data.Cache;
 import net.labhackercd.edemocracia.data.ImageLoader;
 import net.labhackercd.edemocracia.data.LocalMessageStore;
 import net.labhackercd.edemocracia.data.MainRepository;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.Thread;
-import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.data.db.LocalMessage;
-import net.labhackercd.edemocracia.data.rx.Operators;
 import net.labhackercd.edemocracia.ui.BaseFragment;
 import net.labhackercd.edemocracia.ui.listview.ItemListView;
 
@@ -56,17 +51,16 @@ public class MessageListFragment extends BaseFragment {
     private static final int REQUEST_INSERT_MESSAGE = 1;
 
     @Inject Cache cache;
-    @Inject UserData userData;
     @Inject ImageLoader imageLoader;
     @Inject MainRepository repository;
     @Inject TextProcessor textProcessor;
-    @Inject
-    LocalMessageStore messageRepository;
+    @Inject LocalMessageStore messageRepository;
 
     private ThreadData data;
     private Message rootMessage;
     private ItemListView listView;
     private long scrollToItem = -1;
+    private MessageListAdapter adapter;
 
     public static MessageListFragment newInstance(Thread thread) {
         return newInstance(ThreadData.create(thread));
@@ -119,38 +113,39 @@ public class MessageListFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-
-        Activity activity = getActivity();
-        AccountManager manager = AccountManager.get(activity);
-        Account account = AccountUtils.getAccount(activity);
-        User user = userData.getUser(manager, account);
-
-        final MessageListAdapter adapter = new MessageListAdapter(
-                messageRepository, user, textProcessor, imageLoader);
-
-        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-            @Override
-            public void onChanged() {
-                super.onChanged();
-                if (scrollToItem > 0) {
-                    int position = adapter.getLocalMessagePositionById(scrollToItem);
-                    if (position > 0) {
-                        Timber.d("Scrolling to last inserted item %d", position);
-                        scrollToPosition(position);
-                    }
-                    scrollToItem = -1;
-                }
-            }
-        });
-
         listView.refreshEvents()
                 .startWith(false)
                 .doOnNext(fresh -> listView.setRefreshing(true))
                 .flatMap(this::getListData)
                 .observeOn(AndroidSchedulers.mainThread())
-                .map(adapter::replaceWith)
+                .map(this::replaceAdapterData)
                 .doOnNext(this::setRootMessage)
                 .subscribe(listView.dataHandler());
+    }
+
+    private MessageListAdapter replaceAdapterData(Pair<List<Message>, List<LocalMessage>> data) {
+        if (adapter == null) {
+            adapter = new MessageListAdapter(messageRepository, textProcessor, imageLoader);
+
+            adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+                @Override
+                public void onChanged() {
+                    super.onChanged();
+                    if (scrollToItem > 0) {
+                        int position = adapter.getLocalMessagePositionById(scrollToItem);
+                        if (position > 0) {
+                            Timber.d("Scrolling to last inserted item %d", position);
+                            scrollToPosition(position);
+                        }
+                        scrollToItem = -1;
+                    }
+                }
+            });
+        }
+
+        adapter.replaceWith(data);
+
+        return adapter;
     }
 
     @Override
@@ -178,7 +173,7 @@ public class MessageListFragment extends BaseFragment {
         Observable<List<Message>> remoteMessages = repository
                 .getThreadMessages(data.getGroupId(), data.getCategoryId(), data.getThreadId())
                 .transform(r -> r.asObservable()
-                        .compose(Operators.requireAccount(activity))
+                        .compose(AccountUtils.requireAccount(activity))
                         .compose(cache.cacheSkipIf(r.key(), fresh)))
                 .asObservable()
                 .subscribeOn(Schedulers.io());
@@ -206,9 +201,10 @@ public class MessageListFragment extends BaseFragment {
                 .toBlocking()
                 .toIterable();
 
-        // Combine the two lists.
         List<LocalMessage> filteredList = Lists.newArrayList(filtered);
-        return new Pair<>(remote, filteredList);
+
+        // Combine the two lists.
+        return new Pair<List<Message>, List<LocalMessage>>(remote, filteredList);
     }
 
     private void scrollToPosition(int position) {

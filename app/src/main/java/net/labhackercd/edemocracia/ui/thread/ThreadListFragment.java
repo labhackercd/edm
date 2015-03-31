@@ -12,13 +12,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.account.AccountUtils;
 import net.labhackercd.edemocracia.data.Cache;
 import net.labhackercd.edemocracia.data.ImageLoader;
 import net.labhackercd.edemocracia.data.Request;
 import net.labhackercd.edemocracia.data.api.model.Category;
 import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.Thread;
-import net.labhackercd.edemocracia.data.rx.Operators;
 import net.labhackercd.edemocracia.ui.BaseFragment;
 import net.labhackercd.edemocracia.ui.listview.ItemListView;
 
@@ -121,14 +121,14 @@ public abstract class ThreadListFragment extends BaseFragment {
 
         Observable<List<Thread>> t = threads
                 .transform(r -> r.asObservable()
-                        .compose(Operators.requireAccount(activity))
+                        .compose(AccountUtils.requireAccount(activity))
                         .compose(cache.cacheSkipIf(r.key(), fresh))
                         .subscribeOn(Schedulers.io()))
                 .asObservable();
 
         Observable<List<Category>> c = categories
                 .transform(r -> r.asObservable()
-                        .compose(Operators.requireAccount(activity))
+                        .compose(AccountUtils.requireAccount(activity))
                         .compose(cache.cacheSkipIf(r.key(), fresh))
                         .subscribeOn(Schedulers.io()))
                 .asObservable();

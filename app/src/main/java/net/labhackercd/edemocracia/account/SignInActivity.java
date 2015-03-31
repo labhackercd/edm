@@ -45,7 +45,6 @@ public class SignInActivity extends ActionBarActivity {
     public static final String PARAM_EMAIL = "email";
     public static final String PARAM_AUTHTOKEN_TYPE = "authTokenType";
 
-    @Inject UserData userData;
     @Inject MainRepository repository;
 
     @InjectView(R.id.email) AutoCompleteTextView emailView;
@@ -163,8 +162,7 @@ public class SignInActivity extends ActionBarActivity {
             manager.setPassword(account, password);
         }
 
-        // Save the user.
-        userData.setUser(manager, account, user);
+        // TODO Cache the user?
 
         finishLogin(email, password);
     }
