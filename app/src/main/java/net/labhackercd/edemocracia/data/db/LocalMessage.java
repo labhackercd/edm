@@ -29,7 +29,7 @@ public abstract class LocalMessage implements Parcelable {
     }
 
 
-    /** XXX Please, please, don't change the order before reading AutoValues documentation. */
+    /** XXX Please, please, don't change the order of the abstract getters before reading AutoValues documentation. */
 
     public abstract Long id();
     @Nullable public abstract Long insertedMessageId();
@@ -90,14 +90,14 @@ public abstract class LocalMessage implements Parcelable {
 
     public static Observable<List<LocalMessage>> getUnsentMessages(
             SqlBrite brite, long rootMessageId) {
-        return brite.createQuery(TABLE, "SELECT * FROM " + TABLE + " WHERE rootMessageId = ?",
+        return brite.createQuery(TABLE, "SELECT * FROM " + TABLE + " WHERE " + ROOT_MESSAGE_ID + " = ?",
                 String.valueOf(rootMessageId))
                 .map(SqlBrite.Query::run)
                 .map(READ_LIST);
     }
 
     public static Observable<LocalMessage> getMessage(SqlBrite brite, long messageId) {
-        return brite.createQuery(TABLE, "SELECT * FROM " + TABLE + " WHERE _id = ?",
+        return brite.createQuery(TABLE, "SELECT * FROM " + TABLE + " WHERE " + ID + " = ?",
                 String.valueOf(messageId))
                 .map(SqlBrite.Query::run)
                 .map(READ_SINGLE);
