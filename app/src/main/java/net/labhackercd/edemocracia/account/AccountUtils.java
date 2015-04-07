@@ -11,9 +11,13 @@ import net.labhackercd.edemocracia.data.MainRepository;
 import net.labhackercd.edemocracia.data.api.model.User;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import rx.Observable;
+import rx.Observer;
 import rx.schedulers.Schedulers;
+import rx.subjects.PublishSubject;
 import timber.log.Timber;
 
 import static net.labhackercd.edemocracia.account.AccountConstants.ACCOUNT_TYPE;
@@ -33,6 +37,7 @@ public class AccountUtils {
             throw new OperationCanceledException();
 
         Account account = getAccount(activity);
+
         if (account == null) {
             try {
                 manager.addAccount(ACCOUNT_TYPE, null, null, null, activity, null, null).getResult();
@@ -51,12 +56,49 @@ public class AccountUtils {
         return account;
     }
 
+    private static Map<Activity, PublishSubject<Account>> accountRequests = new WeakHashMap<>();
+
     public static Observable<Account> getOrRequestAccount(Activity activity) {
-        return Observable.<Account>create(f -> {
-            Account account;
+        // FIXME This is messy because as usual, I have no idea what I'm doing.
+        Account account = AccountUtils.getAccount(activity);
+
+        if (account != null)
+            return Observable.just(account);
+
+        PublishSubject<Account> request = accountRequests.get(activity);
+
+        if (request != null)
+            return request.asObservable();
+
+        request = PublishSubject.create();
+        accountRequests.put(activity, request);
+
+        request.subscribe(new Observer<Account>() {
+            @Override
+            public void onCompleted() {
+                onTerminated();
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                onTerminated();
+            }
+
+            private void onTerminated() {
+                accountRequests.remove(activity);
+            }
+
+            @Override
+            public void onNext(Account account) {
+            }
+        });
+
+        Observable.<Account>create(f -> {
+            Account acc;
             AccountManager manager = AccountManager.get(activity);
+
             try {
-                account = AccountUtils.getAccount(manager, activity);
+                acc = AccountUtils.getAccount(manager, activity);
             } catch (IOException | AccountsException e) {
                 if (!f.isUnsubscribed())
                     f.onError(e);
@@ -64,12 +106,16 @@ public class AccountUtils {
             }
 
             if (!f.isUnsubscribed()) {
-                if (account == null)
+                if (acc == null) {
                     f.onError(new AssertionError("account == null"));
-                else
-                    f.onNext(account);
+                } else {
+                    f.onNext(acc);
+                    f.onCompleted();
+                }
             }
-        }).subscribeOn(Schedulers.newThread());
+        }).subscribeOn(Schedulers.newThread()).subscribe(request);
+
+        return request.asObservable();
     }
 
     /**
