@@ -35,6 +35,7 @@ import net.labhackercd.edemocracia.ui.preference.PreferenceFragment;
 
 import java.io.FileNotFoundException;
 import java.util.List;
+import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -276,12 +277,12 @@ public class ComposeActivity extends BaseActivity {
         String body = bodyView.getText().toString();
         String subject = subjectView.getText().toString();
 
-        long inserted = messageRepository.insert(parentMessage, subject, body, attachedVideoUri);
+        Pair<Long, UUID> inserted = messageRepository.insert(parentMessage, subject, body, attachedVideoUri);
 
         Toast.makeText(this, R.string.sending_message, Toast.LENGTH_SHORT).show();
 
         Intent result = new Intent();
-        result.putExtra(PARAM_INSERTED_MESSAGE, inserted);
+        result.putExtra(PARAM_INSERTED_MESSAGE, inserted.second);
         setResult(RESULT_OK, result);
         finish();
 

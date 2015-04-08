@@ -15,9 +15,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
+import com.google.common.collect.Sets;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.account.AccountUtils;
 import net.labhackercd.edemocracia.data.Cache;
@@ -32,8 +33,7 @@ import net.labhackercd.edemocracia.ui.listview.ItemListView;
 
 import org.kefirsf.bb.TextProcessor;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.inject.Inject;
 
@@ -57,9 +57,9 @@ public class MessageListFragment extends BaseFragment {
     @Inject LocalMessageStore messageRepository;
 
     private ThreadData data;
+    private UUID scrollToItem;
     private Message rootMessage;
     private ItemListView listView;
-    private long scrollToItem = -1;
     private MessageListAdapter adapter;
 
     public static MessageListFragment newInstance(Thread thread) {
@@ -67,18 +67,18 @@ public class MessageListFragment extends BaseFragment {
     }
 
     public static Fragment newInstance(LocalMessage message) {
-        return newInstance(ThreadData.create(message), message.id());
+        return newInstance(ThreadData.create(message), message.uuid());
     }
 
     private static MessageListFragment newInstance(ThreadData data) {
-        return newInstance(data, -1);
+        return newInstance(data, null);
     }
 
-    private static MessageListFragment newInstance(ThreadData data, long localMessageId) {
+    private static MessageListFragment newInstance(ThreadData data, UUID uuid) {
         MessageListFragment fragment = new MessageListFragment();
         Bundle args = new Bundle();
         args.putParcelable(ARG_THREAD_DATA, data);
-        args.putLong(ARG_SCROLL_TO_ITEM, localMessageId);
+        args.putSerializable(ARG_SCROLL_TO_ITEM, uuid);
         fragment.setArguments(args);
         return fragment;
     }
@@ -87,11 +87,11 @@ public class MessageListFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setHasOptionsMenu(true);
-
         Bundle args = getArguments();
         data = args.getParcelable(ARG_THREAD_DATA);
-        scrollToItem = args.getLong(ARG_SCROLL_TO_ITEM, -1);
+        scrollToItem = (UUID) args.getSerializable(ARG_SCROLL_TO_ITEM);
+
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -102,11 +102,8 @@ public class MessageListFragment extends BaseFragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_INSERT_MESSAGE && resultCode == Activity.RESULT_OK) {
-            long inserted = data.getLongExtra(ComposeActivity.PARAM_INSERTED_MESSAGE, -1);
-            if (inserted >= 0)
-                scrollToItem = inserted;
-        }
+        if (requestCode == REQUEST_INSERT_MESSAGE && resultCode == Activity.RESULT_OK)
+            scrollToItem = (UUID) data.getSerializableExtra(ComposeActivity.PARAM_INSERTED_MESSAGE);
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -116,14 +113,59 @@ public class MessageListFragment extends BaseFragment {
         listView.refreshEvents()
                 .startWith(false)
                 .doOnNext(fresh -> listView.setRefreshing(true))
-                .flatMap(this::getListData)
+                .flatMap(this::refreshList)
                 .observeOn(AndroidSchedulers.mainThread())
                 .map(this::replaceAdapterData)
-                .doOnNext(this::setRootMessage)
                 .subscribe(listView.dataHandler());
     }
 
-    private MessageListAdapter replaceAdapterData(Pair<List<Message>, List<LocalMessage>> data) {
+
+    private Observable<List<Item>> refreshList(boolean fresh) {
+        Observable<List<Item>> remoteMessages = repository
+                .getThreadMessages(data.getGroupId(), data.getCategoryId(), data.getThreadId())
+                .transform(r -> r.asObservable()
+                        .compose(AccountUtils.requireAccount(getActivity()))
+                        .compose(cache.cacheSkipIf(r.key(), fresh)))
+                .asObservable()
+                .subscribeOn(Schedulers.io())
+                .doOnNext(this::setRootMessage)
+                .map(messages -> Observable.from(messages)
+                        .map(Item::create)
+                        .toList().toBlocking().single());
+
+        Observable<List<Item>> localMessages = messageRepository
+                .getUnsentMessages(data.getRootMessageId())
+                .subscribeOn(Schedulers.io())
+                .map(messages -> Observable.from(messages)
+                        .map(Item::create)
+                        .toList().toBlocking().single());
+
+        return localMessages.zipWith(remoteMessages.repeat(), MessageListFragment::combineMessageLists);
+    }
+
+    private static List<Item> combineMessageLists(List<Item> local, List<Item> remote) {
+        // A set containing all remote message UUIDs
+        Set<String> remoteUUIDs = Sets.newHashSet(
+                Observable.from(remote)
+                        .map(Item::getUuid)
+                        .map(UUID::toString)
+                        .toBlocking()
+                        .toIterable());
+
+        // Filter local messages, ignoring those which UUIDs are already in the remote server.
+        Iterable<Item> filtered = Observable.from(local)
+                .filter(item -> !remoteUUIDs.contains(item.getUuid().toString()))
+                .toBlocking()
+                .toIterable();
+
+        return Lists.newLinkedList(Iterables.concat(remote, filtered));
+    }
+
+    private void setRootMessage(List<Message> messages) {
+        rootMessage = messages.isEmpty() ? null : messages.get(0);
+    }
+
+    private MessageListAdapter replaceAdapterData(List<Item> data) {
         if (adapter == null) {
             adapter = new MessageListAdapter(messageRepository, textProcessor, imageLoader);
 
@@ -131,13 +173,9 @@ public class MessageListFragment extends BaseFragment {
                 @Override
                 public void onChanged() {
                     super.onChanged();
-                    if (scrollToItem > 0) {
-                        int position = adapter.getLocalMessagePositionById(scrollToItem);
-                        if (position > 0) {
-                            Timber.d("Scrolling to last inserted item %d", position);
-                            scrollToPosition(position);
-                        }
-                        scrollToItem = -1;
+                    if (scrollToItem != null) {
+                        adapter.scrollToItem(scrollToItem);
+                        scrollToItem = null;
                     }
                 }
             });
@@ -163,60 +201,10 @@ public class MessageListFragment extends BaseFragment {
         }
     }
 
-    private void setRootMessage(MessageListAdapter adapter) {
-        rootMessage = adapter.getRootMessage();
-    }
-
-    private Observable<Pair<List<Message>, List<LocalMessage>>> getListData(boolean fresh) {
-        Activity activity = getActivity();
-
-        Observable<List<Message>> remoteMessages = repository
-                .getThreadMessages(data.getGroupId(), data.getCategoryId(), data.getThreadId())
-                .transform(r -> r.asObservable()
-                        .compose(AccountUtils.requireAccount(activity))
-                        .compose(cache.cacheSkipIf(r.key(), fresh)))
-                .asObservable()
-                .subscribeOn(Schedulers.io());
-
-        Observable<List<LocalMessage>> localMessages = messageRepository
-                .getUnsentMessages(data.getRootMessageId())
-                .first();
-
-        return Observable.zip(
-                remoteMessages, localMessages, MessageListFragment::combineMessageLists);
-    }
-
-    /** Combine two lists of messages. */
-    private static Pair<List<Message>, List<LocalMessage>> combineMessageLists(
-            List<Message> remote, List<LocalMessage> local) {
-        // A set containing all remote message UUIDs
-        Set<String> remoteUUIDs = Sets.newHashSet(Observable.from(remote)
-                .map(Message::getUuid)
-                .toBlocking()
-                .toIterable());
-
-        // Filter local messages, ignoring those which UUIDs are already in the remote server.
-        Iterable<LocalMessage> filtered = Observable.from(local)
-                .filter(msg -> !remoteUUIDs.contains(msg.uuid().toString()))
-                .toBlocking()
-                .toIterable();
-
-        List<LocalMessage> filteredList = Lists.newArrayList(filtered);
-
-        // Combine the two lists.
-        return new Pair<List<Message>, List<LocalMessage>>(remote, filteredList);
-    }
-
-    private void scrollToPosition(int position) {
-        if (position > 10)
-            listView.scrollToPosition(position);
-        else
-            listView.smoothScrollToPosition(position);
-    }
-
     private boolean onReplySelected() {
         if (rootMessage == null) {
             Timber.w("No root message set.");
+            // TODO Show a toast?
             return false;
         }
         Intent intent = new Intent(getActivity(), ComposeActivity.class);
@@ -245,6 +233,57 @@ public class MessageListFragment extends BaseFragment {
 
         private static ThreadData create(long groupId, long categoryId, long threadId, long rootMessageId) {
             return new AutoParcel_MessageListFragment_ThreadData(groupId, categoryId, threadId, rootMessageId);
+        }
+    }
+
+    @AutoParcel
+    static abstract class Item implements Parcelable {
+        public abstract UUID getUuid();
+        public abstract long getUserId();
+        @Nullable public abstract String getUserName();
+        public abstract String getSubject();
+        public abstract String getBody();
+        public abstract LocalMessage.Status getStatus();
+        public abstract Date getCreateDate();
+
+        @AutoParcel.Builder
+        interface Builder {
+            Builder setUuid(UUID uuid);
+            Builder setUserId(long userId);
+            Builder setUserName(@Nullable String userName);
+            Builder setSubject(String subject);
+            Builder setBody(String body);
+            Builder setStatus(LocalMessage.Status status);
+            Builder setCreateDate(Date createDate);
+            Item build();
+        }
+
+        static Builder builder() {
+            return new AutoParcel_MessageListFragment_Item.Builder()
+                    .setStatus(LocalMessage.Status.SUCCESS)
+                    .setUserId(0)
+                    .setUserName(null);
+        }
+
+        static Item create(Message m) {
+            return builder()
+                    .setUuid(UUID.fromString(m.getUuid()))
+                    .setUserId(m.getUserId())
+                    .setUserName(m.getUserName())
+                    .setSubject(m.getSubject())
+                    .setBody(m.getBody())
+                    .setCreateDate(m.getCreateDate())
+                    .build();
+        }
+
+        static Item create(LocalMessage m) {
+            return builder()
+                    .setUuid(m.uuid())
+                    .setSubject(m.subject())
+                    .setBody(m.body())
+                    .setStatus(m.status())
+                    .setCreateDate(m.insertionDate())
+                    .build();
         }
     }
 }

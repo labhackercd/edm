@@ -50,7 +50,7 @@ public class AddMessageService extends Service {
         Observable<SqlBrite.Query> query = brite.createQuery(
                 LocalMessage.TABLE,
                 QUERY_FIRST_MESSAGE_BY_STATUS,
-                LocalMessage.getStatusValue(LocalMessage.Status.QUEUE));
+                LocalMessage.valueOf(LocalMessage.Status.QUEUE));
 
         LocalMessage message = query.map(SqlBrite.Query::run)
                 .map(LocalMessage.READ_SINGLE)

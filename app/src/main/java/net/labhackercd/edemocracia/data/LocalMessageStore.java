@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
+import android.support.v4.util.Pair;
 import com.squareup.sqlbrite.SqlBrite;
 
 import net.labhackercd.edemocracia.data.api.model.Message;
@@ -31,7 +32,7 @@ public class LocalMessageStore {
                 "SELECT COUNT(" + LocalMessage.ID + ") " +
                         "FROM " + LocalMessage.TABLE + " " +
                         "WHERE " + LocalMessage.STATUS + " = ?",
-                LocalMessage.getStatusValue(LocalMessage.Status.QUEUE))
+                LocalMessage.valueOf(LocalMessage.Status.QUEUE))
                 .map(SqlBrite.Query::run)
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
@@ -48,7 +49,8 @@ public class LocalMessageStore {
     }
 
     // TODO Should return LocalMessage but there isn't a LocalMessageBuilder yet.
-    public long insert(Message parentMessage, String subject, String body, Uri videoAttachment) {
+    public Pair<Long, UUID> insert(Message parentMessage, String subject, String body, Uri videoAttachment) {
+        UUID uuid = UUID.randomUUID();
         LocalMessage.Builder builder = new LocalMessage.Builder()
                 .rootMessageId(parentMessage.getRootMessageId())
                 .groupId(parentMessage.getGroupId())
@@ -58,13 +60,18 @@ public class LocalMessageStore {
                 .subject(subject)
                 .body(body)
                 .videoAttachment(videoAttachment)
-                .uuid(UUID.randomUUID())
+                .uuid(uuid)
                 .status(LocalMessage.Status.QUEUE);
-        return brite.insert(LocalMessage.TABLE, builder.build());
+        long id = brite.insert(LocalMessage.TABLE, builder.build());
+        return new Pair<>(id, uuid);
     }
 
     public Observable<List<LocalMessage>> getUnsentMessages(long rootMessageId) {
         return LocalMessage.getUnsentMessages(brite, rootMessageId);
+    }
+
+    public Observable<SqlBrite.Query> getUnsentMessages2(long rootMessageId) {
+        return LocalMessage.getUnsentMessages2(brite, rootMessageId);
     }
 
     public Observable<LocalMessage> getMessage(long messageId) {
@@ -86,8 +93,10 @@ public class LocalMessageStore {
                 LocalMessage.ID + " = ?", String.valueOf(id));
     }
 
-    public int retry(LocalMessage message) {
-        return setStatus(message.id(), LocalMessage.Status.QUEUE);
+    public int retry(UUID uuid) {
+        LocalMessage.Builder builder = new LocalMessage.Builder().status(LocalMessage.Status.QUEUE);
+        return brite.update(LocalMessage.TABLE, builder.build(),
+                LocalMessage.UUID + " = ?", LocalMessage.valueOf(uuid));
     }
 
     public int retryAll(LocalMessage.Status status) {
@@ -97,6 +106,6 @@ public class LocalMessageStore {
         LocalMessage.Builder builder = new LocalMessage.Builder().status(LocalMessage.Status.QUEUE);
 
         return brite.update(LocalMessage.TABLE, builder.build(),
-                LocalMessage.STATUS + " = ?", LocalMessage.getStatusValue(status));
+                LocalMessage.STATUS + " = ?", LocalMessage.valueOf(status));
     }
 }

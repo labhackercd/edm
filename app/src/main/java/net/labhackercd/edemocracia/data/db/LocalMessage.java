@@ -88,10 +88,15 @@ public abstract class LocalMessage implements Parcelable {
     static final String CREATE_INDEX_INSERTED_MESSAGE_ID =
             "CREATE INDEX " + INDEX_INSERTED_MESSAGE_ID + " ON " + TABLE + " (" + INSERTED_MESSAGE_ID + ")";
 
+
+    public static Observable<SqlBrite.Query> getUnsentMessages2(SqlBrite brite, long rootMessageId) {
+        return brite.createQuery(TABLE, "SELECT * FROM " + TABLE + " WHERE " + ROOT_MESSAGE_ID + " = ?",
+                String.valueOf(rootMessageId));
+    }
+
     public static Observable<List<LocalMessage>> getUnsentMessages(
             SqlBrite brite, long rootMessageId) {
-        return brite.createQuery(TABLE, "SELECT * FROM " + TABLE + " WHERE " + ROOT_MESSAGE_ID + " = ?",
-                String.valueOf(rootMessageId))
+        return getUnsentMessages2(brite, rootMessageId)
                 .map(SqlBrite.Query::run)
                 .map(READ_LIST);
     }
@@ -103,7 +108,7 @@ public abstract class LocalMessage implements Parcelable {
                 .map(READ_SINGLE);
     }
 
-    public static Func1<Cursor, List<LocalMessage>> READ_LIST = cursor -> {
+    public static final Func1<Cursor, List<LocalMessage>> READ_LIST = cursor -> {
         try {
             List<LocalMessage> list = new ArrayList<>(cursor.getCount());
             while (cursor.moveToNext())
@@ -150,8 +155,12 @@ public abstract class LocalMessage implements Parcelable {
         return string == null ? null : Uri.parse(string);
     }
 
-    public static String getStatusValue(Status status) {
+    public static String valueOf(Status status) {
         return status.name();
+    }
+
+    public static String valueOf(UUID uuid) {
+        return uuid.toString();
     }
 
     public static final class Builder {
@@ -220,12 +229,12 @@ public abstract class LocalMessage implements Parcelable {
         }
 
         public Builder uuid(UUID uuid) {
-            values.put(UUID, uuid.toString());
+            values.put(UUID, valueOf(uuid));
             return this;
         }
 
         public Builder status(Status status) {
-            values.put(STATUS, getStatusValue(status));
+            values.put(STATUS, valueOf(status));
             return this;
         }
 

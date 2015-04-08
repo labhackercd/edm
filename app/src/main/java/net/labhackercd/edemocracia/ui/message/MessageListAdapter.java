@@ -3,13 +3,13 @@ package net.labhackercd.edemocracia.ui.message;
 import android.app.AlertDialog;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,32 +20,26 @@ import com.squareup.picasso.RequestCreator;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.ImageLoader;
 import net.labhackercd.edemocracia.data.LocalMessageStore;
-import net.labhackercd.edemocracia.data.api.model.Message;
-import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.data.db.LocalMessage;
 
 import org.kefirsf.bb.TextProcessor;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import butterknife.OnClick;
-import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import timber.log.Timber;
 
 public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.ViewHolder> {
 
     private final ImageLoader imageLoader;
     private final TextProcessor textProcessor;
     private final LocalMessageStore messageRepository;
-    private List<Message> messages = Collections.emptyList();
-    private List<LocalMessage> localMessages = Collections.emptyList();
+
+    private List<MessageListFragment.Item> items = Collections.emptyList();
 
     public MessageListAdapter(LocalMessageStore messageRepository, TextProcessor textProcessor, ImageLoader imageLoader) {
         this.imageLoader = imageLoader;
@@ -61,46 +55,23 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int i) {
-        // TODO Place "not yet submitted messages" in their right place on the list
-        // (I mean, like under the message they are replying to.)
-        int remoteCount = messages.size();
-        if (i < remoteCount)
-            holder.bindMessage(messages.get(i));
-        else
-            holder.bindLocalMessage(localMessages.get(i - remoteCount));
+        holder.bindItem(items.get(i));
     }
 
     @Override
     public int getItemCount() {
-        return messages.size() + localMessages.size();
+        return items.size();
     }
 
-    public int getItemPosition(LocalMessage item) {
-        return messages.size() + localMessages.indexOf(item);
-    }
-
-    public int getLocalMessagePositionById(long id) {
-        int position = 0;
-        for (LocalMessage item : localMessages) {
-            if (item.id().equals(id))
-                return messages.size() + position;
-        }
-        return -1;
-    }
-
-    public MessageListAdapter replaceWith(Pair<List<Message>, List<LocalMessage>> lists) {
-        return replaceWith(lists.first, lists.second);
-    }
-
-    public MessageListAdapter replaceWith(List<Message> messages, List<LocalMessage> localMessages) {
-        this.messages = messages;
-        this.localMessages = localMessages;
+    public MessageListAdapter replaceWith(List<MessageListFragment.Item> items) {
+        // TODO Notify better changes so we don't have to redraw everything every single time.
+        this.items = items;
         notifyDataSetChanged();
         return this;
     }
 
-    public Message getRootMessage() {
-        return messages.isEmpty() ? null : messages.get(0);
+    public void scrollToItem(UUID uuid) {
+        // TODO Do it.
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -112,121 +83,91 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         @InjectView(android.R.id.text2) TextView subjectView;
         @InjectView(R.id.error_button) ImageView errorIcon;
 
-        private Message message;
-        private LocalMessage localMessage;
         private Subscription subscription;
+        private MessageListFragment.Item item;
 
         public ViewHolder(View view) {
             super(view);
             ButterKnife.inject(this, view);
             view.setOnClickListener(this::handleClick);
+            ButterKnife.findById(view, R.id.reply).setOnClickListener(this::handleReplyClick);
             errorIcon.setOnClickListener(this::handleErrorClick);
         }
 
-        public void bindMessage(Message message) {
-            beforeBind(message, null);
+        public void bindItem(MessageListFragment.Item item) {
 
-            setAuthor(message.getUserName());
+            // Don't update if not required.
+            if (this.item != null && this.item.equals(item))
+                return;
 
-            setSubject(message.getSubject());
-
-            setBody(message.getBody());
-
-            setStatus(message.getCreateDate());
-
-            // TODO Display author's portrait.
-            setPortrait2(message.getUserName(), message.getUserId());
-        }
-
-        public void bindLocalMessage(LocalMessage localMessage) {
-            beforeBind(null, localMessage);
-
-            // Note: we startWith the given localMessage, but subscribe for when
-            // it's updated somewhere else
-            subscription = messageRepository.getMessage(localMessage.id())
-                    .subscribeOn(Schedulers.io())
-                    .startWith(Observable.just(localMessage))
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe((LocalMessage message) -> {
-                        //setAuthor(user.getScreenName());
-
-                        setSubject(message.subject());
-
-                        setBody(message.body());
-
-                        setLocalMessageStatus(message.status(), message.insertionDate());
-
-                        //setPortrait(user.getScreenName(), user.getPortraitId());
-                    });
-        }
-
-        private void beforeBind(Message message, LocalMessage localMessage) {
-            this.message = message;
-            this.localMessage = localMessage;
-
+            /** Empty everything before binding. */
             if (subscription != null) {
-                if (subscription.isUnsubscribed())
+                if (!subscription.isUnsubscribed())
                     subscription.unsubscribe();
                 subscription = null;
             }
+
+            this.item = item;
+
+            /** Finally, bind the item. */
+
+            setUser(item.getUserId(), item.getUserName());
+
+            setSubject(item.getSubject());
+
+            setBody(item.getBody());
+
+            setStatus(item.getStatus(), item.getCreateDate());
         }
 
-        public void handleClick(View v) {
-            // TODO Do something when a item is clicked
-        }
+        private void setUser(long userId, String userName) {
+            userView.setText(userName);
 
-        private void handleErrorClick(View view) {
-            new AlertDialog.Builder(view.getContext())
-                    .setTitle(R.string.message_submission_failed)
-                    .setMessage(R.string.message_submission_failed_description)
-                    .setNegativeButton(R.string.cancel_message_submission, (dialog, which) -> {
-                        // TODO Stop lying to the user!
-                        dialog.dismiss();
-                    })
-                    .setPositiveButton(R.string.retry_message_submission, (dialog, which) -> {
-                        if (localMessage != null)
-                            messageRepository.retry(localMessage);
-                        dialog.dismiss();
-                    })
-                    .create()
-                    .show();
-        }
+            final Drawable placeholder = userName == null ? null : getPortraitPlaceholder(userName);
 
-        @OnClick(R.id.reply)
-        @SuppressWarnings("UnusedDeclaration")
-        public void onReplyClick(View v) {
-            if (localMessage != null && localMessage.status() == LocalMessage.Status.CANCEL) {
-                // TODO Retry message submission
+            portraitView.setImageDrawable(placeholder);
+
+            if (userId != 0) {
+                subscription = imageLoader.userPortrait2(userId)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .map(request -> request.placeholder(placeholder))
+                        .subscribe(
+                                request -> request.fit().centerCrop().into(portraitView),
+                                error -> Timber.e(error, "Failed to load message portrait."));
             }
-        }
-
-        private void setAuthor(String author) {
-            userView.setText(author);
         }
 
         private void setSubject(String subject) {
             subjectView.setText(subject);
         }
 
-        private void setStatus(Date date) {
-            String text;
-            if (date != null) {
-                Locale locale = dateView.getResources().getConfiguration().locale;
-                text = new PrettyTime(locale).format(date);
+        private void setStatus(LocalMessage.Status status, Date createDate) {
+            if (status.equals(LocalMessage.Status.SUCCESS)) {
+                String text;
+                if (createDate != null) {
+                    Locale locale = dateView.getResources().getConfiguration().locale;
+                    text = new PrettyTime(locale).format(createDate);
+                } else {
+                    text = null;
+                }
+                setStatus(text);
+                setErrorIconVisible(false);
+            } else if (status.equals(LocalMessage.Status.QUEUE)) {
+                setStatus(R.string.sending_message);
+                setErrorIconVisible(false);
             } else {
-                text = null;
+                setStatus(R.string.message_submission_failed, true);
             }
-            setStatus(text);
-        }
-
-        private void setStatus(String text) {
-            dateView.setText(text);
         }
 
         private void setStatus(int resId) {
             setStatus(resId, false);
         }
 
+        private void setStatus(String text) {
+            dateView.setText(text);
+        }
         private void setStatus(int resId, boolean error) {
             dateView.setText(resId);
             dateView.setMessageSubmissionError(error);
@@ -249,42 +190,6 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             errorIcon.setVisibility(show ? View.VISIBLE : View.GONE);
         }
 
-        private void setLocalMessageStatus(LocalMessage.Status status, Date insertionDate) {
-            if (status.equals(LocalMessage.Status.SUCCESS))
-                setStatus(insertionDate);
-            else if (status.equals(LocalMessage.Status.QUEUE))
-                setStatus(R.string.sending_message);
-            else
-                setStatus(R.string.message_submission_failed, true);
-        }
-
-        private void setPortrait(String userName, long portraitId) {
-            Drawable placeholder = getPortraitPlaceholder(userName);
-            if (portraitId <= 0)
-                setPortrait(placeholder);
-            else
-                setPortrait(imageLoader.userPortrait(portraitId).placeholder(placeholder));
-        }
-
-        private void setPortrait2(String userName, long userId) {
-            Drawable placeholder = getPortraitPlaceholder(userName);
-            portraitView.setImageDrawable(placeholder);
-            imageLoader.userPortrait2(userId)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(request -> {
-                        setPortrait(request.placeholder(placeholder));
-                    });
-        }
-
-        private void setPortrait(RequestCreator requestCreator) {
-            requestCreator.fit().centerCrop().into(portraitView);
-        }
-
-        private void setPortrait(Drawable drawable) {
-            portraitView.setImageDrawable(drawable);
-        }
-
         private Drawable getPortraitPlaceholder(String userName) {
             String letter = userName.trim().substring(0, 1).toUpperCase();
             return TextDrawable.builder().buildRect(letter, Color.LTGRAY);
@@ -298,6 +203,41 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             } else {
                 bodyView.setText(null);
             }
+        }
+
+        private void handleClick(View v) {
+            Timber.d("TODO Do something when an item is clicked.");
+        }
+
+        private void handleReplyClick(View view) {
+            if (item != null && item.getStatus().equals(LocalMessage.Status.SUCCESS)) {
+                Timber.d("TODO Do something when the reply button of an item is clicked.");
+            } else {
+                Timber.e("Ignoring invalid reply request for item: %s", item);
+            }
+        }
+
+        private void handleErrorClick(View view) {
+            new AlertDialog.Builder(view.getContext())
+                    .setTitle(R.string.message_submission_failed)
+                    .setMessage(R.string.message_submission_failed_description)
+                    .setNegativeButton(R.string.cancel_message_submission, (dialog, which) -> {
+                        // TODO Stop lying to the user!
+                        dialog.dismiss();
+                    })
+                    .setPositiveButton(R.string.retry_message_submission, (dialog, which) -> {
+                        if (item != null) {
+                            LocalMessage.Status status = item.getStatus();
+                            if (LocalMessage.Status.SUCCESS.equals(status) || LocalMessage.Status.QUEUE.equals(status)) {
+                                Timber.e("Ignoring invalid retry request for item: %s", item);
+                            } else {
+                                messageRepository.retry(item.getUuid());
+                            }
+                        }
+                        dialog.dismiss();
+                    })
+                    .create()
+                    .show();
         }
     }
 }
