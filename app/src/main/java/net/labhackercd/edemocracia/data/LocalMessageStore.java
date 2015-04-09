@@ -96,7 +96,9 @@ public class LocalMessageStore {
     public int retry(UUID uuid) {
         LocalMessage.Builder builder = new LocalMessage.Builder().status(LocalMessage.Status.QUEUE);
         return brite.update(LocalMessage.TABLE, builder.build(),
-                LocalMessage.UUID + " = ?", LocalMessage.valueOf(uuid));
+                LocalMessage.UUID + " = ? AND " + LocalMessage.STATUS + " != ?",
+                LocalMessage.valueOf(uuid),
+                LocalMessage.valueOf(LocalMessage.Status.SUCCESS));
     }
 
     public int retryAll(LocalMessage.Status status) {
