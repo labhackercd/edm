@@ -300,7 +300,7 @@ public class MainActivity extends BaseActivity {
                 ((NavigationDrawerAdapter) drawerList.getAdapter()).getSelectedItemPosition());
     }
 
-    private static String getUserDisplayName(User user) {
+    public static String getUserDisplayName(User user) {
         String userName = Joiner.on(' ').join(
                 user.getFirstName(), user.getMiddleName(), user.getLastName());
         if (TextUtils.isEmpty(userName.trim()))

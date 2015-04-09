@@ -27,8 +27,10 @@ import net.labhackercd.edemocracia.data.LocalMessageStore;
 import net.labhackercd.edemocracia.data.MainRepository;
 import net.labhackercd.edemocracia.data.api.model.Message;
 import net.labhackercd.edemocracia.data.api.model.Thread;
+import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.data.db.LocalMessage;
 import net.labhackercd.edemocracia.ui.BaseFragment;
+import net.labhackercd.edemocracia.ui.MainActivity;
 import net.labhackercd.edemocracia.ui.listview.ItemListView;
 
 import org.kefirsf.bb.TextProcessor;
@@ -133,12 +135,18 @@ public class MessageListFragment extends BaseFragment {
                         .map(Item::create)
                         .toList().toBlocking().single());
 
+        Observable<User> currentUser = AccountUtils.getCurrentUser(repository, getActivity());
+
         Observable<List<Item>> localMessages = messageRepository
                 .getUnsentMessages(data.getRootMessageId())
                 .subscribeOn(Schedulers.io())
-                .map(messages -> Observable.from(messages)
-                        .map(Item::create)
-                        .toList().toBlocking().single());
+                .zipWith(currentUser.repeat(), (messages, user) ->
+                        Observable.from(messages)
+                                .map(Item::builder)
+                                .map(builder -> builder.setUserId(user.getUserId()))
+                                .map(builder -> builder.setUserName(MainActivity.getUserDisplayName(user)))
+                                .map(Item.Builder::build)
+                                .toList().toBlocking().single());
 
         return localMessages.zipWith(remoteMessages.repeat(), MessageListFragment::combineMessageLists);
     }
@@ -265,6 +273,15 @@ public class MessageListFragment extends BaseFragment {
                     .setUserName(null);
         }
 
+        static Builder builder(LocalMessage m) {
+            return builder()
+                    .setUuid(m.uuid())
+                    .setSubject(m.subject())
+                    .setBody(m.body())
+                    .setStatus(m.status())
+                    .setCreateDate(m.insertionDate());
+        }
+
         static Item create(Message m) {
             return builder()
                     .setUuid(UUID.fromString(m.getUuid()))
@@ -273,16 +290,6 @@ public class MessageListFragment extends BaseFragment {
                     .setSubject(m.getSubject())
                     .setBody(m.getBody())
                     .setCreateDate(m.getCreateDate())
-                    .build();
-        }
-
-        static Item create(LocalMessage m) {
-            return builder()
-                    .setUuid(m.uuid())
-                    .setSubject(m.subject())
-                    .setBody(m.body())
-                    .setStatus(m.status())
-                    .setCreateDate(m.insertionDate())
                     .build();
         }
     }
