@@ -9,13 +9,11 @@ import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.ocpsoft.pretty.time.PrettyTime;
-import com.squareup.picasso.RequestCreator;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.ImageLoader;
@@ -152,26 +150,25 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                     text = null;
                 }
                 setStatus(text);
-                setErrorIconVisible(false);
+                setHasError(false);
             } else if (status.equals(LocalMessage.Status.QUEUE)) {
                 setStatus(R.string.sending_message);
-                setErrorIconVisible(false);
+                setHasError(false);
             } else {
-                setStatus(R.string.message_submission_failed, true);
+                setStatus(R.string.message_submission_failed);
+                setHasError(true);
             }
-        }
-
-        private void setStatus(int resId) {
-            setStatus(resId, false);
         }
 
         private void setStatus(String text) {
             dateView.setText(text);
         }
-        private void setStatus(int resId, boolean error) {
-            dateView.setText(resId);
-            dateView.setMessageSubmissionError(error);
 
+        private void setStatus(int resId) {
+            dateView.setText(resId);
+        }
+
+        private void setHasError(boolean hasError) {
             /*
             TODO The text get BOLD only when there is an error.
             Typeface tf = dateView.getTypeface();
@@ -183,11 +180,8 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             dateView.setTypeface(tf, style);
             */
 
-            setErrorIconVisible(error);
-        }
-
-        private void setErrorIconVisible(boolean show) {
-            errorIcon.setVisibility(show ? View.VISIBLE : View.GONE);
+            dateView.setMessageSubmissionError(hasError);
+            errorIcon.setVisibility(hasError ? View.VISIBLE : View.GONE);
         }
 
         private Drawable getPortraitPlaceholder(String userName) {

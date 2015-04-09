@@ -42,8 +42,9 @@ public class StatusView extends TextView {
     }
 
     public void setMessageSubmissionError(boolean error) {
-        if (messageSubmissionError != error)
+        if (messageSubmissionError != error) {
             messageSubmissionError = error;
-        refreshDrawableState();
+            refreshDrawableState();
+        }
     }
 }
