@@ -52,16 +52,16 @@ public class LocalMessageStore {
     public Pair<Long, UUID> insert(Message parentMessage, String subject, String body, Uri videoAttachment) {
         UUID uuid = UUID.randomUUID();
         LocalMessage.Builder builder = new LocalMessage.Builder()
-                .rootMessageId(parentMessage.getRootMessageId())
-                .groupId(parentMessage.getGroupId())
-                .categoryId(parentMessage.getCategoryId())
-                .threadId(parentMessage.getThreadId())
-                .parentMessageId(parentMessage.getMessageId())
-                .subject(subject)
-                .body(body)
-                .videoAttachment(videoAttachment)
-                .uuid(uuid)
-                .status(LocalMessage.Status.QUEUE);
+                .setRootMessageId(parentMessage.getRootMessageId())
+                .setGroupId(parentMessage.getGroupId())
+                .setCategoryId(parentMessage.getCategoryId())
+                .setThreadId(parentMessage.getThreadId())
+                .setParentMessageId(parentMessage.getMessageId())
+                .setSubject(subject)
+                .setBody(body)
+                .setVideoAttachment(videoAttachment)
+                .setUuid(uuid)
+                .setStatus(LocalMessage.Status.QUEUE);
         long id = brite.insert(LocalMessage.TABLE, builder.build());
         return new Pair<>(id, uuid);
     }
@@ -80,21 +80,21 @@ public class LocalMessageStore {
 
     public int setSuccess(long id, Message inserted) {
         LocalMessage.Builder builder = new LocalMessage.Builder()
-                .insertedMessageId(inserted.getMessageId())
-                .insertionDate(inserted.getCreateDate())
-                .status(LocalMessage.Status.SUCCESS);
+                .setMessageId(inserted.getMessageId())
+                .setCreateDate(inserted.getCreateDate())
+                .setStatus(LocalMessage.Status.SUCCESS);
         return brite.update(LocalMessage.TABLE, builder.build(),
                 LocalMessage.ID + " = ?", String.valueOf(id));
     }
 
     public int setStatus(long id, LocalMessage.Status status) {
-        LocalMessage.Builder builder = new LocalMessage.Builder().status(status);
+        LocalMessage.Builder builder = new LocalMessage.Builder().setStatus(status);
         return brite.update(LocalMessage.TABLE, builder.build(),
                 LocalMessage.ID + " = ?", String.valueOf(id));
     }
 
     public int retry(UUID uuid) {
-        LocalMessage.Builder builder = new LocalMessage.Builder().status(LocalMessage.Status.QUEUE);
+        LocalMessage.Builder builder = new LocalMessage.Builder().setStatus(LocalMessage.Status.QUEUE);
         return brite.update(LocalMessage.TABLE, builder.build(),
                 LocalMessage.UUID + " = ? AND " + LocalMessage.STATUS + " != ?",
                 LocalMessage.valueOf(uuid),
@@ -105,7 +105,7 @@ public class LocalMessageStore {
         if (LocalMessage.Status.SUCCESS.equals(status))
             throw new IllegalArgumentException("status == SUCCESS");
 
-        LocalMessage.Builder builder = new LocalMessage.Builder().status(LocalMessage.Status.QUEUE);
+        LocalMessage.Builder builder = new LocalMessage.Builder().setStatus(LocalMessage.Status.QUEUE);
 
         return brite.update(LocalMessage.TABLE, builder.build(),
                 LocalMessage.STATUS + " = ?", LocalMessage.valueOf(status));

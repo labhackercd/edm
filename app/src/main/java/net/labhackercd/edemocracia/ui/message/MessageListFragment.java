@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -69,7 +68,7 @@ public class MessageListFragment extends BaseFragment {
     }
 
     public static Fragment newInstance(LocalMessage message) {
-        return newInstance(ThreadData.create(message), message.uuid());
+        return newInstance(ThreadData.create(message), message.getUuid());
     }
 
     private static MessageListFragment newInstance(ThreadData data) {
@@ -235,8 +234,8 @@ public class MessageListFragment extends BaseFragment {
         }
 
         static ThreadData create(LocalMessage localMessage) {
-            return create(localMessage.groupId(), localMessage.categoryId(),
-                    localMessage.threadId(), localMessage.rootMessageId());
+            return create(localMessage.getGroupId(), localMessage.getCategoryId(),
+                    localMessage.getThreadId(), localMessage.getRootMessageId());
         }
 
         private static ThreadData create(long groupId, long categoryId, long threadId, long rootMessageId) {
@@ -275,11 +274,11 @@ public class MessageListFragment extends BaseFragment {
 
         static Builder builder(LocalMessage m) {
             return builder()
-                    .setUuid(m.uuid())
-                    .setSubject(m.subject())
-                    .setBody(m.body())
-                    .setStatus(m.status())
-                    .setCreateDate(m.insertionDate());
+                    .setUuid(m.getUuid())
+                    .setSubject(m.getSubject())
+                    .setBody(m.getBody())
+                    .setStatus(m.getStatus())
+                    .setCreateDate(m.getInsertionDate());
         }
 
         static Item create(Message m) {

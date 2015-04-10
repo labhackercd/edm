@@ -31,19 +31,19 @@ public abstract class LocalMessage implements Parcelable {
 
     /** XXX Please, please, don't change the order of the abstract getters before reading AutoValues documentation. */
 
-    public abstract Long id();
-    @Nullable public abstract Long insertedMessageId();
-    public abstract Long rootMessageId();
-    public abstract Long groupId();
-    public abstract Long categoryId();
-    public abstract Long threadId();
-    public abstract Long parentMessageId();
-    @Nullable public abstract String body();
-    @Nullable public abstract String subject();
-    @Nullable public abstract Uri videoAttachment();
-    public abstract UUID uuid();
-    public abstract Status status();
-    @Nullable public abstract Date insertionDate();
+    public abstract Long getId();
+    @Nullable public abstract Long getMessageId();
+    public abstract Long getRootMessageId();
+    public abstract Long getGroupId();
+    public abstract Long getCategoryId();
+    public abstract Long getThreadId();
+    public abstract Long getParentMessageId();
+    @Nullable public abstract String getBody();
+    @Nullable public abstract String getSubject();
+    @Nullable public abstract Uri getVideoAttachment();
+    public abstract UUID getUuid();
+    public abstract Status getStatus();
+    @Nullable public abstract Date getInsertionDate();
 
     public static final String TABLE = "LocalMessage";
 
@@ -171,7 +171,7 @@ public abstract class LocalMessage implements Parcelable {
             return this;
         }
 
-        public Builder insertedMessageId(Long insertedMessageId) {
+        public Builder setMessageId(Long insertedMessageId) {
             if (insertedMessageId != null)
                 values.put(INSERTED_MESSAGE_ID, insertedMessageId);
             else
@@ -179,32 +179,32 @@ public abstract class LocalMessage implements Parcelable {
             return this;
         }
 
-        public Builder rootMessageId(long rootMessageId) {
+        public Builder setRootMessageId(long rootMessageId) {
             values.put(ROOT_MESSAGE_ID, rootMessageId);
             return this;
         }
 
-        public Builder groupId(long groupId) {
+        public Builder setGroupId(long groupId) {
             values.put(GROUP_ID, groupId);
             return this;
         }
 
-        public Builder categoryId(long categoryId) {
+        public Builder setCategoryId(long categoryId) {
             values.put(CATEGORY_ID, categoryId);
             return this;
         }
 
-        public Builder threadId(long threadId) {
+        public Builder setThreadId(long threadId) {
             values.put(THREAD_ID, threadId);
             return this;
         }
 
-        public Builder parentMessageId(long parentMessageId) {
+        public Builder setParentMessageId(long parentMessageId) {
             values.put(PARENT_MESSAGE_ID, parentMessageId);
             return this;
         }
 
-        public Builder body(String body) {
+        public Builder setBody(String body) {
             if (body != null)
                 values.put(BODY, body);
             else
@@ -212,7 +212,7 @@ public abstract class LocalMessage implements Parcelable {
             return this;
         }
 
-        public Builder subject(String subject) {
+        public Builder setSubject(String subject) {
             if (subject != null)
                 values.put(SUBJECT, subject);
             else
@@ -220,7 +220,7 @@ public abstract class LocalMessage implements Parcelable {
             return this;
         }
 
-        public Builder videoAttachment(Uri videoAttachment) {
+        public Builder setVideoAttachment(Uri videoAttachment) {
             if (videoAttachment != null)
                 values.put(VIDEO_ATTACHMENT, videoAttachment.toString());
             else
@@ -228,17 +228,17 @@ public abstract class LocalMessage implements Parcelable {
             return this;
         }
 
-        public Builder uuid(UUID uuid) {
+        public Builder setUuid(UUID uuid) {
             values.put(UUID, valueOf(uuid));
             return this;
         }
 
-        public Builder status(Status status) {
+        public Builder setStatus(Status status) {
             values.put(STATUS, valueOf(status));
             return this;
         }
 
-        public Builder insertionDate(Date date) {
+        public Builder setCreateDate(Date date) {
             if (date != null)
                 values.put(INSERTION_DATE, date.getTime());
             else

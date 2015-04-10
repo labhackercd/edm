@@ -52,8 +52,8 @@ public class AddMessageTask {
 
     protected void execute() throws Throwable {
         // Upload the video attachment, if there is any.
-        Uri videoAttachment = message.videoAttachment();
-        String body = message.body();
+        Uri videoAttachment = message.getVideoAttachment();
+        String body = message.getBody();
         if (videoAttachment != null) {
             // TODO Should probably be wrapped in some local PreferenceManager or something.
             String account = PreferenceManager
@@ -65,14 +65,14 @@ public class AddMessageTask {
             // FIXME Please.
             String url = "https://edemocracia.camara.gov.br"
                     + "/c/message_boards/find_message?p_l_id=&messageId="
-                    + String.valueOf(message.parentMessageId());
+                    + String.valueOf(message.getParentMessageId());
 
             String description = application.getResources()
                     .getString(R.string.youtube_video_description);
             description = String.format(description, url);
 
             String videoId = uploadVideo(
-                    message.videoAttachment(), account, message.subject(), description);
+                    message.getVideoAttachment(), account, message.getSubject(), description);
             if (TextUtils.isEmpty(videoId) || "null".equals(videoId))
                 throw new AssertionError("videoId is empty or null");
             body = attachVideo(body, videoId);
@@ -80,12 +80,13 @@ public class AddMessageTask {
 
         // Publish the message.
         Message inserted = service.addMessage(
-                message.uuid(), message.groupId(), message.categoryId(), message.threadId(),
-                message.parentMessageId(), message.subject(), body);
+                message.getUuid(), message.getGroupId(), message.getCategoryId(),
+                message.getThreadId(), message.getParentMessageId(), message.getSubject(),
+                body);
 
         Timber.d("Message published.");
 
-        messages.setSuccess(message.id(), inserted);
+        messages.setSuccess(message.getId(), inserted);
     }
 
     public void onError(Throwable error) {
@@ -105,14 +106,12 @@ public class AddMessageTask {
             MainActivity.notifyMessageSubmissionFailure(application, message, error);
         }
 
-        messages.setStatus(message.id(), status);
+        messages.setStatus(message.getId(), status);
     }
 
-    /** Attach a YouTube video to a message body and returns a the body, with the attached video . */
+    /** Attach a YouTube video to a message body and returns it (the body with the attached video). */
     private String attachVideo(String body, String videoId) {
-        return String
-                .format("[center][youtube]%s[/youtube][/center]", videoId)
-                .concat(body);
+        return String.format("[center][youtube]%s[/youtube][/center]", videoId).concat(body);
     }
 
     private String uploadVideo(Uri video, String youtubeAccount, String title, String description)
