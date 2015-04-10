@@ -28,7 +28,7 @@ import com.google.common.collect.Lists;
 
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.LocalMessageStore;
-import net.labhackercd.edemocracia.data.api.model.Message;
+import net.labhackercd.edemocracia.data.model.Message;
 import net.labhackercd.edemocracia.ui.BaseActivity;
 import net.labhackercd.edemocracia.ui.preference.PreferenceActivity;
 import net.labhackercd.edemocracia.ui.preference.PreferenceFragment;
@@ -55,8 +55,7 @@ public class ComposeActivity extends BaseActivity {
     private Uri attachedVideoUri;
     private Message parentMessage;
 
-    @Inject
-    LocalMessageStore messageRepository;
+    @Inject LocalMessageStore messageRepository;
 
     @InjectView(R.id.message) TextView bodyView;
     @InjectView(R.id.subject) TextView subjectView;

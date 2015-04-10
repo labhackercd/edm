@@ -7,8 +7,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
+import java.util.UUID;
 
-public class Message extends BaseModel {
+public class Message extends BaseModel implements net.labhackercd.edemocracia.data.model.Message {
 
     private int status;
     private boolean attachments;
@@ -17,7 +18,7 @@ public class Message extends BaseModel {
     private long threadId;
     private String subject;
     private boolean answer;
-    private String uuid;
+    private UUID uuid;
     private long companyId;
     private Date createDate;
     private String format;
@@ -65,7 +66,7 @@ public class Message extends BaseModel {
         return answer;
     }
 
-    public String getUuid() {
+    public UUID getUuid() {
         return uuid;
     }
 
@@ -153,7 +154,10 @@ public class Message extends BaseModel {
             instance.threadId = json.getLong("threadId");
             instance.subject = json.getString("subject");
             instance.answer = json.getBoolean("answer");
-            instance.uuid = json.getString("uuid");
+
+            String uuid = json.getString("uuid");
+            instance.uuid = uuid == null ? null : UUID.fromString(uuid);
+
             instance.companyId = json.getLong("companyId");
             instance.createDate = JSON.getJSONLongAsDate(json, "createDate");
             instance.format = json.getString("format");

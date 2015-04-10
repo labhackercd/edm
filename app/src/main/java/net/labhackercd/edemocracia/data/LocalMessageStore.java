@@ -7,7 +7,7 @@ import android.net.Uri;
 import android.support.v4.util.Pair;
 import com.squareup.sqlbrite.SqlBrite;
 
-import net.labhackercd.edemocracia.data.api.model.Message;
+import net.labhackercd.edemocracia.data.model.Message;
 import net.labhackercd.edemocracia.data.db.LocalMessage;
 import net.labhackercd.edemocracia.service.AddMessageService;
 
@@ -61,21 +61,14 @@ public class LocalMessageStore {
                 .setBody(body)
                 .setVideoAttachment(videoAttachment)
                 .setUuid(uuid)
-                .setStatus(LocalMessage.Status.QUEUE);
+                .setStatus(LocalMessage.Status.QUEUE)
+                .setUserId(parentMessage.getUserId());
         long id = brite.insert(LocalMessage.TABLE, builder.build());
         return new Pair<>(id, uuid);
     }
 
     public Observable<List<LocalMessage>> getUnsentMessages(long rootMessageId) {
         return LocalMessage.getUnsentMessages(brite, rootMessageId);
-    }
-
-    public Observable<SqlBrite.Query> getUnsentMessages2(long rootMessageId) {
-        return LocalMessage.getUnsentMessages2(brite, rootMessageId);
-    }
-
-    public Observable<LocalMessage> getMessage(long messageId) {
-        return LocalMessage.getMessage(brite, messageId);
     }
 
     public int setSuccess(long id, Message inserted) {

@@ -20,6 +20,7 @@ import net.labhackercd.edemocracia.data.ImageLoader;
 import net.labhackercd.edemocracia.data.LocalMessageStore;
 import net.labhackercd.edemocracia.data.db.LocalMessage;
 
+import net.labhackercd.edemocracia.data.model.Message;
 import org.kefirsf.bb.TextProcessor;
 
 import java.util.*;
@@ -37,7 +38,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
     private final TextProcessor textProcessor;
     private final LocalMessageStore messageRepository;
 
-    private List<MessageListFragment.Item> items = Collections.emptyList();
+    private List<? extends Item> items = Collections.emptyList();
 
     public MessageListAdapter(LocalMessageStore messageRepository, TextProcessor textProcessor, ImageLoader imageLoader) {
         this.imageLoader = imageLoader;
@@ -61,7 +62,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         return items.size();
     }
 
-    public MessageListAdapter replaceWith(List<MessageListFragment.Item> items) {
+    public MessageListAdapter replaceWith(List<? extends Item> items) {
         // TODO Notify better changes so we don't have to redraw everything every single time.
         this.items = items;
         notifyDataSetChanged();
@@ -70,6 +71,12 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
     public void scrollToItem(UUID uuid) {
         // TODO Do it.
+    }
+
+    interface Item {
+        Message getMessage();
+        String getUserName();
+        LocalMessage.Status getStatus();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -81,8 +88,8 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         @InjectView(android.R.id.text2) TextView subjectView;
         @InjectView(R.id.error_button) ImageView errorIcon;
 
+        private Item item;
         private Subscription subscription;
-        private MessageListFragment.Item item;
 
         public ViewHolder(View view) {
             super(view);
@@ -92,7 +99,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             errorIcon.setOnClickListener(this::handleErrorClick);
         }
 
-        public void bindItem(MessageListFragment.Item item) {
+        public void bindItem(Item item) {
 
             // Don't update if not required.
             if (this.item != null && this.item.equals(item))
@@ -106,16 +113,17 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             }
 
             this.item = item;
+            Message message = item.getMessage();
 
             /** Finally, bind the item. */
 
-            setUser(item.getUserId(), item.getUserName());
+            setUser(message.getUserId(), item.getUserName());
 
-            setSubject(item.getSubject());
+            setSubject(message.getSubject());
 
-            setBody(item.getBody());
+            setBody(message.getBody());
 
-            setStatus(item.getStatus(), item.getCreateDate());
+            setStatus(item.getStatus(), message.getCreateDate());
         }
 
         private void setUser(long userId, String userName) {
@@ -225,7 +233,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                             if (LocalMessage.Status.SUCCESS.equals(status) || LocalMessage.Status.QUEUE.equals(status)) {
                                 Timber.e("Ignoring invalid retry request for item: %s", item);
                             } else {
-                                messageRepository.retry(item.getUuid());
+                                messageRepository.retry(item.getMessage().getUuid());
                             }
                         }
                         dialog.dismiss();

@@ -41,6 +41,7 @@ import net.labhackercd.edemocracia.data.api.model.Group;
 import net.labhackercd.edemocracia.data.api.model.Thread;
 import net.labhackercd.edemocracia.data.api.model.User;
 import net.labhackercd.edemocracia.data.db.LocalMessage;
+import net.labhackercd.edemocracia.data.model.Message;
 import net.labhackercd.edemocracia.data.provider.EDMContract;
 import net.labhackercd.edemocracia.ui.group.GroupListFragment;
 import net.labhackercd.edemocracia.ui.message.MessageListFragment;
@@ -154,7 +155,7 @@ public class MainActivity extends BaseActivity {
         if (thread != null) {
             return MessageListFragment.newInstance(thread);
         } else {
-            LocalMessage localMessage = intent.getParcelableExtra(EXTRA_LOCAL_MESSAGE);
+            LocalMessage localMessage = intent.getParcelableExtra(EXTRA_MESSAGE);
             if (localMessage != null) {
                 return MessageListFragment.newInstance(localMessage);
             } else {
@@ -371,7 +372,6 @@ public class MainActivity extends BaseActivity {
     private static final String EXTRA_THREAD = extraName("thread");
     private static final String EXTRA_MESSAGE = extraName("message");
     private static final String EXTRA_CATEGORY = extraName("category");
-    private static final String EXTRA_LOCAL_MESSAGE = extraName("localName");
 
     private static String extraName(String key) {
         return MainActivity.class.getCanonicalName().concat(".extra.").concat(key);
@@ -423,7 +423,7 @@ public class MainActivity extends BaseActivity {
         intent.setAction(Intent.ACTION_VIEW);
         //intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.setType(EDMContract.Message.CONTENT_ITEM_TYPE);
-        intent.putExtra(EXTRA_LOCAL_MESSAGE, message);
+        intent.putExtra(EXTRA_MESSAGE, (Message) message);
         return intent;
     }
 

@@ -15,11 +15,12 @@ import java.util.List;
 import java.util.UUID;
 
 import auto.parcel.AutoParcel;
+import net.labhackercd.edemocracia.data.model.Message;
 import rx.Observable;
 import rx.functions.Func1;
 
 @AutoParcel
-public abstract class LocalMessage implements Parcelable {
+public abstract class LocalMessage implements Parcelable, Message {
 
     public enum Status {
         QUEUE,
@@ -31,24 +32,25 @@ public abstract class LocalMessage implements Parcelable {
 
     /** XXX Please, please, don't change the order of the abstract getters before reading AutoValues documentation. */
 
-    public abstract Long getId();
-    @Nullable public abstract Long getMessageId();
-    public abstract Long getRootMessageId();
-    public abstract Long getGroupId();
-    public abstract Long getCategoryId();
-    public abstract Long getThreadId();
-    public abstract Long getParentMessageId();
+    public abstract long getId();
+    public abstract long getMessageId();
+    public abstract long getRootMessageId();
+    public abstract long getGroupId();
+    public abstract long getCategoryId();
+    public abstract long getThreadId();
+    public abstract long getParentMessageId();
     @Nullable public abstract String getBody();
     @Nullable public abstract String getSubject();
     @Nullable public abstract Uri getVideoAttachment();
     public abstract UUID getUuid();
     public abstract Status getStatus();
-    @Nullable public abstract Date getInsertionDate();
+    @Nullable public abstract Date getCreateDate();
+    public abstract long getUserId();
 
     public static final String TABLE = "LocalMessage";
 
     public static final String ID = "_id";
-    public static final String INSERTED_MESSAGE_ID = "insertedMessageId";
+    public static final String MESSAGE_ID = "insertedMessageId";
     public static final String ROOT_MESSAGE_ID = "rootMessageId";
     public static final String GROUP_ID = "groupId";
     public static final String CATEGORY_ID = "categoryId";
@@ -59,12 +61,13 @@ public abstract class LocalMessage implements Parcelable {
     public static final String VIDEO_ATTACHMENT = "videoAttachment";
     public static final String UUID = "uuid";
     public static final String STATUS = "status";
-    public static final String INSERTION_DATE = "insertionDate";
+    public static final String CREATE_DATE = "insertionDate";
+    public static final String USER_ID = "userId";
 
     static final String CREATE = Joiner.on('\n').join(
             "CREATE TABLE " + TABLE + "(",
                 ID + " INTEGER NOT NULL PRIMARY KEY,",
-                INSERTED_MESSAGE_ID + " INTEGER,",
+                MESSAGE_ID + " INTEGER NOT NULL DEFAULT 0,",
                 ROOT_MESSAGE_ID + " INTEGER NOT NULL,",
                 PARENT_MESSAGE_ID + " INTEGER NOT NULL,",
                 GROUP_ID + " INTEGER NOT NULL,",
@@ -75,7 +78,8 @@ public abstract class LocalMessage implements Parcelable {
                 VIDEO_ATTACHMENT + " TEXT,",
                 UUID + " TEXT NOT NULL,",
                 STATUS + " TEXT NOT NULL,",
-                INSERTION_DATE + " INTEGER"
+                CREATE_DATE + " INTEGER,",
+                USER_ID + " INTEGER NOT NULL"
             + ")");
 
 
@@ -86,7 +90,7 @@ public abstract class LocalMessage implements Parcelable {
             "CREATE INDEX " + INDEX_ROOT_MESSAGE_ID + " ON " + TABLE + " (" + ROOT_MESSAGE_ID + ")";
 
     static final String CREATE_INDEX_INSERTED_MESSAGE_ID =
-            "CREATE INDEX " + INDEX_INSERTED_MESSAGE_ID + " ON " + TABLE + " (" + INSERTED_MESSAGE_ID + ")";
+            "CREATE INDEX " + INDEX_INSERTED_MESSAGE_ID + " ON " + TABLE + " (" + MESSAGE_ID + ")";
 
 
     public static Observable<SqlBrite.Query> getUnsentMessages2(SqlBrite brite, long rootMessageId) {
@@ -125,13 +129,13 @@ public abstract class LocalMessage implements Parcelable {
     };
 
     private static LocalMessage fromCursor(Cursor cursor) {
-        Long id = cursor.getLong(cursor.getColumnIndexOrThrow(ID));
-        Long insertedMessageId = cursor.getLong(cursor.getColumnIndexOrThrow(INSERTED_MESSAGE_ID));
-        Long rootMessageId = cursor.getLong(cursor.getColumnIndexOrThrow(ROOT_MESSAGE_ID));
-        Long groupId = cursor.getLong(cursor.getColumnIndexOrThrow(GROUP_ID));
-        Long categoryId = cursor.getLong(cursor.getColumnIndexOrThrow(CATEGORY_ID));
-        Long threadId = cursor.getLong(cursor.getColumnIndexOrThrow(THREAD_ID));
-        Long parentMessageId = cursor.getLong(cursor.getColumnIndexOrThrow(PARENT_MESSAGE_ID));
+        long id = cursor.getLong(cursor.getColumnIndexOrThrow(ID));
+        long messageId = cursor.getLong(cursor.getColumnIndexOrThrow(MESSAGE_ID));
+        long rootMessageId = cursor.getLong(cursor.getColumnIndexOrThrow(ROOT_MESSAGE_ID));
+        long groupId = cursor.getLong(cursor.getColumnIndexOrThrow(GROUP_ID));
+        long categoryId = cursor.getLong(cursor.getColumnIndexOrThrow(CATEGORY_ID));
+        long threadId = cursor.getLong(cursor.getColumnIndexOrThrow(THREAD_ID));
+        long parentMessageId = cursor.getLong(cursor.getColumnIndexOrThrow(PARENT_MESSAGE_ID));
         String body = cursor.getString(cursor.getColumnIndexOrThrow(BODY));
         String subject = cursor.getString(cursor.getColumnIndexOrThrow(SUBJECT));
         Uri videoAttachment = nullableUri(
@@ -141,10 +145,11 @@ public abstract class LocalMessage implements Parcelable {
         Status status = Enum.valueOf(
                 Status.class, cursor.getString(cursor.getColumnIndexOrThrow(STATUS)));
         Date insertionDate = nullableDate(
-                cursor.getLong(cursor.getColumnIndexOrThrow(INSERTION_DATE)));
+                cursor.getLong(cursor.getColumnIndexOrThrow(CREATE_DATE)));
+        long userId = cursor.getLong(cursor.getColumnIndexOrThrow(USER_ID));
         return new AutoParcel_LocalMessage(
-                id, insertedMessageId, rootMessageId, groupId, categoryId, threadId,
-                parentMessageId, body, subject, videoAttachment, uuid, status, insertionDate);
+                id, messageId, rootMessageId, groupId, categoryId, threadId,
+                parentMessageId, body, subject, videoAttachment, uuid, status, insertionDate, userId);
     }
 
     private static Date nullableDate(Long milliseconds) {
@@ -171,11 +176,8 @@ public abstract class LocalMessage implements Parcelable {
             return this;
         }
 
-        public Builder setMessageId(Long insertedMessageId) {
-            if (insertedMessageId != null)
-                values.put(INSERTED_MESSAGE_ID, insertedMessageId);
-            else
-                values.putNull(INSERTED_MESSAGE_ID);
+        public Builder setMessageId(long messageId) {
+            values.put(MESSAGE_ID, messageId);
             return this;
         }
 
@@ -240,9 +242,14 @@ public abstract class LocalMessage implements Parcelable {
 
         public Builder setCreateDate(Date date) {
             if (date != null)
-                values.put(INSERTION_DATE, date.getTime());
+                values.put(CREATE_DATE, date.getTime());
             else
-                values.putNull(INSERTION_DATE);
+                values.putNull(CREATE_DATE);
+            return this;
+        }
+
+        public Builder setUserId(long userId) {
+            values.put(USER_ID, userId);
             return this;
         }
 

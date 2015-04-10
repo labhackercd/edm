@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 final class DbOpenHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "edm";
-    private static final int VERSION = 7;
+    private static final int VERSION = 8;
 
 
     public DbOpenHelper(Context context) {
