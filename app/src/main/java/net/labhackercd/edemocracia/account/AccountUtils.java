@@ -131,12 +131,12 @@ public class AccountUtils {
     }
 
     public static Observable<User> getCurrentUser(MainRepository repository, Activity activity) {
+        // TODO FIXME XXX cacheSkipIf with some expiration time or more granular control! PLZ!
         return getOrRequestAccount(activity)
                 .flatMap(account -> repository.getUser()
                         .transform(r -> r.asObservable()
-                                .compose(UserDataCache.with(activity, account).cache(r.key())))
+                                .compose(UserDataCache.with(activity, account).cacheSkipIf(r.key(), false)))
                         .asObservable()
-                        .subscribeOn(Schedulers.io()))
-                .asObservable();
+                        .subscribeOn(Schedulers.io()));
     }
 }
