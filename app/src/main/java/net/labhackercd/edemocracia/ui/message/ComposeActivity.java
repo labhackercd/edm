@@ -2,6 +2,7 @@ package net.labhackercd.edemocracia.ui.message;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,13 +22,14 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 import net.labhackercd.edemocracia.R;
+import net.labhackercd.edemocracia.account.AccountUtils;
 import net.labhackercd.edemocracia.data.LocalMessageStore;
+import net.labhackercd.edemocracia.data.MainRepository;
 import net.labhackercd.edemocracia.data.model.Message;
 import net.labhackercd.edemocracia.ui.BaseActivity;
 import net.labhackercd.edemocracia.ui.preference.PreferenceActivity;
@@ -35,7 +37,6 @@ import net.labhackercd.edemocracia.ui.preference.PreferenceFragment;
 
 import java.io.FileNotFoundException;
 import java.util.List;
-import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -55,6 +56,7 @@ public class ComposeActivity extends BaseActivity {
     private Uri attachedVideoUri;
     private Message parentMessage;
 
+    @Inject MainRepository repository;
     @Inject LocalMessageStore messageRepository;
 
     @InjectView(R.id.message) TextView bodyView;
@@ -276,14 +278,22 @@ public class ComposeActivity extends BaseActivity {
         String body = bodyView.getText().toString();
         String subject = subjectView.getText().toString();
 
-        Pair<Long, UUID> inserted = messageRepository.insert(parentMessage, subject, body, attachedVideoUri);
+        final ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setIndeterminate(true);
+        dialog.setTitle(R.string.sending_message);
 
-        Toast.makeText(this, R.string.sending_message, Toast.LENGTH_SHORT).show();
-
-        Intent result = new Intent();
-        result.putExtra(PARAM_INSERTED_MESSAGE, inserted.second);
-        setResult(RESULT_OK, result);
-        finish();
+        AccountUtils.getCurrentUser(repository, this)
+                .doOnSubscribe(dialog::show)
+                .map(user -> messageRepository.insert(
+                        parentMessage, user.getUserId(), subject, body, attachedVideoUri))
+                // TODO Left it loading for enough time for the user realize that something is going on.
+                .subscribe(inserted -> {
+                    Intent result = new Intent();
+                    result.putExtra(PARAM_INSERTED_MESSAGE, inserted.second);
+                    setResult(RESULT_OK, result);
+                    dialog.dismiss();
+                    finish();
+                });
 
         return true;
     }

@@ -47,6 +47,8 @@ public class AddMessageService extends Service {
         // FIXME We can only process one item at time.
         if (running) return;
 
+        // TODO Prioritize current user's messages? :D
+
         Observable<SqlBrite.Query> query = brite.createQuery(
                 LocalMessage.TABLE,
                 QUERY_FIRST_MESSAGE_BY_STATUS,

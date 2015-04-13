@@ -48,8 +48,14 @@ public class LocalMessageStore {
         context.startService(new Intent(context, AddMessageService.class));
     }
 
+    public Observable<List<LocalMessage>> getUnsentMessages(long userId, long rootMessageId) {
+        return LocalMessage.createQueryForUnsentMessages(brite, userId, rootMessageId)
+                .map(SqlBrite.Query::run)
+                .map(LocalMessage.READ_LIST);
+    }
+
     // TODO Should return LocalMessage but there isn't a LocalMessageBuilder yet.
-    public Pair<Long, UUID> insert(Message parentMessage, String subject, String body, Uri videoAttachment) {
+    public Pair<Long, UUID> insert(Message parentMessage, long userId, String subject, String body, Uri videoAttachment) {
         UUID uuid = UUID.randomUUID();
         LocalMessage.Builder builder = new LocalMessage.Builder()
                 .setRootMessageId(parentMessage.getRootMessageId())
@@ -62,13 +68,9 @@ public class LocalMessageStore {
                 .setVideoAttachment(videoAttachment)
                 .setUuid(uuid)
                 .setStatus(LocalMessage.Status.QUEUE)
-                .setUserId(parentMessage.getUserId());
+                .setUserId(userId);
         long id = brite.insert(LocalMessage.TABLE, builder.build());
         return new Pair<>(id, uuid);
-    }
-
-    public Observable<List<LocalMessage>> getUnsentMessages(long rootMessageId) {
-        return LocalMessage.getUnsentMessages(brite, rootMessageId);
     }
 
     public int setSuccess(long id, Message inserted) {

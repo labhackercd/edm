@@ -135,15 +135,12 @@ public class MessageListFragment extends BaseFragment {
                         .map(ItemImpl::create)
                         .toList().toBlocking().single());
 
-        Observable<User> currentUser = AccountUtils.getCurrentUser(repository, getActivity());
-
-        Observable<List<? extends Item>> localMessages = messageRepository
-                .getUnsentMessages(data.getRootMessageId())
-                .subscribeOn(Schedulers.io())
-                .zipWith(currentUser.repeat(), (messages, user) ->
-                        Observable.from(messages)
+        Observable<List<ItemImpl>> localMessages = AccountUtils.getCurrentUser(repository, getActivity())
+                .flatMap(user -> messageRepository
+                        .getUnsentMessages(user.getUserId(), data.getRootMessageId())
+                        .map(messages -> Observable.from(messages)
                                 .map(message -> ItemImpl.create(message, user))
-                                .toList().toBlocking().single());
+                                .toList().toBlocking().single()));
 
         return localMessages.zipWith(remoteMessages.repeat(), MessageListFragment::combineMessageLists);
     }

@@ -92,24 +92,11 @@ public abstract class LocalMessage implements Parcelable, Message {
     static final String CREATE_INDEX_INSERTED_MESSAGE_ID =
             "CREATE INDEX " + INDEX_INSERTED_MESSAGE_ID + " ON " + TABLE + " (" + MESSAGE_ID + ")";
 
-
-    public static Observable<SqlBrite.Query> getUnsentMessages2(SqlBrite brite, long rootMessageId) {
-        return brite.createQuery(TABLE, "SELECT * FROM " + TABLE + " WHERE " + ROOT_MESSAGE_ID + " = ?",
+    public static Observable<SqlBrite.Query> createQueryForUnsentMessages(SqlBrite brite, long userId, long rootMessageId) {
+        return brite.createQuery(TABLE,
+                "SELECT * FROM " + TABLE + " WHERE " + USER_ID + " = ? AND " + ROOT_MESSAGE_ID + " = ?",
+                String.valueOf(userId),
                 String.valueOf(rootMessageId));
-    }
-
-    public static Observable<List<LocalMessage>> getUnsentMessages(
-            SqlBrite brite, long rootMessageId) {
-        return getUnsentMessages2(brite, rootMessageId)
-                .map(SqlBrite.Query::run)
-                .map(READ_LIST);
-    }
-
-    public static Observable<LocalMessage> getMessage(SqlBrite brite, long messageId) {
-        return brite.createQuery(TABLE, "SELECT * FROM " + TABLE + " WHERE " + ID + " = ?",
-                String.valueOf(messageId))
-                .map(SqlBrite.Query::run)
-                .map(READ_SINGLE);
     }
 
     public static final Func1<Cursor, List<LocalMessage>> READ_LIST = cursor -> {
