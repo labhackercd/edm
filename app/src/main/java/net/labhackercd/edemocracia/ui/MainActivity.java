@@ -104,13 +104,17 @@ public class MainActivity extends BaseActivity {
                 intent = createIntent(this);
             }
 
-            if (!(Intent.ACTION_VIEW.equals(intent.getAction()) && handleViewIntent(intent))) {
+            if (!(Intent.ACTION_VIEW.equals(intent.getAction()) && handleViewIntent(intent, false))) {
                 throw new UnsupportedOperationException(String.format("Unable to handle intent: %s", intent));
             }
         }
     }
 
     private boolean handleViewIntent(Intent intent) {
+        return handleViewIntent(intent, true);
+    }
+
+    private boolean handleViewIntent(Intent intent, boolean addToBackStack) {
         String type = intent.getType();
 
         if (type == null)
@@ -118,15 +122,15 @@ public class MainActivity extends BaseActivity {
 
         switch (type) {
             case EDMContract.Group.CONTENT_TYPE:
-                replaceContent(new GroupListFragment());
+                replaceContent(new GroupListFragment(), addToBackStack);
                 return true;
             case EDMContract.Group.CONTENT_ITEM_TYPE:
             case EDMContract.Category.CONTENT_ITEM_TYPE:
-                replaceContent(createThreadListFragment(this, intent));
+                replaceContent(createThreadListFragment(this, intent), addToBackStack);
                 return true;
             case EDMContract.Thread.CONTENT_ITEM_TYPE:
             case EDMContract.Message.CONTENT_ITEM_TYPE:
-                replaceContent(createMessageListFragment(this, intent));
+                replaceContent(createMessageListFragment(this, intent), addToBackStack);
                 return true;
             default:
                 return false;
@@ -167,13 +171,14 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private int replaceContent(Fragment fragment) {
+    private int replaceContent(Fragment fragment, boolean addToBackStack) {
+        // TODO Also allow the user to build a *custom* back stack.
         FragmentManager manager = getSupportFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.replace(CONTENT_RESOURCE_ID, fragment);
-        // TODO Parametrize the addition to the back stack.
-        // TODO Also allow the user to build a *custom* back stack.
-        transaction.addToBackStack(null);
+        if (addToBackStack) {
+            transaction.addToBackStack(null);
+        }
         return transaction.commit();
     }
 
