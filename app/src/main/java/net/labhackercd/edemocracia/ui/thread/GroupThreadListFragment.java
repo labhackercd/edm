@@ -2,6 +2,7 @@ package net.labhackercd.edemocracia.ui.thread;
 
 import android.os.Bundle;
 
+import android.support.annotation.Nullable;
 import net.labhackercd.edemocracia.data.MainRepository;
 import net.labhackercd.edemocracia.data.Request;
 import net.labhackercd.edemocracia.data.api.model.Category;
@@ -25,6 +26,22 @@ public class GroupThreadListFragment extends ThreadListFragment {
         group = (Group) args.getSerializable(ThreadListFragment.ARG_GROUP);
         if (group == null)
             throw new IllegalArgumentException("group == null");
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState != null) {
+            if (group == null)
+                group = (Group) savedInstanceState.getSerializable(ThreadListFragment.ARG_GROUP);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (group != null)
+            outState.putSerializable(ThreadListFragment.ARG_GROUP, group);
     }
 
     @Override

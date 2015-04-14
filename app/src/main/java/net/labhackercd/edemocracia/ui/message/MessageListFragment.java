@@ -103,10 +103,12 @@ public class MessageListFragment extends BaseFragment {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_INSERT_MESSAGE && resultCode == Activity.RESULT_OK)
-            scrollToItem = (UUID) data.getSerializableExtra(ComposeActivity.PARAM_INSERTED_MESSAGE);
-        super.onActivityResult(requestCode, resultCode, data);
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState != null) {
+            data = savedInstanceState.getParcelable(ARG_THREAD_DATA);
+            scrollToItem = (UUID) savedInstanceState.getSerializable(ARG_SCROLL_TO_ITEM);
+        }
     }
 
     @Override
@@ -121,6 +123,21 @@ public class MessageListFragment extends BaseFragment {
                 .subscribe(listView.dataHandler());
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (data != null)
+            outState.putParcelable(ARG_THREAD_DATA, data);
+        if (scrollToItem != null)
+            outState.putSerializable(ARG_SCROLL_TO_ITEM, scrollToItem);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_INSERT_MESSAGE && resultCode == Activity.RESULT_OK)
+            scrollToItem = (UUID) data.getSerializableExtra(ComposeActivity.PARAM_INSERTED_MESSAGE);
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 
     private Observable<List<? extends Item>> refreshList(boolean fresh) {
         Observable<List<? extends Item>> remoteMessages = repository

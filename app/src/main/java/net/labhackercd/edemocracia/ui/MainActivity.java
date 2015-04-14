@@ -94,17 +94,19 @@ public class MainActivity extends BaseActivity {
         drawerList.setLayoutManager(new LinearLayoutManager(
                 drawerList.getContext(), LinearLayoutManager.VERTICAL, false));
 
-        // Handle intent
-        Intent intent = getIntent();
+        // Only handle intent if the Activity is actually being created!
+        if (savedInstanceState == null) {
+            Intent intent = getIntent();
 
-        if (intent == null
-                || Intent.ACTION_MAIN.equals(intent.getAction())
-                || intent.getAction() == null && intent.getType() == null) {
-            intent = createIntent(this);
-        }
+            if (intent == null
+                    || Intent.ACTION_MAIN.equals(intent.getAction())
+                    || intent.getAction() == null && intent.getType() == null) {
+                intent = createIntent(this);
+            }
 
-        if (!(Intent.ACTION_VIEW.equals(intent.getAction()) && handleViewIntent(intent))) {
-            throw new UnsupportedOperationException(String.format("Unable to handle intent: %s", intent));
+            if (!(Intent.ACTION_VIEW.equals(intent.getAction()) && handleViewIntent(intent))) {
+                throw new UnsupportedOperationException(String.format("Unable to handle intent: %s", intent));
+            }
         }
     }
 
@@ -311,10 +313,7 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // If the DrawerToggle can handle this item, we just let it.
-        if (drawerToggle.onOptionsItemSelected(item))
-            return true;
-        return super.onOptionsItemSelected(item);
+        return drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
     }
 
     /** App notifications will be place here for now. */
