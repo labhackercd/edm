@@ -36,7 +36,7 @@ public class EDMContract {
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_THREADS).build();
 
         public static final String CONTENT_ITEM_TYPE =
-                "vnd.android.cursor.item/vnd.edemocraciaa.thread";
+                "vnd.android.cursor.item/vnd.edemocracia.thread";
     }
 
     public static final class Message {
@@ -46,6 +46,6 @@ public class EDMContract {
         public static final String CONTENT_TYPE =
                 "vnd.android.cursor.dir/vnd.edemocracia.message";
         public static final String CONTENT_ITEM_TYPE =
-                "vnd.android.cursor.item/vnd.edemocraciaa.message";
+                "vnd.android.cursor.item/vnd.edemocracia.message";
     }
 }
