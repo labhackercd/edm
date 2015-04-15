@@ -140,7 +140,7 @@ public class MessageListFragment extends BaseFragment {
     }
 
     private Observable<List<? extends Item>> refreshList(boolean fresh) {
-        Observable<List<? extends Item>> remoteMessages = repository
+        Observable<List<ItemImpl>> remoteMessages = repository
                 .getThreadMessages(data.getGroupId(), data.getCategoryId(), data.getThreadId())
                 .transform(r -> r.asObservable()
                         .compose(AccountUtils.requireAccount(getActivity()))
@@ -148,6 +148,7 @@ public class MessageListFragment extends BaseFragment {
                 .asObservable()
                 .subscribeOn(Schedulers.io())
                 .doOnNext(this::setRootMessage)
+                .single()
                 .map(messages -> Observable.from(messages)
                         .map(ItemImpl::create)
                         .toList().toBlocking().single());
@@ -159,10 +160,10 @@ public class MessageListFragment extends BaseFragment {
                                 .map(message -> ItemImpl.create(message, user))
                                 .toList().toBlocking().single()));
 
-        return localMessages.zipWith(remoteMessages.repeat(), MessageListFragment::combineMessageLists);
+        return Observable.combineLatest(remoteMessages, localMessages, MessageListFragment::combineMessageLists);
     }
 
-    private static List<? extends Item> combineMessageLists(List<? extends Item> local, List<? extends Item> remote) {
+    private static List<? extends Item> combineMessageLists(List<? extends Item> remote, List<? extends Item> local) {
         // A set containing all remote message UUIDs
         Set<UUID> remoteUUIDs = Sets.newHashSet(
                 Observable.from(remote)
