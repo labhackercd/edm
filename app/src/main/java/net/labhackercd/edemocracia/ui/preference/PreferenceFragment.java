@@ -1,6 +1,7 @@
 package net.labhackercd.edemocracia.ui.preference;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +9,8 @@ import android.os.Bundle;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import net.labhackercd.edemocracia.EDMApplication;
 import net.labhackercd.edemocracia.R;
 import net.labhackercd.edemocracia.data.LocalMessageStore;
@@ -27,9 +30,9 @@ public class PreferenceFragment extends android.preference.PreferenceFragment {
     private static final String EXTRA_RECOVER_INTENT = "recoverIntent";
     private static final int REQUEST_CODE_CHOOSE_ACCOUNT = 1;
     private static final int REQUEST_CODE_AUTHORIZE = 2;
+    private static final int REQUEST_GOOGLE_PLAY_SERVICES = 3;
 
-    @Inject
-    LocalMessageStore messages;
+    @Inject LocalMessageStore messages;
 
     private GoogleAccountPreference googleCredentialPreference;
 
@@ -41,11 +44,19 @@ public class PreferenceFragment extends android.preference.PreferenceFragment {
 
         googleCredentialPreference = (GoogleAccountPreference) findPreference(PREF_YOUTUBE_ACCOUNT);
         googleCredentialPreference.setOnPreferenceClickListener(preference -> {
-            Intent intent = googleCredentialPreference.newChooseAccountIntent();
-            if (intent != null) {
-                startActivityForResult(intent, REQUEST_CODE_CHOOSE_ACCOUNT);
-                return true;
+            int result = GooglePlayServicesUtil.isGooglePlayServicesAvailable(preference.getContext());
+
+            if (result != ConnectionResult.SUCCESS) {
+                Dialog dialog = GooglePlayServicesUtil.getErrorDialog(result, getActivity(), REQUEST_GOOGLE_PLAY_SERVICES);
+                dialog.show();
+            } else {
+                Intent intent = googleCredentialPreference.newChooseAccountIntent();
+                if (intent != null) {
+                    startActivityForResult(intent, REQUEST_CODE_CHOOSE_ACCOUNT);
+                    return true;
+                }
             }
+
             return false;
         });
     }
@@ -70,8 +81,8 @@ public class PreferenceFragment extends android.preference.PreferenceFragment {
         switch (requestCode) {
             case REQUEST_CODE_CHOOSE_ACCOUNT:
                 googleCredentialPreference.onChooseAccountResult(resultCode, data);
+                // TODO Only trigger this if the user effectively selected any account, it changed, there wasn't a token, etc.
                 if (resultCode == Activity.RESULT_OK) {
-                    // TODO Only trigger this if the user effectively selected any account, it changed, there wasn't a token, etc.
                     Schedulers.newThread().createWorker()
                             .schedule(() -> {
                                 try {
