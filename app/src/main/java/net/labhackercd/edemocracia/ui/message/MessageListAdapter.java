@@ -69,8 +69,14 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         return this;
     }
 
-    public void scrollToItem(UUID uuid) {
-        // TODO Do it.
+    public int getItemPosition(UUID uuid) {
+        // FIXME Shouldn't we synchronize this?
+        for (int i = 0; i < getItemCount(); i++) {
+            if (items.get(i).getMessage().getUuid().equals(uuid)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     interface Item {

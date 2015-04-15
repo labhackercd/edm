@@ -189,7 +189,9 @@ public class MessageListFragment extends BaseFragment {
                 public void onChanged() {
                     super.onChanged();
                     if (scrollToItem != null) {
-                        adapter.scrollToItem(scrollToItem);
+                        int position = adapter.getItemPosition(scrollToItem);
+                        if (position >= 0)
+                            listView.smoothScrollToPosition(position);
                         scrollToItem = null;
                     }
                 }
