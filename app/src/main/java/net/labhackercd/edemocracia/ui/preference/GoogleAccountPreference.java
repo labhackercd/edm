@@ -89,7 +89,7 @@ public class GoogleAccountPreference extends Preference {
         summarySubscription = getPreferenceChangeObservable()
                 .startWith(getCurrentValue())
                 .distinctUntilChanged()
-                .map(Object::toString)
+                .map(account -> account == null ? null : account.toString())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::setSelectedAccount);
     }
