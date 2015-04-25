@@ -73,7 +73,7 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.5.0'
 
     // Liferay Client
-    compile('com.liferay.mobile:liferay-android-sdk:6.2.0.+') {
+    compile('com.liferay.mobile:liferay-android-sdk:6.2.0.17') {
         exclude module: 'httpclient'
     }
 
