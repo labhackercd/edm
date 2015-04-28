@@ -16,7 +16,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -45,8 +44,10 @@ import net.labhackercd.nhegatu.data.model.Message;
 import net.labhackercd.nhegatu.data.provider.EDMContract;
 import net.labhackercd.nhegatu.ui.group.GroupListFragment;
 import net.labhackercd.nhegatu.ui.message.MessageListFragment;
+import net.labhackercd.nhegatu.ui.preference.PreferenceActivity;
 import net.labhackercd.nhegatu.ui.preference.PreferenceFragment;
 import net.labhackercd.nhegatu.ui.thread.ThreadListFragment;
+import com.google.common.collect.Lists;
 
 import javax.inject.Inject;
 
@@ -57,10 +58,10 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
+import java.util.List;
+
 // TODO Use Home button to navigate up, just like GMail does.
 public class MainActivity extends BaseActivity {
-
-    private static final String STATE_SELECTED_POSITION = "selectedNavItem";
 
     // TODO Change to android.R.id.content
     private static final int CONTENT_RESOURCE_ID = R.id.container;
@@ -215,21 +216,7 @@ public class MainActivity extends BaseActivity {
             drawer.openDrawer();
          */
 
-        NavigationDrawerAdapter adapter = new NavigationDrawerAdapter();
-        adapter.setSelectionListener(new NavigationDrawerAdapter.SelectionListener() {
-            @Override
-            public void onItemSelected(View view, int position) {
-                // TODO This really shouldn't be tied to the gravity only.
-                drawer.closeDrawer(GravityCompat.START);
-            }
-        });
-
-        if (savedInstanceState != null) {
-            int selected = savedInstanceState.getInt(STATE_SELECTED_POSITION);
-            if (adapter.getSelectedItemPosition() != selected)
-                adapter.setSelectedItem(selected);
-        }
-
+        NavDrawerAdapter adapter = new NavDrawerAdapter(drawer, getDrawerItems(drawerList.getContext()));
         drawerList.setAdapter(adapter);
     }
 
@@ -299,13 +286,6 @@ public class MainActivity extends BaseActivity {
             fillDrawerSubscription.unsubscribe();
             fillDrawerSubscription = null;
         }
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt(STATE_SELECTED_POSITION,
-                ((NavigationDrawerAdapter) drawerList.getAdapter()).getSelectedItemPosition());
     }
 
     public static String getUserDisplayName(User user) {
@@ -433,5 +413,44 @@ public class MainActivity extends BaseActivity {
             manager.registerReceiver(
                     this, IntentFilter.create(Intent.ACTION_VIEW, EDMContract.Thread.CONTENT_ITEM_TYPE));
         }
+    }
+
+    private static List<NavDrawerItem> getDrawerItems(Context context) {
+        return Lists.newArrayList(
+                NavDrawerItem.create(
+                        context.getString(R.string.title_group_list),
+                        R.drawable.ic_forum_black_24dp,
+                        MainActivity::onClickHome),
+                // TODO Make "back" and "up" consistent in the Preference Screen
+                NavDrawerItem.create(
+                        context.getString(R.string.title_preferences),
+                        R.drawable.ic_settings_black_24dp,
+                        MainActivity::onClickPreferences)
+                /*
+                TODO About screen.
+                NavDrawerItem.create(
+                        context.getString(R.string.title_about),
+                        R.drawable.ic_info_black_24dp,
+                        MainActivity::onClickAbout)
+                        */
+        );
+    }
+
+    private static void onClickHome(DrawerLayout drawer, View view) {
+        Context context = view.getContext();
+        Intent intent = MainActivity.createIntent(context);
+        if (LocalBroadcastManager.getInstance(context).sendBroadcast(intent))
+            drawer.closeDrawers();
+    }
+
+    private static void onClickPreferences(DrawerLayout drawer, View view) {
+        Context context = view.getContext();
+        Intent intent = new Intent(context, PreferenceActivity.class);
+        context.startActivity(intent);
+    }
+
+    private static void onClickAbout(DrawerLayout drawer, View view) {
+        Timber.d("%s", view.getAnimation());
+        // TODO Show the about screen.
     }
 }
