@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="net.labhackercd.edemocracia">
+    package="net.labhackercd.nhegatu">
 
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -16,14 +17,14 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
-        android:name=".EDMApplication"
+        android:name="net.labhackercd.nhegatu.EDMApplication"
         android:allowBackup="true"
         android:icon="@drawable/icon"
         tools:replace="android:icon"
         android:label="@string/app_name"
         android:theme="@style/Theme.GreenTheme">
         <activity
-            android:name=".ui.MainActivity">
+            android:name="net.labhackercd.nhegatu.ui.MainActivity">
 
             <!-- Launcher -->
             <intent-filter>
@@ -80,37 +81,37 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".account.SignInActivity"
+            android:name="net.labhackercd.nhegatu.account.SignInActivity"
             android:label="@string/title_activity_sign_in"
-            android:parentActivityName=".ui.MainActivity"
+            android:parentActivityName="net.labhackercd.nhegatu.ui.MainActivity"
             android:theme="@style/Theme.GreenTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateVisible" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.MainActivity" />
+                android:value="net.labhackercd.nhegatu.ui.MainActivity" />
         </activity>
         <activity
-            android:name=".ui.message.ComposeActivity"
-            android:parentActivityName=".ui.MainActivity" >
+            android:name="net.labhackercd.nhegatu.ui.message.ComposeActivity"
+            android:parentActivityName="net.labhackercd.nhegatu.ui.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.MainActivity" />
+                android:value="net.labhackercd.nhegatu.ui.MainActivity" />
         </activity>
         <activity
-            android:name=".ui.preference.PreferenceActivity"
-            android:parentActivityName=".ui.MainActivity" >
+            android:name="net.labhackercd.nhegatu.ui.preference.PreferenceActivity"
+            android:parentActivityName="net.labhackercd.nhegatu.ui.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.MainActivity" />
+                android:value="net.labhackercd.nhegatu.ui.MainActivity" />
         </activity>
-        <service android:name=".account.AccountAuthenticatorService">
+        <service android:name="net.labhackercd.nhegatu.account.AccountAuthenticatorService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
             <meta-data android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator" />
         </service>
-        <service android:name=".service.AddMessageService" />
+        <service android:name="net.labhackercd.nhegatu.service.AddMessageService" />
         <meta-data android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
         <meta-data

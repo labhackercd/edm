@@ -75,7 +75,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="18dp">
 
-                <net.labhackercd.edemocracia.ui.message.StatusView
+                <net.labhackercd.nhegatu.ui.message.StatusView
                     tools:text="7 horas atrás"
                     android:id="@+id/date"
                     android:layout_width="0dip"
@@ -104,7 +104,7 @@
     </LinearLayout>
 
 
-    <net.labhackercd.edemocracia.ui.message.MessageView
+    <net.labhackercd.nhegatu.ui.message.MessageView
         android:id="@+id/body"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"

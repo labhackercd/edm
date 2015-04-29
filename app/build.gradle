@@ -20,7 +20,7 @@ android {
     buildToolsVersion "21.1.2"
 
     defaultConfig {
-        applicationId "net.labhackercd.edemocracia"
+        applicationId "net.labhackercd.nhegatu"
         minSdkVersion 15
         targetSdkVersion 21
         versionCode 3

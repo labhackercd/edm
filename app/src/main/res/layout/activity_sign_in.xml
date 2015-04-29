@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
 	android:gravity="center"
     android:orientation="vertical"
-    tools:context="net.labhackercd.edemocracia.SignInActivity">
+    tools:context="net.labhackercd.nhegatu.SignInActivity">
 
     <ProgressBar
         xmlns:android="http://schemas.android.com/apk/res/android"
