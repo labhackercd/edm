@@ -1,4 +1,4 @@
-package net.labhackercd.nhegatu.youtube;
+package net.labhackercd.nhegatu.upload;
 
 import com.google.android.gms.common.Scopes;
 import com.google.api.services.youtube.YouTubeScopes;

@@ -13,7 +13,7 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccoun
 import com.google.api.client.util.ExponentialBackOff;
 
 import net.labhackercd.nhegatu.R;
-import net.labhackercd.nhegatu.youtube.Constants;
+import net.labhackercd.nhegatu.upload.Constants;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;

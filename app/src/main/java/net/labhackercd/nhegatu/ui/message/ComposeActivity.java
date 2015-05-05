@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -133,36 +134,54 @@ public class ComposeActivity extends BaseActivity {
         attachedVideoUri = uri;
         if (videoThumbView != null) {
             try {
-                ContentResolver contentResolver = getApplication().getContentResolver();
+                String thumbnailPath = getVideoThumbnailPath(
+                        videoThumbView.getContext(), attachedVideoUri);
 
-                String[] projection = {MediaStore.Images.Media.DATA};
-                Cursor cursor = contentResolver.query(attachedVideoUri, projection, null, null, null);
-                int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                cursor.moveToFirst();
-                String path = cursor.getString(columnIndex);
+                Bitmap thumbnail = ThumbnailUtils.createVideoThumbnail(
+                        thumbnailPath, MediaStore.Images.Thumbnails.MINI_KIND);
 
-                Bitmap thumb = ThumbnailUtils.createVideoThumbnail(path, MediaStore.Images.Thumbnails.MINI_KIND);
-
-                videoThumbView.setImageBitmap(thumb);
+                videoThumbView.setImageBitmap(thumbnail);
 
                 if (videoTitleView != null) {
                     List<String> parts = Splitter
                             .onPattern("/")
                             .trimResults()
                             .omitEmptyStrings()
-                            .splitToList(path);
+                            .splitToList(thumbnailPath);
                     if (parts.size() > 0) {
                         videoTitleView.setText(parts.get(parts.size()-1));
                     }
                 }
 
                 if (videoSizeView != null) {
-                    long fileSize = contentResolver.openFileDescriptor(attachedVideoUri, "r").getStatSize();
+                    long fileSize = getVideoFileSize(videoThumbView.getContext(), attachedVideoUri);
                     videoSizeView.setText(Long.toString(fileSize));
                 }
             } catch (FileNotFoundException e) {
                 // NOOP
             }
+        }
+    }
+
+    // TODO Move me outta here!
+    public static long getVideoFileSize(Context context, Uri video) throws FileNotFoundException {
+        return context.getContentResolver().openFileDescriptor(video, "r").getStatSize();
+    }
+
+    // TODO Move me outta here!
+    public static String getVideoThumbnailPath(Context context, Uri video) {
+        ContentResolver contentResolver = context.getContentResolver();
+
+        Cursor cursor = null;
+        try {
+            String[] projection = {MediaStore.Images.Media.DATA};
+            cursor = contentResolver.query(video, projection, null, null, null);
+            int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(columnIndex);
+        } finally {
+            if (cursor != null && !cursor.isClosed())
+                cursor.close();
         }
     }
 

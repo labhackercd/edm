@@ -10,13 +10,15 @@ import net.labhackercd.nhegatu.ui.UiModule;
 import javax.inject.Singleton;
 
 import dagger.Provides;
+import net.labhackercd.nhegatu.upload.UploadModule;
 
 @dagger.Module(
         includes = {
                 UiModule.class,
                 DataModule.class,
                 AccountModule.class,
-                ServiceModule.class
+                ServiceModule.class,
+                UploadModule.class
         }
 )
 @SuppressWarnings("UnusedDeclaration")

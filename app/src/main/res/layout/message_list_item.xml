@@ -103,7 +103,6 @@
 
     </LinearLayout>
 
-
     <net.labhackercd.nhegatu.ui.message.MessageView
         android:id="@+id/body"
         android:layout_width="fill_parent"

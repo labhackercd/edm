@@ -69,6 +69,8 @@ public class AddMessageService extends Service {
             return;
         }
 
+        // TODO FIXME When the task fails, if the user keeps retrying, it'll be executing this line N+1 times for every retry.
+
         AddMessageTask task = new AddMessageTask(message);
 
         EDMApplication.get(this).getObjectGraph().inject(task);
