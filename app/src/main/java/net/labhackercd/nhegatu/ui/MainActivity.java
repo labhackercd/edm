@@ -323,23 +323,6 @@ public class MainActivity extends BaseActivity {
 
     /** App notifications will be place here for now. */
 
-    public static void notifyMessageSubmissionFailure(
-            Context context, LocalMessage message, Throwable error) {
-        Intent intent = createIntent(context, message);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-                context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-                .setContentTitle(context.getString(R.string.app_name))
-                .setContentText(context.getString(R.string.message_submission_failed))
-                .setSmallIcon(R.drawable.ic_videocam_white_36dp)
-                .setContentIntent(pendingIntent);
-
-        getSupportNotificationManager(context).notify(0, builder.build());
-    }
-
     public static void notifyUserRecoverableAuthException(
             Context context, LocalMessage message, UserRecoverableAuthException exception) {
         Intent intent = PreferenceFragment.newRecoverIntent(context, exception);
@@ -422,7 +405,7 @@ public class MainActivity extends BaseActivity {
 
 
     /** Create an Intent to view a LocalMessage. */
-    private static Intent createIntent(Context context, LocalMessage message) {
+    public static Intent createIntent(Context context, LocalMessage message) {
         Intent intent = new Intent(context, MainActivity.class);
         intent.setAction(Intent.ACTION_VIEW);
         //intent.addCategory(Intent.CATEGORY_DEFAULT);

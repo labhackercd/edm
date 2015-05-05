@@ -105,4 +105,18 @@ public class LocalMessageStore {
         return brite.update(LocalMessage.TABLE, builder.build(),
                 LocalMessage.STATUS + " = ?", LocalMessage.valueOf(status));
     }
+
+    public int replaceAttachmentWithYouTubeVideo(LocalMessage message, String videoId) {
+        String newBody = attachVideo(message.getBody(), videoId);
+        LocalMessage.Builder builder = new LocalMessage.Builder()
+                .setVideoAttachment(null)
+                .setBody(newBody);
+        return brite.update(LocalMessage.TABLE, builder.build(),
+                LocalMessage.ID + " = ?", String.valueOf(message.getId()));
+    }
+
+    /** Attach a YouTube video to a message body and returns it (the body with the attached video). */
+    public static String attachVideo(String body, String videoId) {
+        return String.format("[center][youtube]%s[/youtube][/center]", videoId).concat(body);
+    }
 }
