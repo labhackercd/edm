@@ -150,7 +150,7 @@ public class AddMessageTask {
 
         return new NotificationCompat.Builder(context)
                 .setContentTitle(context.getString(R.string.app_name))
-                .setSmallIcon(R.drawable.ic_videocam_white_36dp)
+                .setSmallIcon(R.drawable.ic_edm_white_24dp)
                 .setContentIntent(pendingIntent)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
     }
