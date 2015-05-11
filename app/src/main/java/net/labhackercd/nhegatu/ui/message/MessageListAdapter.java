@@ -3,12 +3,15 @@ package net.labhackercd.nhegatu.ui.message;
 import android.app.AlertDialog;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.media.ThumbnailUtils;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -27,7 +30,8 @@ import java.util.*;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import rx.Subscription;
+import rx.*;
+import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import timber.log.Timber;
@@ -83,6 +87,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         Message getMessage();
         String getUserName();
         LocalMessage.Status getStatus();
+        Uri getVideoAttachment();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -93,9 +98,10 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         @InjectView(android.R.id.text1) TextView userView;
         @InjectView(android.R.id.text2) TextView subjectView;
         @InjectView(R.id.error_button) ImageView errorIcon;
+        @InjectView(R.id.video_thumbnail) FrameLayout videoThumbnail;
 
         private Item item;
-        private Subscription subscription;
+        private Subscription portraitSubscription;
 
         public ViewHolder(View view) {
             super(view);
@@ -112,10 +118,10 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                 return;
 
             /** Empty everything before binding. */
-            if (subscription != null) {
-                if (!subscription.isUnsubscribed())
-                    subscription.unsubscribe();
-                subscription = null;
+            if (portraitSubscription != null) {
+                if (!portraitSubscription.isUnsubscribed())
+                    portraitSubscription.unsubscribe();
+                portraitSubscription = null;
             }
 
             this.item = item;
@@ -127,7 +133,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
             setSubject(message.getSubject());
 
-            setBody(message.getBody());
+            setBody(message.getBody(), item.getVideoAttachment());
 
             setStatus(item.getStatus(), message.getCreateDate());
         }
@@ -140,7 +146,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             portraitView.setImageDrawable(placeholder);
 
             if (userId != 0) {
-                subscription = imageLoader.userPortrait2(userId)
+                portraitSubscription = imageLoader.userPortrait2(userId)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .map(request -> request.placeholder(placeholder))
@@ -203,13 +209,19 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             return TextDrawable.builder().buildRect(letter, Color.LTGRAY);
         }
 
-        private void setBody(String body) {
+        private void setBody(String body, Uri videoAttachment) {
             if (!TextUtils.isEmpty(body)) {
                 bodyView.setHTMLText(textProcessor.process(body));
                 bodyView.setLinksClickable(true);
                 bodyView.setMovementMethod(LinkMovementMethod.getInstance());
             } else {
                 bodyView.setText(null);
+            }
+
+            if (videoAttachment == null) {
+                videoThumbnail.setVisibility(View.GONE);
+            } else {
+                videoThumbnail.setVisibility(View.VISIBLE);
             }
         }
 

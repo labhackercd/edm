@@ -2,6 +2,7 @@ package net.labhackercd.nhegatu.ui.message;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
@@ -263,15 +264,16 @@ public class MessageListFragment extends BaseFragment {
         public abstract Message getMessage();
         public abstract String getUserName();
         public abstract LocalMessage.Status getStatus();
+        public abstract Uri getVideoAttachment();
 
         static ItemImpl create(net.labhackercd.nhegatu.data.api.model.Message message) {
             return new AutoParcel_MessageListFragment_ItemImpl(
-                    message, message.getUserName(), LocalMessage.Status.SUCCESS);
+                    message, message.getUserName(), LocalMessage.Status.SUCCESS, null);
         }
 
         static ItemImpl create(LocalMessage message, User user) {
             return new AutoParcel_MessageListFragment_ItemImpl(
-                    message, MainActivity.getUserDisplayName(user), message.getStatus());
+                    message, MainActivity.getUserDisplayName(user), message.getStatus(), message.getVideoAttachment());
         }
     }
 }

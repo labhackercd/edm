@@ -4,4 +4,6 @@
     <dimen name="navdrawer_chosen_account_height">140dp</dimen>
     <dimen name="navdrawer_profile_image_size">40dp</dimen>
     <dimen name="keyline_1">16dp</dimen>
+    <dimen name="video_thumbnail_width">120dp</dimen>
+    <dimen name="video_thumbnail_height">90dp</dimen>
 </resources>

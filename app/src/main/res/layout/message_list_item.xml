@@ -103,6 +103,16 @@
 
     </LinearLayout>
 
+    <FrameLayout
+        android:id="@+id/video_thumbnail"
+        android:layout_width="@dimen/video_thumbnail_width"
+        android:layout_height="@dimen/video_thumbnail_height"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8sp"
+        android:layout_marginLeft="?android:attr/listPreferredItemPaddingLeft"
+        android:layout_marginRight="?android:attr/listPreferredItemPaddingRight"
+        />
+
     <net.labhackercd.nhegatu.ui.message.MessageView
         android:id="@+id/body"
         android:layout_width="fill_parent"
