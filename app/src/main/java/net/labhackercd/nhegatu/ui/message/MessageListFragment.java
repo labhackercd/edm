@@ -19,6 +19,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import com.google.common.collect.Sets;
+import com.squareup.picasso.Picasso;
 import net.labhackercd.nhegatu.R;
 import net.labhackercd.nhegatu.account.AccountUtils;
 import net.labhackercd.nhegatu.data.Cache;
@@ -54,6 +55,7 @@ public class MessageListFragment extends BaseFragment {
     private static final int REQUEST_INSERT_MESSAGE = 1;
 
     @Inject Cache cache;
+    @Inject Picasso picasso;
     @Inject ImageLoader imageLoader;
     @Inject MainRepository repository;
     @Inject TextProcessor textProcessor;
@@ -183,7 +185,7 @@ public class MessageListFragment extends BaseFragment {
 
     private MessageListAdapter replaceAdapterData(List<? extends Item> data) {
         if (adapter == null) {
-            adapter = new MessageListAdapter(messageRepository, textProcessor, imageLoader);
+            adapter = new MessageListAdapter(messageRepository, textProcessor, imageLoader, picasso);
 
             adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
                 @Override
@@ -264,7 +266,7 @@ public class MessageListFragment extends BaseFragment {
         public abstract Message getMessage();
         public abstract String getUserName();
         public abstract LocalMessage.Status getStatus();
-        public abstract Uri getVideoAttachment();
+        @Nullable public abstract Uri getVideoAttachment();
 
         static ItemImpl create(net.labhackercd.nhegatu.data.api.model.Message message) {
             return new AutoParcel_MessageListFragment_ItemImpl(

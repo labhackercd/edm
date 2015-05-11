@@ -2,6 +2,7 @@ package net.labhackercd.nhegatu.data;
 
 import android.app.Application;
 
+import android.content.Context;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
@@ -45,8 +46,10 @@ public class DataModule {
 
     @Provides @Singleton
     Picasso providePicasso(Application application, OkHttpClient client) {
-        return new Picasso.Builder(application)
+        Context context = application.getApplicationContext();
+        return new Picasso.Builder(context)
                 .downloader(new OkHttpDownloader(client))
+                .addRequestHandler(new ContentThumbnailRequestHandler(context))
                 // XXX This is really annoying.
                 //.listener((picasso, uri, exception) ->
                 //        Timber.w(exception, "Failed to load image: %s", uri))

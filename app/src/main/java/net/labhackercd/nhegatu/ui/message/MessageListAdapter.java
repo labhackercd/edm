@@ -3,7 +3,6 @@ package net.labhackercd.nhegatu.ui.message;
 import android.app.AlertDialog;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -18,6 +17,7 @@ import android.widget.TextView;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.ocpsoft.pretty.time.PrettyTime;
 
+import com.squareup.picasso.Picasso;
 import net.labhackercd.nhegatu.R;
 import net.labhackercd.nhegatu.data.ImageLoader;
 import net.labhackercd.nhegatu.data.LocalMessageStore;
@@ -31,20 +31,21 @@ import java.util.*;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import rx.*;
-import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.ViewHolder> {
 
+    private final Picasso picasso;
     private final ImageLoader imageLoader;
     private final TextProcessor textProcessor;
     private final LocalMessageStore messageRepository;
 
     private List<? extends Item> items = Collections.emptyList();
 
-    public MessageListAdapter(LocalMessageStore messageRepository, TextProcessor textProcessor, ImageLoader imageLoader) {
+    public MessageListAdapter(LocalMessageStore messageRepository, TextProcessor textProcessor, ImageLoader imageLoader, Picasso picasso) {
+        this.picasso = picasso;
         this.imageLoader = imageLoader;
         this.textProcessor = textProcessor;
         this.messageRepository = messageRepository;
@@ -96,9 +97,10 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         @InjectView(R.id.body) MessageView bodyView;
         @InjectView(R.id.portrait) ImageView portraitView;
         @InjectView(android.R.id.text1) TextView userView;
-        @InjectView(android.R.id.text2) TextView subjectView;
         @InjectView(R.id.error_button) ImageView errorIcon;
-        @InjectView(R.id.video_thumbnail) FrameLayout videoThumbnail;
+        @InjectView(android.R.id.text2) TextView subjectView;
+        @InjectView(R.id.video_thumbnail) ImageView videoThumbnail;
+        @InjectView(R.id.video_thumbnail_frame) FrameLayout videoThumbnailFrame;
 
         private Item item;
         private Subscription portraitSubscription;
@@ -219,9 +221,13 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             }
 
             if (videoAttachment == null) {
-                videoThumbnail.setVisibility(View.GONE);
+                videoThumbnailFrame.setVisibility(View.GONE);
             } else {
-                videoThumbnail.setVisibility(View.VISIBLE);
+                videoThumbnail.setImageBitmap(null);
+                picasso.load(videoAttachment)
+                        .centerCrop().fit()
+                        .into(videoThumbnail);
+                videoThumbnailFrame.setVisibility(View.VISIBLE);
             }
         }
 
@@ -259,5 +265,6 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                     .create()
                     .show();
         }
+
     }
 }
