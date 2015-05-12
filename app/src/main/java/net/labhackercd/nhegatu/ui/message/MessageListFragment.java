@@ -30,6 +30,7 @@ import net.labhackercd.nhegatu.data.api.model.Thread;
 import net.labhackercd.nhegatu.data.api.model.User;
 import net.labhackercd.nhegatu.data.db.LocalMessage;
 import net.labhackercd.nhegatu.data.model.Message;
+import net.labhackercd.nhegatu.service.VideoAttachmentUploader;
 import net.labhackercd.nhegatu.ui.BaseFragment;
 import net.labhackercd.nhegatu.ui.MainActivity;
 import net.labhackercd.nhegatu.ui.listview.ItemListView;
@@ -59,6 +60,7 @@ public class MessageListFragment extends BaseFragment {
     @Inject ImageLoader imageLoader;
     @Inject MainRepository repository;
     @Inject TextProcessor textProcessor;
+    @Inject VideoAttachmentUploader uploader;
     @Inject LocalMessageStore messageRepository;
 
     private ThreadData data;
@@ -186,7 +188,7 @@ public class MessageListFragment extends BaseFragment {
     private MessageListAdapter replaceAdapterData(List<? extends Item> data) {
         if (adapter == null) {
             adapter = new MessageListAdapter(
-                    listView.getContext(), messageRepository, textProcessor, imageLoader, picasso);
+                    listView.getContext(), messageRepository, textProcessor, imageLoader, picasso, uploader);
 
             adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
                 @Override
@@ -268,15 +270,16 @@ public class MessageListFragment extends BaseFragment {
         public abstract String getUserName();
         public abstract LocalMessage.Status getStatus();
         @Nullable public abstract Uri getVideoAttachment();
+        public abstract long getUploadId();
 
         static ItemImpl create(net.labhackercd.nhegatu.data.api.model.Message message) {
             return new AutoParcel_MessageListFragment_ItemImpl(
-                    message, message.getUserName(), LocalMessage.Status.SUCCESS, null);
+                    message, message.getUserName(), LocalMessage.Status.SUCCESS, null, 0);
         }
 
         static ItemImpl create(LocalMessage message, User user) {
             return new AutoParcel_MessageListFragment_ItemImpl(
-                    message, MainActivity.getUserDisplayName(user), message.getStatus(), message.getVideoAttachment());
+                    message, MainActivity.getUserDisplayName(user), message.getStatus(), message.getVideoAttachment(), message.getId());
         }
     }
 }

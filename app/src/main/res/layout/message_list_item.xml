@@ -103,6 +103,16 @@
 
     </LinearLayout>
 
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="fill_parent"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_height="3dp"
+        android:layout_marginTop="8sp"
+        android:layout_marginLeft="?android:attr/listPreferredItemPaddingLeft"
+        android:layout_marginRight="?android:attr/listPreferredItemPaddingRight"
+        />
+
     <FrameLayout
         android:id="@+id/video_thumbnail_frame"
         android:layout_width="@dimen/video_thumbnail_width"

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
@@ -14,9 +15,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
+import com.google.api.client.googleapis.media.MediaHttpUploader;
 import com.ocpsoft.pretty.time.PrettyTime;
 
 import com.squareup.picasso.Picasso;
@@ -27,8 +30,12 @@ import net.labhackercd.nhegatu.data.LocalMessageStore;
 import net.labhackercd.nhegatu.data.db.LocalMessage;
 
 import net.labhackercd.nhegatu.data.model.Message;
+import net.labhackercd.nhegatu.service.VideoAttachmentUploader;
+import net.labhackercd.nhegatu.ui.preference.PreferenceFragment;
+import net.labhackercd.nhegatu.upload.YouTubeUploader;
 import org.kefirsf.bb.TextProcessor;
 
+import java.io.IOException;
 import java.util.*;
 
 import butterknife.ButterKnife;
@@ -45,15 +52,17 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
     private final TextProcessor textProcessor;
     private final LocalMessageStore messageRepository;
     private final Transformation videoAttachmentTransformation;
+    private final VideoAttachmentUploader uploader;
 
     private List<? extends Item> items = Collections.emptyList();
 
-    public MessageListAdapter(Context context, LocalMessageStore messageRepository, TextProcessor textProcessor, ImageLoader imageLoader, Picasso picasso) {
+    public MessageListAdapter(Context context, LocalMessageStore messageRepository, TextProcessor textProcessor, ImageLoader imageLoader, Picasso picasso, VideoAttachmentUploader uploader) {
         this.picasso = picasso;
         this.imageLoader = imageLoader;
         this.textProcessor = textProcessor;
         this.messageRepository = messageRepository;
         this.videoAttachmentTransformation = new VideoPlayButtonTransformation(context);
+        this.uploader = uploader;
     }
 
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
@@ -94,6 +103,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         String getUserName();
         LocalMessage.Status getStatus();
         Uri getVideoAttachment();
+        long getUploadId();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -104,6 +114,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         @InjectView(android.R.id.text1) TextView userView;
         @InjectView(R.id.error_button) ImageView errorIcon;
         @InjectView(android.R.id.text2) TextView subjectView;
+        @InjectView(R.id.progress_bar) ProgressBar progressBar;
         @InjectView(R.id.video_thumbnail) ImageView videoThumbnail;
         @InjectView(R.id.video_thumbnail_frame) FrameLayout videoThumbnailFrame;
 
@@ -143,6 +154,52 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             setBody(message.getBody(), item.getVideoAttachment());
 
             setStatus(item.getStatus(), message.getCreateDate());
+
+            setUploadProgress(item.getUploadId());
+        }
+
+        private void setUploadProgress(long uploadId) {
+            if (uploadId > 0) {
+                String youtubeAccount = PreferenceManager
+                        .getDefaultSharedPreferences(itemView.getContext().getApplicationContext())
+                        .getString(PreferenceFragment.PREF_YOUTUBE_ACCOUNT, null);
+                if (youtubeAccount != null) {
+                    uploader.getUploadProgressStream(uploadId, youtubeAccount)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(this::handleUploadProgress);
+                }
+            } else {
+                progressBar.setVisibility(View.GONE);
+            }
+        }
+
+        private void handleUploadProgress(YouTubeUploader.UploadProgress progress) {
+            // TODO Animate the progress bar in and out?
+            if (progress.getInsertedVideo() != null) {
+                progressBar.setVisibility(View.GONE);
+            } else {
+                double uploadProgress = 0;
+                boolean indeterminate = true;
+
+                MediaHttpUploader uploader = progress.getMediaHttpUploader();
+                if (uploader != null && (
+                        uploader.getUploadState() == MediaHttpUploader.UploadState.MEDIA_IN_PROGRESS
+                        || uploader.getUploadState() == MediaHttpUploader.UploadState.MEDIA_COMPLETE)) {
+                    try {
+                        uploadProgress = uploader.getProgress();
+                        indeterminate = false;
+                    } catch (IOException e) {
+                        // Do nothing.
+                    }
+                }
+
+                // XXX 1000 to make it smoother than 100.
+                final int max = 1000;
+                progressBar.setMax(max);
+                progressBar.setProgress((int) (uploadProgress * max));
+                progressBar.setIndeterminate(indeterminate);
+                progressBar.setVisibility(View.VISIBLE);
+            }
         }
 
         private void setUser(long userId, String userName) {
