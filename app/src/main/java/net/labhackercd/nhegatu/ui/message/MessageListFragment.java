@@ -185,7 +185,8 @@ public class MessageListFragment extends BaseFragment {
 
     private MessageListAdapter replaceAdapterData(List<? extends Item> data) {
         if (adapter == null) {
-            adapter = new MessageListAdapter(messageRepository, textProcessor, imageLoader, picasso);
+            adapter = new MessageListAdapter(
+                    listView.getContext(), messageRepository, textProcessor, imageLoader, picasso);
 
             adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
                 @Override

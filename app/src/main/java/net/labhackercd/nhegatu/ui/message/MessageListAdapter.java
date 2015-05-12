@@ -1,6 +1,8 @@
 package net.labhackercd.nhegatu.ui.message;
 
 import android.app.AlertDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -18,6 +20,7 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.ocpsoft.pretty.time.PrettyTime;
 
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Transformation;
 import net.labhackercd.nhegatu.R;
 import net.labhackercd.nhegatu.data.ImageLoader;
 import net.labhackercd.nhegatu.data.LocalMessageStore;
@@ -41,14 +44,16 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
     private final ImageLoader imageLoader;
     private final TextProcessor textProcessor;
     private final LocalMessageStore messageRepository;
+    private final Transformation videoAttachmentTransformation;
 
     private List<? extends Item> items = Collections.emptyList();
 
-    public MessageListAdapter(LocalMessageStore messageRepository, TextProcessor textProcessor, ImageLoader imageLoader, Picasso picasso) {
+    public MessageListAdapter(Context context, LocalMessageStore messageRepository, TextProcessor textProcessor, ImageLoader imageLoader, Picasso picasso) {
         this.picasso = picasso;
         this.imageLoader = imageLoader;
         this.textProcessor = textProcessor;
         this.messageRepository = messageRepository;
+        this.videoAttachmentTransformation = new VideoPlayButtonTransformation(context);
     }
 
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
@@ -224,11 +229,18 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                 videoThumbnailFrame.setVisibility(View.GONE);
             } else {
                 videoThumbnail.setImageBitmap(null);
+                videoThumbnail.setOnClickListener(view -> playVideo(videoAttachment));
                 picasso.load(videoAttachment)
                         .centerCrop().fit()
+                        .transform(videoAttachmentTransformation)
                         .into(videoThumbnail);
                 videoThumbnailFrame.setVisibility(View.VISIBLE);
             }
+        }
+
+        private void playVideo(Uri uri) {
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            videoThumbnail.getContext().startActivity(intent);
         }
 
         private void handleClick(View v) {
