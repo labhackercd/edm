@@ -106,7 +106,7 @@
     <ProgressBar
         android:id="@+id/progress_bar"
         android:layout_width="fill_parent"
-        style="@android:style/Widget.ProgressBar.Horizontal"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_height="3dp"
         android:layout_marginTop="8sp"
         android:layout_marginLeft="?android:attr/listPreferredItemPaddingLeft"
