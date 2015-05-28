@@ -120,6 +120,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
         private Item item;
         private Subscription portraitSubscription;
+        private Subscription uploadProgressSubscription;
 
         public ViewHolder(View view) {
             super(view);
@@ -142,6 +143,12 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                 portraitSubscription = null;
             }
 
+            if (uploadProgressSubscription != null) {
+                if (!uploadProgressSubscription.isUnsubscribed())
+                    uploadProgressSubscription.unsubscribe();
+                uploadProgressSubscription = null;
+            }
+
             this.item = item;
             Message message = item.getMessage();
 
@@ -153,23 +160,20 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
 
             setBody(message.getBody(), item.getVideoAttachment());
 
-            setStatus(item.getStatus(), message.getCreateDate());
-
-            setUploadProgress(item.getUploadId());
+            setStatus(item.getStatus(), message.getCreateDate(), item.getUploadId());
         }
 
         private void setUploadProgress(long uploadId) {
+            progressBar.setVisibility(View.GONE);
             if (uploadId > 0) {
                 String youtubeAccount = PreferenceManager
                         .getDefaultSharedPreferences(itemView.getContext().getApplicationContext())
                         .getString(PreferenceFragment.PREF_YOUTUBE_ACCOUNT, null);
                 if (youtubeAccount != null) {
-                    uploader.getUploadProgressStream(uploadId, youtubeAccount)
+                    uploadProgressSubscription = uploader.getUploadProgressStream(uploadId, youtubeAccount)
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(this::handleUploadProgress);
                 }
-            } else {
-                progressBar.setVisibility(View.GONE);
             }
         }
 
@@ -224,7 +228,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
             subjectView.setText(subject);
         }
 
-        private void setStatus(LocalMessage.Status status, Date createDate) {
+        private void setStatus(LocalMessage.Status status, Date createDate, long uploadId) {
             if (status.equals(LocalMessage.Status.SUCCESS)) {
                 String text;
                 if (createDate != null) {
@@ -235,12 +239,15 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
                 }
                 setStatus(text);
                 setHasError(false);
+                setUploadProgress(0);
             } else if (status.equals(LocalMessage.Status.QUEUE)) {
                 setStatus(R.string.sending_message);
                 setHasError(false);
+                setUploadProgress(uploadId);
             } else {
                 setStatus(R.string.message_submission_failed);
                 setHasError(true);
+                setUploadProgress(0);
             }
         }
 

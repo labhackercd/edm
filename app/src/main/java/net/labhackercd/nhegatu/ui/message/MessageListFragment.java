@@ -45,6 +45,7 @@ import javax.inject.Inject;
 import auto.parcel.AutoParcel;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
