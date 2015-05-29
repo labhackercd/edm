@@ -4,6 +4,7 @@ buildscript {
     }
 
     dependencies {
+        //noinspection GradleDynamicVersion
         classpath 'io.fabric.tools:gradle:1.+'
     }
 }
@@ -68,9 +69,9 @@ dependencies {
     provided 'com.squareup.dagger:dagger-compiler:1.2.2'
 
     // Networking
-    compile 'com.squareup.okhttp:okhttp:2.3.0'
-    compile 'com.squareup.okhttp:okhttp-urlconnection:2.3.0'
-    compile 'com.squareup.picasso:picasso:2.5.0'
+    compile 'com.squareup.okhttp:okhttp:2.4.0'
+    compile 'com.squareup.okhttp:okhttp-urlconnection:2.4.0'
+    compile 'com.squareup.picasso:picasso:2.5.2'
 
     // Liferay Client
     compile('com.liferay.mobile:liferay-android-sdk:6.2.0.17') {
@@ -82,15 +83,15 @@ dependencies {
 
     // ORM
     compile 'com.squareup.sqlbrite:sqlbrite:0.1.0'
-    compile 'com.github.frankiesardo:auto-parcel:0.3'
-    provided 'com.github.frankiesardo:auto-parcel-processor:0.3'
 
     // Utility libraries
     compile 'com.google.code.gson:gson:2.3.1'
     compile 'com.google.guava:guava-jdk5:17.0'
+    compile 'com.github.frankiesardo:auto-parcel:0.3'
+    provided 'com.github.frankiesardo:auto-parcel-processor:0.3'
 
     // More utility
-    compile 'io.reactivex:rxjava:1.0.7'
+    compile 'io.reactivex:rxjava:1.0.11'
     compile 'io.reactivex:rxandroid:0.24.0'
     compile 'com.jakewharton:butterknife:6.1.0'
     compile 'com.jakewharton.timber:timber:2.7.1'
