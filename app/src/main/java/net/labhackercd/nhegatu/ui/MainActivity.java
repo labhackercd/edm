@@ -417,23 +417,43 @@ public class MainActivity extends BaseActivity {
 
     private static List<NavDrawerItem> getDrawerItems(Context context) {
         return Lists.newArrayList(
-                NavDrawerItem.create(
+                createDrawerItem(
                         context.getString(R.string.title_group_list),
                         R.drawable.ic_forum_black_24dp,
                         MainActivity::onClickHome),
                 // TODO Make "back" and "up" consistent in the Preference Screen
-                NavDrawerItem.create(
+                createDrawerItem(
                         context.getString(R.string.title_preferences),
                         R.drawable.ic_settings_black_24dp,
                         MainActivity::onClickPreferences)
                 /*
                 TODO About screen.
-                NavDrawerItem.create(
+                createDrawerItem(
                         context.getString(R.string.title_about),
                         R.drawable.ic_info_black_24dp,
                         MainActivity::onClickAbout)
                         */
         );
+    }
+
+    private static NavDrawerItem createDrawerItem(final String title, final int icon,
+                                                  final NavDrawerItem.OnClickListener onClickListener) {
+        return new NavDrawerItem() {
+            @Override
+            public String getTitle() {
+                return title;
+            }
+
+            @Override
+            public int getIcon() {
+                return icon;
+            }
+
+            @Override
+            public OnClickListener getOnClickListener() {
+                return onClickListener;
+            }
+        };
     }
 
     private static void onClickHome(DrawerLayout drawer, View view) {

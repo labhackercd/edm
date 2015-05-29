@@ -5,7 +5,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
-
 import dagger.ObjectGraph;
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;

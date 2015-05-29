@@ -12,23 +12,4 @@ public interface NavDrawerItem {
     String getTitle();
     int getIcon();
     OnClickListener getOnClickListener();
-
-    static NavDrawerItem create(final String title, final int icon, final OnClickListener onClickListener) {
-        return new NavDrawerItem() {
-            @Override
-            public String getTitle() {
-                return title;
-            }
-
-            @Override
-            public int getIcon() {
-                return icon;
-            }
-
-            @Override
-            public OnClickListener getOnClickListener() {
-                return onClickListener;
-            }
-        };
-    }
 }
