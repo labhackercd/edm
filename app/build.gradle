@@ -23,7 +23,7 @@ android {
     defaultConfig {
         applicationId "net.labhackercd.nhegatu"
         minSdkVersion 15
-        targetSdkVersion 21
+        targetSdkVersion 22
         versionCode 6
         versionName "1.0.0-SNAPSHOT"
         manifestPlaceholders = [ fabricApiKey: localProperties.getProperty('fabric.api.key') ]
@@ -60,8 +60,8 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
 
     // Android support libraries and it's helper libraries
-    compile 'com.android.support:appcompat-v7:21.0.3'
-    compile 'com.android.support:recyclerview-v7:21.0.3'
+    compile 'com.android.support:appcompat-v7:22.2.0'
+    compile 'com.android.support:recyclerview-v7:22.2.0'
 
     // Dependency Injection mechanism
     compile 'javax.inject:javax.inject:1'
