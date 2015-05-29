@@ -94,7 +94,7 @@ dependencies {
     compile 'io.reactivex:rxjava:1.0.11'
     compile 'io.reactivex:rxandroid:0.24.0'
     compile 'com.jakewharton:butterknife:6.1.0'
-    compile 'com.jakewharton.timber:timber:2.7.1'
+    compile 'com.jakewharton.timber:timber:3.1.0'
     compile 'com.ocpsoft:ocpsoft-pretty-time:1.0.7'
     compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
 
