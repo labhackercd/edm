@@ -44,4 +44,6 @@ public interface EDMService {
 
     public Message addMessage(UUID uuid, long groupId, long categoryId, long threadId,
                               long parentMessageId, String subject, String body);
+
+    public Message getMessage(long messageId);
 }

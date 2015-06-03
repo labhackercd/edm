@@ -18,6 +18,7 @@ import com.ocpsoft.pretty.time.PrettyTime;
 import net.labhackercd.nhegatu.R;
 import net.labhackercd.nhegatu.data.ImageLoader;
 import net.labhackercd.nhegatu.data.api.model.Category;
+import net.labhackercd.nhegatu.data.api.model.Message;
 import net.labhackercd.nhegatu.data.api.model.Thread;
 import net.labhackercd.nhegatu.ui.MainActivity;
 
@@ -27,22 +28,28 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import timber.log.Timber;
 
 public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.ViewHolder> {
 
-    private final ImageLoader imageLoader;
+    public interface ThreadItem {
+        Thread getThread();
+        Observable<Message> getRootMessage();
+    }
 
-    private List<Thread> threads = Collections.emptyList();
+    private List<ThreadItem> threads = Collections.emptyList();
     private List<Category> categories = Collections.emptyList();
+    private final ImageLoader imageLoader;
 
     public ThreadListAdapter(ImageLoader imageLoader) {
         this.imageLoader = imageLoader;
     }
 
-    public ThreadListAdapter replaceWith(List<Category> categories, List<Thread> threads) {
+    public ThreadListAdapter replaceWith(List<Category> categories, List<ThreadItem> threads) {
         this.threads = threads;
         this.categories = categories;
         notifyDataSetChanged();
@@ -81,9 +88,10 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
         @InjectView(R.id.portrait) ImageView portraitView;
         @InjectView(android.R.id.text1) TextView userView;
 
-        private Thread thread;
         private Category category;
-        private Subscription portraitSubscription = null;
+        private ThreadItem threadItem;
+        private Subscription titleSubscription;
+        private Subscription portraitSubscription;
 
         public ViewHolder(View view) {
             super(view);
@@ -108,15 +116,17 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
             setDate(date != null ? date : category.getCreateDate());
         }
 
-        public void bindThread(Thread thread) {
-            beforeBind(null, thread);
+        public void bindThread(ThreadItem item) {
+            beforeBind(null, item);
+
+            Thread thread = item.getThread();
 
             setPortrait(thread.getStatusByUserName(), thread.getRootMessageUserId());
 
             setUserName(thread.getStatusByUserName());
 
-            // TODO Set the actual title.
-            setTitle(thread.toString());
+            Observable<String> asyncTitle = item.getRootMessage().map(Message::getSubject);
+            setTitle(thread.toString(), asyncTitle);
 
             // TODO Set the actual body.
             setBody(thread.toString());
@@ -126,12 +136,18 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
             setDate(thread.getLastPostDate());
         }
 
-        private void beforeBind(Category category, Thread thread) {
-            this.thread = thread;
+        private void beforeBind(Category category, ThreadItem thread) {
+            this.threadItem = thread;
             this.category = category;
             if (portraitSubscription != null) {
-                portraitSubscription.unsubscribe();
+                if (!portraitSubscription.isUnsubscribed())
+                    portraitSubscription.unsubscribe();
                 portraitSubscription = null;
+            }
+            if (titleSubscription != null) {
+                if (!titleSubscription.isUnsubscribed())
+                    titleSubscription.unsubscribe();
+                titleSubscription = null;
             }
         }
 
@@ -162,6 +178,14 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
             titleView.setText(title);
         }
 
+        private void setTitle(String placeholder, Observable<String> title) {
+            setTitle(placeholder);
+            titleSubscription = title
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(this::setTitle, (error) -> Timber.e(error, "Failed to load message title."));
+        }
+
         private void setUserName(String userName) {
             userView.setText(userName);
         }
@@ -170,8 +194,8 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
             Drawable placeholder = portraitPlaceholder(userName);
             portraitView.setImageDrawable(placeholder);
             portraitSubscription = imageLoader.userPortrait2(userId)
-                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(r -> r.fit().centerCrop()
                             .placeholder(placeholder)
                             .into(portraitView));
@@ -183,8 +207,8 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
         }
 
         private void handleClick(View v) {
-            if (thread != null)
-                broadcastViewThread(v.getContext(), thread);
+            if (threadItem != null)
+                broadcastViewThread(v.getContext(), threadItem.getThread());
             else if (category != null)
                 broadcastViewCategory(v.getContext(), category);
         }

@@ -33,7 +33,6 @@ import rx.Observable;
 
 class EDMServiceImpl implements EDMService {
 
-
     public static class Builder implements EDMService.Builder {
         private Endpoint endpoint;
         private ErrorHandler errorHandler;
@@ -349,6 +348,16 @@ class EDMServiceImpl implements EDMService {
                     subject, body, "bbcode", new JSONArray(), false, 0.0, true, serviceContext);
 
             return Message.JSON_READER.fromJSON(inserted);
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
+    @Override
+    public Message getMessage(long messageId) {
+        try {
+            JSONObject json = getMessageService().getMessage(messageId);
+            return json == null ? null : Message.JSON_READER.fromJSON(json);
         } catch (Exception e) {
             throw handleException(e);
         }

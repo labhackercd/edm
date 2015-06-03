@@ -90,6 +90,10 @@ public class MainRepository {
                 groupId, categoryId, threadId);
     }
 
+    public Request<Message> getMessage(long messageId) {
+        return request1("getMessage", service::getMessage, messageId);
+    }
+
     /** WARNING: Black magic ahead. */
 
     private static <R> Request<R> request0(String id, Func0<R> callable) {

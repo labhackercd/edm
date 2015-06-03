@@ -15,9 +15,11 @@ import net.labhackercd.nhegatu.R;
 import net.labhackercd.nhegatu.account.AccountUtils;
 import net.labhackercd.nhegatu.data.Cache;
 import net.labhackercd.nhegatu.data.ImageLoader;
+import net.labhackercd.nhegatu.data.MainRepository;
 import net.labhackercd.nhegatu.data.Request;
 import net.labhackercd.nhegatu.data.api.model.Category;
 import net.labhackercd.nhegatu.data.api.model.Group;
+import net.labhackercd.nhegatu.data.api.model.Message;
 import net.labhackercd.nhegatu.data.api.model.Thread;
 import net.labhackercd.nhegatu.ui.BaseFragment;
 import net.labhackercd.nhegatu.ui.listview.ItemListView;
@@ -46,9 +48,9 @@ public abstract class ThreadListFragment extends BaseFragment {
 
     @Inject Cache cache;
     @Inject ImageLoader imageLoader;
+    @Inject MainRepository repository;
 
     private ItemListView listView;
-
 
     public static Fragment newInstance(Group group) {
         ThreadListFragment fragment = new GroupThreadListFragment();
@@ -113,20 +115,20 @@ public abstract class ThreadListFragment extends BaseFragment {
                 .subscribe(listView.dataHandler());
     }
 
-    private Observable<Pair<List<Category>, List<Thread>>> getListData(boolean fresh) {
-        Request<List<Thread>> threads = getListThreadsRequest();
-        Request<List<Category>> categories = getListCategoriesRequest();
-
+    private Observable<Pair<List<Category>, List<ThreadListAdapter.ThreadItem>>> getListData(boolean fresh) {
         Activity activity = getActivity();
 
-        Observable<List<Thread>> t = threads
+        Observable<List<ThreadListAdapter.ThreadItem>> t = getListThreadsRequest()
                 .transform(r -> r.asObservable()
                         .compose(AccountUtils.requireAccount(activity))
                         .compose(cache.cacheSkipIf(r.key(), fresh))
                         .subscribeOn(Schedulers.io()))
-                .asObservable();
+                .asObservable()
+                .map(list -> Observable.from(list)
+                        .map(thread -> create(activity, thread, fresh))
+                        .toList().toBlocking().single());
 
-        Observable<List<Category>> c = categories
+        Observable<List<Category>> c = getListCategoriesRequest()
                 .transform(r -> r.asObservable()
                         .compose(AccountUtils.requireAccount(activity))
                         .compose(cache.cacheSkipIf(r.key(), fresh))
@@ -134,6 +136,23 @@ public abstract class ThreadListFragment extends BaseFragment {
                 .asObservable();
 
         return Observable.zip(c, t, Pair::new);
+    }
+
+    private ThreadListAdapter.ThreadItem create(final Activity activity, final Thread thread, final boolean fresh) {
+        return new ThreadListAdapter.ThreadItem() {
+            @Override public Thread getThread() {
+                return thread;
+            }
+
+            @Override public Observable<Message> getRootMessage() {
+                return repository.getMessage(thread.getRootMessageId())
+                        .transform(r -> r.asObservable()
+                                .compose(AccountUtils.requireAccount(activity))
+                                .compose(cache.cache(r.key()))
+                                .subscribeOn(Schedulers.io()))
+                        .asObservable();
+            }
+        };
     }
 
     protected abstract Request<List<Thread>> getListThreadsRequest();
