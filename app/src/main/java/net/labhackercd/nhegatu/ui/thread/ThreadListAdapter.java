@@ -90,6 +90,7 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
 
         private Category category;
         private ThreadItem threadItem;
+        private Subscription bodySubscription;
         private Subscription titleSubscription;
         private Subscription portraitSubscription;
 
@@ -129,7 +130,8 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
             setTitle(thread.toString(), asyncTitle);
 
             // TODO Set the actual body.
-            setBody(thread.toString());
+            Observable<String> body = item.getRootMessage().map(Message::getBody);
+            setBodyAsync(body);
 
             setCounter(thread.getMessageCount());
 
@@ -148,6 +150,11 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
                 if (!titleSubscription.isUnsubscribed())
                     titleSubscription.unsubscribe();
                 titleSubscription = null;
+            }
+            if (bodySubscription != null) {
+                if (!bodySubscription.isUnsubscribed())
+                    bodySubscription.unsubscribe();
+                bodySubscription = null;
             }
         }
 
@@ -172,6 +179,13 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
                 body = body.replaceAll("\\n+", " ");
             }
             bodyView.setText(body);
+        }
+
+        private void setBodyAsync(Observable<String> body) {
+            bodySubscription = body
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(this::setBody, (error) -> Timber.e(error, "Failed to load message body."));
         }
 
         private void setTitle(String title) {
