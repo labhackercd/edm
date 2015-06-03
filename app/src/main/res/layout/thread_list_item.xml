@@ -43,8 +43,8 @@
                     <!-- FIXME There's still a problem with long titles hiding the counter. -->
 
                     <TextView
-                        tools:text="Equipe e-Democracia"
-                        android:id="@android:id/text1"
+                        tools:text="O rato roeu a roupa do rei de Roma"
+                        android:id="@android:id/text2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceMedium"
@@ -74,11 +74,12 @@
                     android:fontFamily="sans-serif-light"
                     android:layout_marginBottom="1sp"
                     android:layout_gravity="bottom" />
+
             </LinearLayout>
 
         <TextView
-            tools:text="O rato roeu a roupa do rei de Roma"
-            android:id="@android:id/text2"
+            tools:text="Equipe e-Democracia"
+            android:id="@android:id/text1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
