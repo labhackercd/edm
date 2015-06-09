@@ -17,8 +17,8 @@ def localProperties = new Properties()
 localProperties.load(new FileInputStream(file('../local.properties')))
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion "21.1.2"
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
 
     defaultConfig {
         applicationId "net.labhackercd.nhegatu"
