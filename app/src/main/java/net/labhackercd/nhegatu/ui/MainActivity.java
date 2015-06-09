@@ -239,7 +239,7 @@ public class MainActivity extends BaseActivity {
             fillDrawerSubscription = AccountUtils.getOrRequestAccount(this)
                     .flatMap(account -> repository.getUser()
                             .asObservable()
-                            .compose(UserDataCache.with(this, account).cache(null))
+                            .compose(UserDataCache.with(this, account).getCached("currentUser"))
                             .map(UserInfo::create)
                             .startWith(new UserInfo(account.name))
                             .subscribeOn(Schedulers.io()))

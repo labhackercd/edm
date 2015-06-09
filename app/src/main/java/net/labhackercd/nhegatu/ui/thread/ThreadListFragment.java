@@ -148,7 +148,7 @@ public abstract class ThreadListFragment extends BaseFragment {
                 return repository.getMessage(thread.getRootMessageId())
                         .transform(r -> r.asObservable()
                                 .compose(AccountUtils.requireAccount(activity))
-                                .compose(cache.cache(r.key()))
+                                .compose(cache.getCached(r.key()))
                                 .subscribeOn(Schedulers.io()))
                         .asObservable();
             }

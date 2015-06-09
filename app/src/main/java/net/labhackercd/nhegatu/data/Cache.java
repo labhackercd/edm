@@ -25,6 +25,10 @@ public abstract class Cache {
         };
     }
 
+    public <T> Observable.Transformer<T, T> getCached(Object key) {
+        return cacheSkipIf(key, false);
+    }
+
     /**
      * Convenience method that applies both {@link Cache.cache} and {@link Cache.skipIf} to
      * an observable.

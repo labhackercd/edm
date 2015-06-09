@@ -39,7 +39,7 @@ public class ImageLoader {
     public Observable<RequestCreator> userPortrait2(long userId) {
         return repository.getUser(userId)
                 .transform(r -> r.asObservable()
-                        .compose(cache.cache(r.key())))
+                        .compose(cache.getCached(r.key())))
                 .asObservable()
                 .map(user -> {
                     long portraitId = user.getPortraitId();
