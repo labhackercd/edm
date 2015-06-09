@@ -27,6 +27,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import android.widget.Toast;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.common.base.Joiner;
 
@@ -243,7 +244,10 @@ public class MainActivity extends BaseActivity {
                             .startWith(new UserInfo(account.name))
                             .subscribeOn(Schedulers.io()))
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(this::fillDrawerUserInfo);
+                    .subscribe(this::fillDrawerUserInfo, (error) -> {
+                        // TODO Proper error handling!
+                        Toast.makeText(MainActivity.this, error.toString(), Toast.LENGTH_SHORT).show();
+                    });
         }
     }
 
