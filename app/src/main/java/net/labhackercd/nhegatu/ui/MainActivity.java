@@ -238,11 +238,12 @@ public class MainActivity extends BaseActivity {
         if (fillDrawerSubscription == null || fillDrawerSubscription.isUnsubscribed()) {
             fillDrawerSubscription = AccountUtils.getOrRequestAccount(this)
                     .flatMap(account -> repository.getUser()
+                            .transform(r -> r.asObservable()
+                                    .compose(UserDataCache.with(this, account).getCached("currentUser")))
                             .asObservable()
-                            .compose(UserDataCache.with(this, account).getCached("currentUser"))
                             .map(UserInfo::create)
-                            .startWith(new UserInfo(account.name))
-                            .subscribeOn(Schedulers.io()))
+                            .startWith(new UserInfo(account.name)))
+                    .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(this::fillDrawerUserInfo, (error) -> {
                         // TODO Proper error handling!
