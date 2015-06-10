@@ -4,6 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.util.Pair;
@@ -68,6 +69,8 @@ public class SignInActivity extends AppCompatActivity {
 
         ButterKnife.inject(this);
 
+        findViewById(R.id.sign_up).setOnClickListener(this::onSignUpButtonClicked);
+
         // progress view shouldn't be visible at startup
         progressView.setVisibility(View.GONE);
 
@@ -97,6 +100,14 @@ public class SignInActivity extends AppCompatActivity {
     @SuppressWarnings("UnusedDeclaration")
     public void onSignInButtonClick(View view) {
         handleLogin();
+    }
+
+    private void onSignUpButtonClicked(View view) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        // TODO Remove hardcoded URL.
+        // TODO Use https url (not using now since its broken coz of mixed http/https content)
+        intent.setData(Uri.parse("http://edemocracia.camara.gov.br/cadastro"));
+        startActivity(intent);
     }
 
     public void handleLogin() {

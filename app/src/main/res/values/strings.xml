@@ -45,4 +45,5 @@
     <string name="message_submission_failed_description">This message failed to be submited.\n\nWould you like to try again?</string>
     <string name="none_selected">None selected</string>
     <string name="message_submitted">Message submitted</string>
+    <string name="create_account">Create account</string>
 </resources>
