@@ -139,9 +139,15 @@ public class ThreadListAdapter extends RecyclerView.Adapter<ThreadListAdapter.Vi
 
             Thread thread = item.getThread();
 
-            setPortrait(thread.getStatusByUserName(), thread.getRootMessageUserId());
+            // FIXME Use proper user name field from root message.
+            // XXX This hack sucks. getStatusByUserName can return null but I don't know why.
+            String userName = thread.getStatusByUserName();
+            if (userName == null)
+                userName = "Unknown";
 
-            setUserName(thread.getStatusByUserName());
+            setPortrait(userName, thread.getRootMessageUserId());
+
+            setUserName(userName);
 
             Observable<String> asyncTitle = item.getRootMessage().map(Message::getSubject);
             setTitle(thread.toString(), asyncTitle);
