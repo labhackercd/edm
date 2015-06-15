@@ -27,7 +27,6 @@ import com.liferay.mobile.android.v62.mbmessage.MBMessageService;
 import com.liferay.mobile.android.v62.mbthread.MBThreadService;
 import com.liferay.mobile.android.v62.user.UserService;
 
-import net.labhackercd.nhegatu.data.api.client.CustomService;
 import net.labhackercd.nhegatu.data.api.client.EDMBatchSession;
 import net.labhackercd.nhegatu.data.api.client.EDMGetSessionWrapper;
 import net.labhackercd.nhegatu.data.api.client.EDMSession;
@@ -134,7 +133,6 @@ class EDMServiceImpl implements EDMService {
 
     private UserService userService;
     private GroupService groupService;
-    private CustomService customService;
     private MBThreadService threadService;
     private MBMessageService messageService;
     private MBCategoryService categoryService;
@@ -161,12 +159,6 @@ class EDMServiceImpl implements EDMService {
         if (categoryService == null)
             categoryService = new MBCategoryService(session);
         return categoryService;
-    }
-
-    private CustomService getCustomService() {
-        if (customService == null)
-            customService = new CustomService(session);
-        return customService;
     }
 
     private UserService getUserService() {
