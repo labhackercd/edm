@@ -21,6 +21,7 @@ import com.liferay.mobile.android.http.HttpUtil;
 import com.liferay.mobile.android.service.Session;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 
@@ -40,11 +41,11 @@ import java.lang.reflect.Field;
  * simple "/". This way, we can set the full URL of the remote service in the Session and
  * this is how it should be since the beginning.
  */
-public class HttpUtilMonkeyPatcher {
+class PathlessHttpUtil {
     private static final Object lock = new Object();
     private static boolean patched = false;
 
-    public static void patch() {
+    private static void ensureItsMonkeyPatched() {
         if (!patched) {
             synchronized (lock) {
                 try {
@@ -59,8 +60,13 @@ public class HttpUtilMonkeyPatcher {
         }
     }
 
+    public static JSONArray post(Session session, JSONObject command) throws Exception {
+        ensureItsMonkeyPatched();
+        return HttpUtil.post(session, command);
+    }
+
     public static JSONArray post(Session session, JSONArray commands) throws Exception {
-        patch();
+        ensureItsMonkeyPatched();
         return HttpUtil.post(session, commands);
     }
 }

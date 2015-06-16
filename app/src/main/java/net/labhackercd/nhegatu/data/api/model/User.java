@@ -22,11 +22,12 @@ import net.labhackercd.nhegatu.data.api.model.util.JSONReader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import static net.labhackercd.nhegatu.data.api.model.util.JSON.getJSONLongAsDate;
 
-public class User extends BaseModel {
+public class User implements Serializable {
 
     private boolean agreedToTermsOfUse;
     private String comments;

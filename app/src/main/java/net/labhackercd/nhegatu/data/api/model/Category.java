@@ -23,9 +23,10 @@ import net.labhackercd.nhegatu.data.api.model.util.JSONReader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Category extends BaseModel {
+public class Category implements Serializable {
 
     private String userName;
     private String description;

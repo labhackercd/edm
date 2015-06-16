@@ -22,9 +22,9 @@ import net.labhackercd.nhegatu.data.api.model.util.JSONReader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Group extends BaseModel {
+import java.io.Serializable;
 
-    public static final String CLOSED = "closed";
+public class Group implements Serializable {
 
     private String friendlyURL;
     private long classPK;
@@ -121,7 +121,7 @@ public class Group extends BaseModel {
             instance.type = json.getInt("type");
             instance.groupId = json.getLong("groupId");
             instance.name = json.getString("name");
-            instance.closed = json.getBoolean(CLOSED);
+            instance.closed = json.getBoolean("closed");
 
             return instance;
         }

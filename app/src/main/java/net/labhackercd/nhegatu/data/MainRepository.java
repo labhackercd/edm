@@ -19,19 +19,21 @@ package net.labhackercd.nhegatu.data;
 
 import android.support.v4.util.Pair;
 
-import com.liferay.mobile.android.auth.basic.BasicAuthentication;
-
-import net.labhackercd.nhegatu.data.api.EDMService;
+import net.labhackercd.nhegatu.data.api.client.EDMService;
 import net.labhackercd.nhegatu.data.api.model.Category;
 import net.labhackercd.nhegatu.data.api.model.Group;
 import net.labhackercd.nhegatu.data.api.model.Message;
 import net.labhackercd.nhegatu.data.api.model.Thread;
 import net.labhackercd.nhegatu.data.api.model.User;
+import net.labhackercd.nhegatu.data.api.model.util.JSONReader;
 import net.labhackercd.nhegatu.data.rx.RxSupport;
 
 import java.util.Arrays;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import rx.Observable;
 import rx.functions.Func0;
 import rx.functions.Func1;
@@ -47,22 +49,18 @@ public class MainRepository {
     }
 
     public Request<User> getUser() {
-        return request0("getUser", service::getUser);
+        return request0("getUser", service::getUser)
+                .transform(new JsonObjectReader<>(User.JSON_READER));
     }
 
     public Request<User> getUser(long userId) {
-        return request1("getUser", service::getUser, userId);
-    }
-
-    public Request<User> getUserWithCredentials(String email, String password) {
-        EDMService newService = service.newBuilder()
-                .setAuthentication(new BasicAuthentication(email, password))
-                .build();
-        return request0("getUserWithCredentials", newService::getUser);
+        return request1("getUser", service::getUser, userId)
+                .transform(new JsonObjectReader<>(User.JSON_READER));
     }
 
     public Request<List<Group>> getGroups(long companyId) {
         return request1("getGroups", service::getGroups, companyId)
+                .transform(new JsonArrayReader<>(Group.JSON_READER))
                 .transform(r -> r.asObservable()
                         .flatMap(Observable::from)
                         .filter(group -> group != null)
@@ -75,6 +73,7 @@ public class MainRepository {
 
     public Request<List<Thread>> getThreads(long groupId) {
         return request1("getThreads", service::getThreads, groupId)
+                .transform(new JsonArrayReader<>(Thread.JSON_READER))
                 .transform(r -> r.asObservable()
                         .flatMap(Observable::from)
                         .filter(thread -> thread != null && thread.getCategoryId() == 0)
@@ -82,11 +81,13 @@ public class MainRepository {
     }
 
     public Request<List<Thread>> getThreads(long groupId, long categoryId) {
-        return request2("getThreads", service::getThreads, groupId, categoryId);
+        return request2("getThreads", service::getThreads, groupId, categoryId)
+                .transform(new JsonArrayReader<>(Thread.JSON_READER));
     }
 
     public Request<List<Category>> getCategories(long groupId) {
         return request1("getCategories", service::getCategories, groupId)
+                .transform(new JsonArrayReader<>(Category.JSON_READER))
                 .transform(r -> r.asObservable()
                         .flatMap(Observable::from)
                         .filter(category -> category != null && category.getParentCategoryId() == 0)
@@ -94,21 +95,18 @@ public class MainRepository {
     }
 
     public Request<List<Category>> getCategories(long groupId, long categoryId) {
-        return request2("getCategories", service::getCategories, groupId, categoryId);
-    }
-
-    public Request<List<Message>> getThreadMessages(Thread thread) {
-        return getThreadMessages(
-                thread.getGroupId(), thread.getCategoryId(), thread.getThreadId());
+        return request2("getCategories", service::getCategories, groupId, categoryId)
+                .transform(new JsonArrayReader<>(Category.JSON_READER));
     }
 
     public Request<List<Message>> getThreadMessages(long groupId, long categoryId, long threadId) {
-        return request3("getThreadMessages", service::getThreadMessages,
-                groupId, categoryId, threadId);
+        return request3("getThreadMessages", service::getThreadMessages, groupId, categoryId, threadId)
+                .transform(new JsonArrayReader<>(Message.JSON_READER));
     }
 
     public Request<Message> getMessage(long messageId) {
-        return request1("getMessage", service::getMessage, messageId);
+        return request1("getMessage", service::getMessage, messageId)
+                .transform(new JsonObjectReader<>(Message.JSON_READER));
     }
 
     /** WARNING: Black magic ahead. */
@@ -184,6 +182,68 @@ public class MainRepository {
         @Override
         public int hashCode() {
             return Arrays.hashCode(args);
+        }
+    }
+
+    /** FOR NARNIA! */
+
+    private static class JsonObjectReader<T> implements Request.Transformer<JSONObject, T> {
+        private final JSONReader<T> reader;
+
+        private JsonObjectReader(JSONReader<T> reader) {
+            this.reader = reader;
+        }
+
+        @Override
+        public Observable<T> call(Request<JSONObject> r) {
+            return r.asObservable()
+                    .map(json -> fromJSON(reader, json))
+                    .onErrorResumeNext(throwable -> {
+                        return Observable.error(
+                                throwable instanceof ConversionException
+                                        ? throwable.getCause() : throwable);
+                    });
+        }
+    }
+
+    private static class JsonArrayReader<T> implements Request.Transformer<JSONArray, List<T>> {
+        private final JSONReader<T> reader;
+
+        private JsonArrayReader(JSONReader<T> reader) {
+            this.reader = reader;
+        }
+
+        @Override
+        public Observable<List<T>> call(Request<JSONArray> r) {
+            return r.asObservable()
+                    .map(json -> fromJSON(reader, json))
+                    .onErrorResumeNext(throwable -> {
+                        return Observable.error(
+                                throwable instanceof ConversionException
+                                        ? throwable.getCause() : throwable);
+                    });
+        }
+    }
+
+    private static <R> R fromJSON(JSONReader<R> reader, JSONObject json) {
+        try {
+            return reader.fromJSON(json);
+        } catch (JSONException e) {
+            throw new ConversionException(e);
+        }
+    }
+
+    private static <R> List<R> fromJSON(JSONReader<R> reader, JSONArray json) {
+        try {
+            return reader.fromJSON(json);
+        } catch (JSONException e) {
+            throw new ConversionException(e);
+        }
+    }
+
+    private static class ConversionException extends RuntimeException {
+        private ConversionException(Throwable cause) {
+            super(cause);
         }
     }
 }

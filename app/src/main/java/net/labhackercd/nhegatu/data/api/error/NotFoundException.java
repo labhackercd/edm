@@ -15,15 +15,10 @@
  * along with Nhegatu.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.labhackercd.nhegatu.data.api;
+package net.labhackercd.nhegatu.data.api.error;
 
-public interface ErrorHandler {
-    public Throwable handleError(ServiceError error);
-
-    ErrorHandler DEFAULT = new ErrorHandler() {
-        @Override
-        public Throwable handleError(ServiceError error) {
-            return error;
-        }
-    };
+public class NotFoundException extends Exception {
+    public NotFoundException(Exception error) {
+        super(error);
+    }
 }

@@ -20,7 +20,6 @@ package net.labhackercd.nhegatu.data.api.client;
 import android.os.AsyncTask;
 
 import com.liferay.mobile.android.auth.Authentication;
-import com.liferay.mobile.android.exception.ServerException;
 import com.liferay.mobile.android.service.Session;
 import com.liferay.mobile.android.task.callback.AsyncTaskCallback;
 
@@ -30,12 +29,12 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EDMBatchSession implements Session {
+class BatchSession implements com.liferay.mobile.android.service.Session {
     private final Session session;
     private final Object lock = new Object();
     private final List<JSONObject> commands = new ArrayList<>();
 
-    public EDMBatchSession(Session session) {
+    public BatchSession(Session session) {
         this.session = session;
     }
 
@@ -77,9 +76,7 @@ public class EDMBatchSession implements Session {
         synchronized (lock) {
             commands = new JSONArray(this.commands);
             try {
-                return HttpUtilMonkeyPatcher.post(this, commands);
-            } catch (ServerException e) {
-                throw EDMSession.handleException(e);
+                return PathlessHttpUtil.post(this, commands);
             } finally {
                 this.commands.clear();
             }

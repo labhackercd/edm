@@ -15,12 +15,22 @@
  * along with Nhegatu.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.labhackercd.nhegatu.data.api.client.exception;
+package net.labhackercd.nhegatu.data.api.error;
 
 import com.liferay.mobile.android.exception.ServerException;
+import net.labhackercd.nhegatu.data.api.client.ErrorHandler;
 
-public class AuthorizationException extends ServerException {
-    public AuthorizationException(Exception e) {
-        super(e);
+public class EDMErrorHandler implements ErrorHandler {
+    @Override
+    public Throwable handleError(Exception error) {
+        if (error instanceof ServerException) {
+            String message = error.getMessage().toLowerCase().trim();
+            if (message.matches(".*(no *such|no *\\w+ *exists).*")) {
+                return new NotFoundException(error);
+            } else if (message.matches(".*(please *sign|authenticated *access|authentication *failed).*")) {
+                return new AuthorizationException(error);
+            }
+        }
+        return error;
     }
 }

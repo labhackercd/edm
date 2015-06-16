@@ -15,12 +15,10 @@
  * along with Nhegatu.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.labhackercd.nhegatu.data.api.model;
+package net.labhackercd.nhegatu.data.api.error;
 
-import java.io.Serializable;
-
-/**
- * Base class for all models.
- */
-class BaseModel implements Serializable {
+public class AuthorizationException extends Exception {
+    public AuthorizationException(Exception error) {
+        super(error);
+    }
 }

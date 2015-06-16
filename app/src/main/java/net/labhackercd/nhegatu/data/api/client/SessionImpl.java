@@ -20,29 +20,23 @@ package net.labhackercd.nhegatu.data.api.client;
 import android.os.AsyncTask;
 
 import com.liferay.mobile.android.auth.Authentication;
-import com.liferay.mobile.android.exception.ServerException;
-import com.liferay.mobile.android.http.HttpUtil;
 import com.liferay.mobile.android.service.Session;
 import com.liferay.mobile.android.task.callback.AsyncTaskCallback;
-
-import net.labhackercd.nhegatu.data.api.client.exception.AuthorizationException;
-import net.labhackercd.nhegatu.data.api.client.exception.NotFoundException;
-import net.labhackercd.nhegatu.data.api.client.exception.PrincipalException;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class EDMSession implements Session {
+class SessionImpl implements Session {
     private final Endpoint endpoint;
     private Authentication authentication;
 
-    public EDMSession(Endpoint endpoint) {
-        this(endpoint, null);
-    }
-
-    public EDMSession(Endpoint endpoint, Authentication authentication) {
+    SessionImpl(Endpoint endpoint, Authentication authentication) {
         this.endpoint = endpoint;
         this.authentication = authentication;
+    }
+
+    public Endpoint getEndpoint() {
+        return endpoint;
     }
 
     @Override
@@ -62,17 +56,12 @@ public class EDMSession implements Session {
 
     @Override
     public String getServer() {
-        return endpoint.url();
+        return getEndpoint().getUrl();
     }
 
     @Override
     public JSONArray invoke(JSONObject command) throws Exception {
-        try {
-            HttpUtilMonkeyPatcher.patch();
-            return HttpUtil.post(this, command);
-        } catch (ServerException e) {
-            throw handleException(e);
-        }
+        return PathlessHttpUtil.post(this, command);
     }
 
     @Override
@@ -98,19 +87,5 @@ public class EDMSession implements Session {
     @Override
     public AsyncTask upload(JSONObject command) throws Exception {
         throw new UnsupportedOperationException("Uploads are not supported.");
-    }
-
-    public static Exception handleException(Exception e) {
-        String err = e.getMessage().toLowerCase().trim();
-
-        if (err.matches(".*principal *exception.*")) {
-            return new PrincipalException(e);
-        } else if (err.matches(".*(no *such|no *\\w+ *exists).*")) {
-            return new NotFoundException(e);
-        } else if (err.matches(".*(please *sign|authenticated *access|authentication *failed).*")) {
-            return new AuthorizationException(e);
-        }
-
-        return e;
     }
 }

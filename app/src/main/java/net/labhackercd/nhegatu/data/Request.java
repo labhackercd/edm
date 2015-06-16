@@ -56,7 +56,12 @@ public abstract class Request<T>  {
         };
     }
 
-    public Request<T> transform(Func1<Request<T>, Observable<T>> transformation) {
-        return Request.create(key(), transformation.call(this));
+    @SuppressWarnings("unchecked")
+    public <R> Request<R> transform(Transformer<? super T, ? extends R> transformation) {
+        return Request.create(key(), ((Transformer<T, R>) transformation).call(this));
+    }
+
+    public interface Transformer<T, R> extends Func1<Request<T>, Observable<R>> {
+        // cover for generics insanity
     }
 }

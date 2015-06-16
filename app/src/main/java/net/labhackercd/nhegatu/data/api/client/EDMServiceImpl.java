@@ -15,39 +15,26 @@
  * along with Nhegatu.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.labhackercd.nhegatu.data.api;
+package net.labhackercd.nhegatu.data.api.client;
 
 import com.google.common.collect.Lists;
 import com.liferay.mobile.android.auth.Authentication;
+import com.liferay.mobile.android.exception.ServerException;
 import com.liferay.mobile.android.service.JSONObjectWrapper;
-import com.liferay.mobile.android.service.Session;
 import com.liferay.mobile.android.v62.group.GroupService;
 import com.liferay.mobile.android.v62.mbcategory.MBCategoryService;
 import com.liferay.mobile.android.v62.mbmessage.MBMessageService;
 import com.liferay.mobile.android.v62.mbthread.MBThreadService;
 import com.liferay.mobile.android.v62.user.UserService;
-
-import net.labhackercd.nhegatu.data.api.client.EDMBatchSession;
-import net.labhackercd.nhegatu.data.api.client.EDMGetSessionWrapper;
-import net.labhackercd.nhegatu.data.api.client.EDMSession;
-import net.labhackercd.nhegatu.data.api.client.Endpoint;
-import net.labhackercd.nhegatu.data.api.client.exception.NotFoundException;
-import net.labhackercd.nhegatu.data.api.model.Category;
-import net.labhackercd.nhegatu.data.api.model.Group;
-import net.labhackercd.nhegatu.data.api.model.Message;
-import net.labhackercd.nhegatu.data.api.model.Thread;
-import net.labhackercd.nhegatu.data.api.model.User;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import rx.Observable;
 
 import java.util.List;
 import java.util.UUID;
 
-import rx.Observable;
-
-class EDMServiceImpl implements EDMService {
+public final class EDMServiceImpl implements EDMService {
 
     public static class Builder implements EDMService.Builder {
         private Endpoint endpoint;
@@ -58,180 +45,121 @@ class EDMServiceImpl implements EDMService {
             this(null, null, null);
         }
 
-        public Builder setEndpoint(final Endpoint endpoint) {
-            if (endpoint == null)
-                throw new IllegalStateException("endpoint == null");
+        private Builder(ErrorHandler errorHandler, Endpoint endpoint, Authentication authentication) {
             this.endpoint = endpoint;
-            return this;
-        }
-
-        public Builder setAuthentication(final Authentication authentication) {
+            this.errorHandler = errorHandler;
             this.authentication = authentication;
-            return this;
         }
 
+        @Override
         public Builder setErrorHandler(ErrorHandler errorHandler) {
             this.errorHandler = errorHandler;
             return this;
         }
 
+        @Override
+        public Builder setEndpoint(final Endpoint endpoint) {
+            if (endpoint == null)
+                throw new IllegalStateException("An endpoint must be specified.");
+            this.endpoint = endpoint;
+            return this;
+        }
+
+        @Override
+        public Builder setAuthentication(final Authentication authentication) {
+            this.authentication = authentication;
+            return this;
+        }
+
+        @Override
         public EDMService build() {
             Endpoint endpoint = this.endpoint;
             ErrorHandler errorHandler = this.errorHandler;
             Authentication authentication = this.authentication;
 
             if (endpoint == null)
-                throw new IllegalStateException("A Endpoint must be specified.");
+                throw new IllegalStateException("An endpoint must be specified.");
 
             if (errorHandler == null)
                 errorHandler = ErrorHandler.DEFAULT;
 
-            return new EDMServiceImpl(endpoint, errorHandler, authentication);
-        }
-
-        private Builder(Endpoint endpoint, ErrorHandler errorHandler, Authentication authentication) {
-            this.endpoint = endpoint;
-            this.errorHandler = errorHandler;
-            this.authentication = authentication;
+            return new EDMServiceImpl(errorHandler, endpoint,  authentication);
         }
     }
 
-    private final Session session;
-    private final Endpoint endpoint;
+    private final SessionImpl session;
     private final ErrorHandler errorHandler;
-    private final Authentication authentication;
 
-    private EDMServiceImpl(Endpoint endpoint, ErrorHandler errorHandler, Authentication authentication) {
-        this.endpoint = endpoint;
+    private EDMServiceImpl(ErrorHandler errorHandler, Endpoint endpoint, Authentication authentication) {
+        this.session = new SessionImpl(endpoint, authentication);
         this.errorHandler = errorHandler;
-        this.authentication = authentication;
-        this.session = new EDMSession(endpoint, authentication);
-    }
-
-    public Builder newBuilder() {
-        return new Builder(endpoint, errorHandler, authentication);
-    }
-
-    private ServiceError handleException(Exception e) {
-        // TODO Properly turn the Exception into a ServiceError, identify Exception types, etc.
-        ServiceError error = new ServiceError(e);
-        Throwable t = handleError(error);
-        if (t instanceof ServiceError)
-            return (ServiceError) t;
-        else
-            return new ServiceError(t);
-    }
-
-    private Throwable handleError(ServiceError error) {
-        Throwable throwable = errorHandler.handleError(error);
-        if (throwable == null) {
-            throwable = new IllegalStateException(
-                    "Error handler returned null for wrapped exception.", error);
-        }
-        return throwable;
-    }
-
-    private UserService userService;
-    private GroupService groupService;
-    private MBThreadService threadService;
-    private MBMessageService messageService;
-    private MBCategoryService categoryService;
-
-    private GroupService getGroupService() {
-        if (groupService == null)
-            groupService = new GroupService(session);
-        return groupService;
-    }
-
-    private MBThreadService getThreadService() {
-        if (threadService == null)
-            threadService = new MBThreadService(session);
-        return threadService;
-    }
-
-    private MBMessageService getMessageService() {
-        if (messageService == null)
-            messageService = new MBMessageService(session);
-        return messageService;
-    }
-
-    private MBCategoryService getCategoryService() {
-        if (categoryService == null)
-            categoryService = new MBCategoryService(session);
-        return categoryService;
-    }
-
-    private UserService getUserService() {
-        if (userService == null)
-            userService = new UserService(session);
-        return userService;
     }
 
     @Override
-    public User getUser() {
+    public Builder newBuilder() {
+        return new Builder(errorHandler, session.getEndpoint(), session.getAuthentication());
+    }
+
+    @Override
+    public JSONObject getUser() {
         try {
             JSONObject command = new JSONObject("{\"/user/get-user-by-id\": {}}");
-            JSONObject json = session.invoke(command).getJSONObject(0);
-            return json == null ? null : User.JSON_READER.fromJSON(json);
+            return session.invoke(command).getJSONObject(0);
         } catch (Exception e) {
             throw handleException(e);
         }
     }
 
     @Override
-    public User getUser(long userId) {
+    public JSONObject getUser(long userId) {
         try {
-            JSONObject json = getUserService().getUserById(userId);
-            return json == null ? null : User.JSON_READER.fromJSON(json);
+            return new UserService(session).getUserById(userId);
         } catch (Exception e) {
             throw handleException(e);
         }
     }
 
     @Override
-    public List<Thread> getThreads(long groupId) {
+    public JSONArray getThreads(long groupId) {
         try {
-            JSONArray json = getThreadService().getGroupThreads(groupId, -1, 0, -1, -1);
-            return json == null ? null : Thread.JSON_READER.fromJSON(json);
+            return new MBThreadService(session).getGroupThreads(groupId, -1, 0, -1, -1);
         } catch (Exception e) {
             throw handleException(e);
         }
     }
 
     @Override
-    public List<Thread> getThreads(long groupId, long categoryId) {
+    public JSONArray getThreads(long groupId, long categoryId) {
         try {
-            JSONArray json = getThreadService().getThreads(groupId, categoryId, 0, -1, -1);
-            return json == null ? null : Thread.JSON_READER.fromJSON(json);
+            return new MBThreadService(session).getThreads(groupId, categoryId, 0, -1, -1);
         } catch (Exception e) {
             throw handleException(e);
         }
     }
 
     @Override
-    public List<Category> getCategories(long groupId) {
+    public JSONArray getCategories(long groupId) {
         try {
-            JSONArray json = getCategoryService().getCategories(groupId);
-            return json == null ? null : Category.JSON_READER.fromJSON(json);
+            return new MBCategoryService(session).getCategories(groupId);
         } catch (Exception e) {
             throw handleException(e);
         }
     }
 
     @Override
-    public List<Category> getCategories(long groupId, long categoryId) {
+    public JSONArray getCategories(long groupId, long categoryId) {
         try {
-            JSONArray json = getCategoryService().getCategories(groupId, categoryId, -1, -1);
-            return json == null ? null : Category.JSON_READER.fromJSON(json);
+            return new MBCategoryService(session).getCategories(groupId, categoryId, -1, -1);
         } catch (Exception e) {
             throw handleException(e);
         }
     }
 
     @Override
-    public List<Group> getGroups(long companyId) {
+    public JSONArray getGroups(long companyId) {
         try {
-            JSONArray json = new RetryHelper<JSONArray>() {
+            // TODO Move retry logic out of here.
+            return new RetryHelper<JSONArray>() {
                 @Override
                 public JSONArray call() throws Throwable {
                     return getGroupsArray(companyId);
@@ -239,11 +167,15 @@ class EDMServiceImpl implements EDMService {
 
                 @Override
                 protected boolean shouldRetry(Throwable t) {
-                    return (t instanceof NotFoundException
-                            && t.getMessage().toLowerCase().contains("group"));
+                    // TODO Test retry cases. Please.
+                    // TODO Move this a layer down? We could implement this retry policy at the repository level where we *will probably* have proper exception handling.
+                    if (t instanceof ServerException) {
+                        String message = t.getMessage().toLowerCase().trim();
+                        return message.matches(".*((no *such|no *)group *exists).*");
+                    }
+                    return false;
                 }
             }.call(3);
-            return json == null ? null : Group.JSON_READER.fromJSON(json);
         } catch (Exception e) {
             throw handleException(e);
         }
@@ -276,7 +208,7 @@ class EDMServiceImpl implements EDMService {
     }
 
     private JSONArray getGroupsArray(long companyId) throws Exception {
-        EDMBatchSession batch = new EDMBatchSession(session);
+        BatchSession batch = new BatchSession(session);
 
         for (Long groupId : getGroupIds(companyId)) {
             String field = "groupId";
@@ -284,7 +216,7 @@ class EDMServiceImpl implements EDMService {
             batch.invoke(new JSONObject("{" +
                     "  \"$" + alias + " = /group/get-group\": {" +
                     "    \"groupId\": " + groupId + "," +
-                    "    \"$" + Group.CLOSED + " = /expandovalue/get-data.5\": {" +
+                    "    \"$closed = /expandovalue/get-data.5\": {" +
                     "      \"companyId\": " + companyId + "," +
                     "      \"className\": \"com.liferay.portal.model.Group\"," +
                     "      \"tableName\": \"CUSTOM_FIELDS\"," +
@@ -299,7 +231,7 @@ class EDMServiceImpl implements EDMService {
     }
 
     private List<Long> getGroupIds(long companyId) throws Exception {
-        JSONArray json = getGroupService().search(companyId, "%", "%", new JSONArray(), -1, -1);
+        JSONArray json = new GroupService(session).search(companyId, "%", "%", new JSONArray(), -1, -1);
         return Lists.newArrayList(
                 createObjectObservable(json)
                         .map(o -> o.optLong("groupId"))
@@ -327,19 +259,17 @@ class EDMServiceImpl implements EDMService {
     }
 
     @Override
-    public List<Message> getThreadMessages(long groupId, long categoryId, long threadId) {
+    public JSONArray getThreadMessages(long groupId, long categoryId, long threadId) {
         try {
-            JSONArray json = getMessageService().getThreadMessages(
-                    groupId, categoryId, threadId, 0, -1, -1);
-            return json == null ? null : Message.JSON_READER.fromJSON(json);
+            return new MBMessageService(session).getThreadMessages(groupId, categoryId, threadId, 0, -1, -1);
         } catch (Exception e) {
             throw handleException(e);
         }
     }
 
     @Override
-    public Message addMessage(UUID uuid, long groupId, long categoryId, long threadId,
-                              long parentMessageId, String subject, String body) {
+    public JSONObject addMessage(UUID uuid, long groupId, long categoryId,
+                                 long threadId, long parentMessageId, String subject, String body) {
         try {
             JSONObject scArgs = new JSONObject();
             scArgs.put("addGuestPermissions", true);
@@ -350,25 +280,30 @@ class EDMServiceImpl implements EDMService {
             JSONObjectWrapper serviceContext = new JSONObjectWrapper(
                     "com.liferay.portal.service.ServiceContext", scArgs);
 
-            MBMessageService service = new MBMessageService(new EDMGetSessionWrapper(session));
+            MBMessageService service = new MBMessageService(new GETSessionWrapper(session));
 
-            JSONObject inserted = service.addMessage(
+            return service.addMessage(
                     groupId, categoryId, threadId, parentMessageId,
                     subject, body, "bbcode", new JSONArray(), false, 0.0, true, serviceContext);
-
-            return Message.JSON_READER.fromJSON(inserted);
         } catch (Exception e) {
             throw handleException(e);
         }
     }
 
     @Override
-    public Message getMessage(long messageId) {
+    public JSONObject getMessage(long messageId) {
         try {
-            JSONObject json = getMessageService().getMessage(messageId);
-            return json == null ? null : Message.JSON_READER.fromJSON(json);
+            return new MBMessageService(session).getMessage(messageId);
         } catch (Exception e) {
             throw handleException(e);
         }
+    }
+
+    private ClientError handleException(Exception error) {
+        Throwable newError = errorHandler.handleError(error);
+        if (newError == null) {
+            throw new IllegalStateException("Error handler returned null for wrapped exception.", error);
+        }
+        return new ClientError(newError);
     }
 }

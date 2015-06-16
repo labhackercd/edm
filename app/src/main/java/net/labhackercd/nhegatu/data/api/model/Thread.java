@@ -23,9 +23,10 @@ import net.labhackercd.nhegatu.data.api.model.util.JSONReader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Thread extends BaseModel {
+public class Thread implements Serializable {
 
     private int status;
     private int viewCount;

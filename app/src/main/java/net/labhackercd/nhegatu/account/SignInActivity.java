@@ -37,10 +37,12 @@ import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.liferay.mobile.android.auth.basic.BasicAuthentication;
 import net.labhackercd.nhegatu.EDMApplication;
 import net.labhackercd.nhegatu.R;
-import net.labhackercd.nhegatu.data.MainRepository;
-import net.labhackercd.nhegatu.data.api.EDMErrorHandler;
+import net.labhackercd.nhegatu.data.api.client.ClientError;
+import net.labhackercd.nhegatu.data.api.client.EDMService;
+import net.labhackercd.nhegatu.data.api.error.AuthorizationException;
 import net.labhackercd.nhegatu.data.api.model.User;
 
 import javax.inject.Inject;
@@ -49,10 +51,14 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.OnEditorAction;
+import org.json.JSONException;
+import org.json.JSONObject;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import timber.log.Timber;
+
+import java.io.IOException;
 
 import static android.accounts.AccountManager.KEY_ACCOUNT_NAME;
 import static android.accounts.AccountManager.KEY_ACCOUNT_TYPE;
@@ -63,7 +69,7 @@ public class SignInActivity extends AppCompatActivity {
     public static final String PARAM_EMAIL = "email";
     public static final String PARAM_AUTHTOKEN_TYPE = "authTokenType";
 
-    @Inject MainRepository repository;
+    @Inject EDMService service;
 
     @InjectView(R.id.email) AutoCompleteTextView emailView;
     @InjectView(R.id.password) EditText passwordView;
@@ -172,7 +178,17 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     private Observable<User> checkCredentials(String email, String password) {
-        return repository.getUserWithCredentials(email, password).asObservable();
+        return Observable.defer(() -> {
+            JSONObject json = service.newBuilder()
+                    .setAuthentication(new BasicAuthentication(email, password))
+                    .build()
+                    .getUser();
+            try {
+                return Observable.just(json == null ? null : User.JSON_READER.fromJSON(json));
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private void handleSuccess(Pair<User, String> pair) {
@@ -195,21 +211,20 @@ public class SignInActivity extends AppCompatActivity {
         finishLogin(email, password);
     }
 
-    private void handleError(Throwable throwable) {
+    private void handleError(Throwable error) {
         showProgress(false);
 
-        int errorMessage;
-        if (EDMErrorHandler.isNetworkError(throwable)) {
-            errorMessage = R.string.network_error_message;
-        } else if (EDMErrorHandler.isAuthorizationError(throwable)) {
-            errorMessage = R.string.invalid_credentials_message;
-        } else {
-            errorMessage = R.string.unknown_error_message;
-            Timber.e(throwable, "Failed to check credentials.");
+        String message = getFriendlyErrorMessage(error);
+
+        if (message == null) {
+            message = error.getMessage();
+
+            // Log unknown errors for debugging.
+            Timber.e(error, "Failed to check user credentials.");
         }
 
         new AlertDialog.Builder(this)
-                .setMessage(errorMessage)
+                .setMessage(message)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -218,6 +233,18 @@ public class SignInActivity extends AppCompatActivity {
                 })
                 .create()
                 .show();
+    }
+
+    private String getFriendlyErrorMessage(Throwable error) {
+        if (error instanceof ClientError) {
+            Throwable cause = error.getCause();
+            if (cause instanceof IOException) {
+                return getString(R.string.network_error_message);
+            } else if (cause instanceof AuthorizationException) {
+                return getString(R.string.invalid_credentials_message);
+            }
+        }
+        return null;
     }
 
     private void configureSyncFor(Account account) {

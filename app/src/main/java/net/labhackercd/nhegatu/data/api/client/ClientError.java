@@ -15,12 +15,19 @@
  * along with Nhegatu.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.labhackercd.nhegatu.data.api.client.exception;
+package net.labhackercd.nhegatu.data.api.client;
 
-import com.liferay.mobile.android.exception.ServerException;
+/** Unchecked wrapper for checked exceptions thrown by the inner client code. */
+public class ClientError extends RuntimeException {
+    private Throwable cause;
 
-public class PrincipalException extends ServerException {
-    public PrincipalException(Exception e) {
-        super(e);
+    ClientError(Throwable cause) {
+        this.cause = cause;
+    }
+
+    /** Return the wrapped exception. */
+    @Override
+    public Throwable getCause() {
+        return cause;
     }
 }

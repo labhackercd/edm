@@ -26,8 +26,8 @@ import com.squareup.picasso.Picasso;
 import com.squareup.sqlbrite.SqlBrite;
 
 import net.labhackercd.nhegatu.data.api.ApiModule;
-import net.labhackercd.nhegatu.data.api.EDMService;
 import net.labhackercd.nhegatu.data.api.Portal;
+import net.labhackercd.nhegatu.data.api.client.EDMService;
 import net.labhackercd.nhegatu.data.db.DbModule;
 
 import java.io.File;

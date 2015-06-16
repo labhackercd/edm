@@ -23,10 +23,11 @@ import net.labhackercd.nhegatu.data.api.model.util.JSONReader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 
-public class Message extends BaseModel implements net.labhackercd.nhegatu.data.model.Message {
+public class Message implements Serializable, net.labhackercd.nhegatu.data.model.Message {
 
     private int status;
     private boolean attachments;

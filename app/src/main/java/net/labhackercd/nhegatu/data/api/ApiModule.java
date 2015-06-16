@@ -24,12 +24,15 @@ import android.app.Application;
 import com.liferay.mobile.android.auth.basic.BasicAuthentication;
 
 import net.labhackercd.nhegatu.account.AccountUtils;
+import net.labhackercd.nhegatu.data.api.client.EDMService;
+import net.labhackercd.nhegatu.data.api.client.EDMServiceImpl;
 import net.labhackercd.nhegatu.data.api.client.Endpoint;
 
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import net.labhackercd.nhegatu.data.api.error.EDMErrorHandler;
 
 @Module(complete = false, library = true)
 @SuppressWarnings("UnusedDeclaration")
@@ -48,8 +51,10 @@ public class ApiModule {
     }
 
     @Provides @Singleton
-    EDMService provideEDMService(final Application application, Endpoint endpoint) {
+    EDMService provideEDMServiceImpl(final Application application, Endpoint endpoint) {
         return new EDMServiceImpl.Builder()
+                .setEndpoint(endpoint)
+                .setErrorHandler(new EDMErrorHandler())
                 .setAuthentication(request -> {
                     Account account = AccountUtils.getAccount(application);
                     if (account != null) {
@@ -59,7 +64,6 @@ public class ApiModule {
                         new BasicAuthentication(email, password).authenticate(request);
                     }
                 })
-                .setEndpoint(endpoint)
                 .build();
     }
 }

@@ -21,7 +21,6 @@ import android.os.AsyncTask;
 
 import com.google.common.base.CharMatcher;
 import com.liferay.mobile.android.auth.Authentication;
-import com.liferay.mobile.android.exception.ServerException;
 import com.liferay.mobile.android.http.HttpUtil;
 import com.liferay.mobile.android.service.Session;
 import com.liferay.mobile.android.task.callback.AsyncTaskCallback;
@@ -33,10 +32,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -55,13 +52,13 @@ import java.util.List;
  * Note that most of the Session API is not implemented and will only raise a RuntimeError. Only
  * the methods required to call the methods we need are implemented so far.
  */
-public class EDMGetSessionWrapper implements Session {
+class GETSessionWrapper implements Session {
     private Session session;
     private static final List<String> INTERCEPT_COMMANDS = Arrays.asList(
             "/mbmessage/add-message"
     );
 
-    public EDMGetSessionWrapper(Session session) {
+    public GETSessionWrapper(Session session) {
         this.session = session;
     }
 
@@ -102,7 +99,7 @@ public class EDMGetSessionWrapper implements Session {
                     Object value = args.get(key);
                     argsCopy.add(new BasicNameValuePair(key, value.toString()));
                 }
-                return CustomHttpUtil.invokeThroughGET(this, method, argsCopy);
+                return GETHttpUtil.invokeThroughGET(this, method, argsCopy);
             }
         }
 
@@ -111,22 +108,22 @@ public class EDMGetSessionWrapper implements Session {
 
     @Override
     public void setAuthentication(Authentication authentication) {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void setCallback(AsyncTaskCallback callback) {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void setConnectionTimeout(int connectionTimeout) {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void setServer(String server) {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException();
 
     }
 
@@ -135,11 +132,11 @@ public class EDMGetSessionWrapper implements Session {
         throw new UnsupportedOperationException();
     }
 
-    public static class CustomHttpUtil extends HttpUtil {
-        protected static JSONArray invokeThroughGET(Session session,
-                                                    String method, List<NameValuePair> args)
-                throws IOException, ServerException, JSONException {
-            String url = createMethodURL(session, method, args);
+    /** We must extend HttpUtil because {@link HttpUtil.handleServerException} is protected. */
+    private static class GETHttpUtil extends HttpUtil {
+
+        private static JSONArray invokeThroughGET(Session session, String method, List<NameValuePair> args) throws Exception {
+            String url = createMethodURL(session.getServer(), method, args);
 
             HttpClient client = HttpUtil.getClient(session);
 
@@ -147,15 +144,7 @@ public class EDMGetSessionWrapper implements Session {
 
             Authentication authentication = session.getAuthentication();
             if (authentication != null) {
-                try {
-                    authentication.authenticate(request);
-                } catch (IOException e) {
-                    throw e;
-                } catch (Exception e) {
-                    // XXX We should really not do this, but liferay-mobile-sdk-android
-                    // won't let us know what's happening.
-                    throw new RuntimeException(e);
-                }
+                authentication.authenticate(request);
             }
 
             HttpResponse response = client.execute(request);
@@ -167,9 +156,9 @@ public class EDMGetSessionWrapper implements Session {
             return new JSONArray("[" + json + "]");
         }
 
-        private static String createMethodURL(Session session, String method, List<NameValuePair> args) {
+        private static String createMethodURL(String endpoint, String method, List<NameValuePair> args) {
             CharMatcher matcher = CharMatcher.anyOf("/");
-            return matcher.trimTrailingFrom(session.getServer())
+            return matcher.trimTrailingFrom(endpoint)
                     .concat("/").concat(matcher.trimFrom(method))
                     .concat("?").concat(URLEncodedUtils.format(args, "UTF-8"));
         }

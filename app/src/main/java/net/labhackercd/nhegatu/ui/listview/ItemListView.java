@@ -27,12 +27,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import net.labhackercd.nhegatu.R;
-import net.labhackercd.nhegatu.data.api.client.exception.AuthorizationException;
 
 import java.io.IOException;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import net.labhackercd.nhegatu.data.api.error.AuthorizationException;
 import rx.Observable;
 import rx.Observer;
 import rx.subjects.PublishSubject;
@@ -210,14 +210,14 @@ public class ItemListView extends SwipeRefreshLayout {
         setEnabled(hasItems);
     }
 
-    private void handleError(Throwable e) {
+    private void handleError(Throwable error) {
         int errorMessage;
-        if (e instanceof IOException) {
+        if (error instanceof IOException) {
             errorMessage = R.string.network_error_message;
-        } else if (e instanceof AuthorizationException) {
+        } else if (error instanceof AuthorizationException) {
             errorMessage = R.string.authorization_error_message;
         } else {
-            Timber.e(e, "Failed to load list data.");
+            Timber.e(error, "Failed to load list data.");
             errorMessage = R.string.load_error_message;
         }
         setRefreshing(false);

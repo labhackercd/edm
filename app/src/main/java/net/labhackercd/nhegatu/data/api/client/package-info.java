@@ -15,17 +15,9 @@
  * along with Nhegatu.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.labhackercd.nhegatu.data.api;
-
-public class ServiceError extends RuntimeException {
-    private Throwable cause;
-
-    ServiceError(Throwable cause) {
-        this.cause = cause;
-    }
-
-    @Override
-    public Throwable getCause() {
-        return cause;
-    }
-}
+/**
+ * A client to the remote web service.
+ *
+ * All web service calls are implemented in {@link EDMServiceImpl}.
+ */
+package net.labhackercd.nhegatu.data.api.client;

@@ -25,7 +25,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
-import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -34,14 +33,14 @@ import com.google.api.services.youtube.model.Video;
 
 import net.labhackercd.nhegatu.R;
 import net.labhackercd.nhegatu.data.LocalMessageStore;
-import net.labhackercd.nhegatu.data.api.EDMService;
+import net.labhackercd.nhegatu.data.api.client.EDMService;
 import net.labhackercd.nhegatu.data.db.LocalMessage;
-import net.labhackercd.nhegatu.data.model.Message;
 import net.labhackercd.nhegatu.ui.MainActivity;
 import net.labhackercd.nhegatu.upload.YouTubeUploader;
 
 import javax.inject.Inject;
 
+import org.json.JSONObject;
 import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
@@ -96,11 +95,12 @@ public class AddMessageTask {
         }
 
         // FIXME Publishing messages and marking them as successfully submitted is not atomic!
-        Message inserted = service.addMessage(
+        JSONObject insertedJson = service.addMessage(
                 message.getUuid(), message.getGroupId(), message.getCategoryId(),
                 message.getThreadId(), message.getParentMessageId(), message.getSubject(), body);
 
-        messages.setSuccess(message.getId(), inserted);
+        messages.setSuccess(message.getId(),
+                net.labhackercd.nhegatu.data.api.model.Message.JSON_READER.fromJSON(insertedJson));
     }
 
     private void notifyProgress(YouTubeUploader.UploadProgress uploadProgress) {
