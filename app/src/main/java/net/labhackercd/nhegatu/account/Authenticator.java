@@ -27,19 +27,22 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.text.TextUtils;
+import net.labhackercd.nhegatu.ui.SignInActivity;
 
 import static android.accounts.AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE;
 import static android.accounts.AccountManager.KEY_BOOLEAN_RESULT;
 import static android.accounts.AccountManager.KEY_INTENT;
-import static net.labhackercd.nhegatu.account.AccountConstants.ACCOUNT_TYPE;
-import static net.labhackercd.nhegatu.account.SignInActivity.PARAM_AUTHTOKEN_TYPE;
-import static net.labhackercd.nhegatu.account.SignInActivity.PARAM_EMAIL;
+import static net.labhackercd.nhegatu.ui.SignInActivity.PARAM_AUTHTOKEN_TYPE;
+import static net.labhackercd.nhegatu.ui.SignInActivity.PARAM_EMAIL;
 
-public class AccountAuthenticator extends AbstractAccountAuthenticator {
+public class Authenticator extends AbstractAccountAuthenticator {
+
+    // TODO Change this to match BuildConfig.APPLICATION_ID.
+    public static final String ACCOUNT_TYPE = "net.labhackercd.edemocracia.Account";
 
     private final Context context;
 
-    public AccountAuthenticator(Context context) {
+    public Authenticator(Context context) {
         super(context);
         this.context = context;
     }

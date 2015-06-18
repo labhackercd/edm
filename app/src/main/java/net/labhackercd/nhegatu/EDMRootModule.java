@@ -19,7 +19,6 @@ package net.labhackercd.nhegatu;
 
 import android.app.Application;
 
-import net.labhackercd.nhegatu.account.AccountModule;
 import net.labhackercd.nhegatu.data.DataModule;
 import net.labhackercd.nhegatu.service.ServiceModule;
 import net.labhackercd.nhegatu.ui.UiModule;
@@ -33,7 +32,6 @@ import net.labhackercd.nhegatu.upload.UploadModule;
         includes = {
                 UiModule.class,
                 DataModule.class,
-                AccountModule.class,
                 ServiceModule.class,
                 UploadModule.class
         }

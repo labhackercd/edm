@@ -98,7 +98,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="net.labhackercd.nhegatu.account.SignInActivity"
+            android:name=".ui.SignInActivity"
             android:label="@string/title_activity_sign_in"
             android:parentActivityName="net.labhackercd.nhegatu.ui.MainActivity"
             android:theme="@style/Theme.GreenTheme.NoActionBar"
@@ -121,7 +121,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="net.labhackercd.nhegatu.ui.MainActivity" />
         </activity>
-        <service android:name="net.labhackercd.nhegatu.account.AccountAuthenticatorService">
+        <service android:name=".account.AuthenticatorService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>

@@ -37,7 +37,7 @@ import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 import timber.log.Timber;
 
-import static net.labhackercd.nhegatu.account.AccountConstants.ACCOUNT_TYPE;
+import static net.labhackercd.nhegatu.account.Authenticator.ACCOUNT_TYPE;
 
 public class AccountUtils {
     public static Account getAccount(final Context context) {

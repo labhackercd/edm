@@ -17,6 +17,24 @@
 
 package net.labhackercd.nhegatu.account;
 
-public interface AccountConstants {
-    String ACCOUNT_TYPE = "net.labhackercd.edemocracia.Account";
+import android.app.Service;
+import android.content.Intent;
+import android.os.IBinder;
+
+import static android.accounts.AccountManager.ACTION_AUTHENTICATOR_INTENT;
+
+public class AuthenticatorService extends Service {
+
+    private static Authenticator authenticator;
+
+    public IBinder onBind(Intent intent) {
+        return intent.getAction().equals(ACTION_AUTHENTICATOR_INTENT) ? getAuthenticator()
+                .getIBinder() : null;
+    }
+
+    private Authenticator getAuthenticator() {
+        if (authenticator == null)
+            authenticator = new Authenticator(this);
+        return authenticator;
+    }
 }

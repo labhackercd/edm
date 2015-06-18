@@ -15,7 +15,7 @@
  * along with Nhegatu.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.labhackercd.nhegatu.account;
+package net.labhackercd.nhegatu.ui;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -63,7 +63,7 @@ import java.io.IOException;
 import static android.accounts.AccountManager.KEY_ACCOUNT_NAME;
 import static android.accounts.AccountManager.KEY_ACCOUNT_TYPE;
 import static android.accounts.AccountManager.KEY_AUTHTOKEN;
-import static net.labhackercd.nhegatu.account.AccountConstants.ACCOUNT_TYPE;
+import static net.labhackercd.nhegatu.account.Authenticator.ACCOUNT_TYPE;
 
 public class SignInActivity extends AppCompatActivity {
     public static final String PARAM_EMAIL = "email";

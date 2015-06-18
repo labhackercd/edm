@@ -42,6 +42,7 @@ import dagger.Provides;
 @Module(
         injects = {
                 MainActivity.class,
+                SignInActivity.class,
                 ComposeActivity.class,
                 GroupListFragment.class,
                 PreferenceFragment.class,
