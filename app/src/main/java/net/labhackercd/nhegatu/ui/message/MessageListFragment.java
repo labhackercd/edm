@@ -254,7 +254,7 @@ public class MessageListFragment extends BaseFragment {
         }
         Intent intent = new Intent(getActivity(), ComposeActivity.class);
         intent.setAction(Intent.ACTION_INSERT);
-        intent.putExtra(ComposeActivity.PARAM_PARENT_MESSAGE, rootMessage);
+        intent.putExtra(ComposeActivity.PARAM_PARENT_MESSAGE, (Parcelable) rootMessage);
         startActivityForResult(intent, REQUEST_INSERT_MESSAGE);
         return true;
     }

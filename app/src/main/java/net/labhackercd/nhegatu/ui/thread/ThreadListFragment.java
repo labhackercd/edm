@@ -36,8 +36,8 @@ import net.labhackercd.nhegatu.data.MainRepository;
 import net.labhackercd.nhegatu.data.Request;
 import net.labhackercd.nhegatu.data.api.model.Category;
 import net.labhackercd.nhegatu.data.api.model.Group;
-import net.labhackercd.nhegatu.data.api.model.Message;
 import net.labhackercd.nhegatu.data.api.model.Thread;
+import net.labhackercd.nhegatu.data.api.model.Message;
 import net.labhackercd.nhegatu.ui.BaseFragment;
 import net.labhackercd.nhegatu.ui.listview.ItemListView;
 

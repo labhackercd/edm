@@ -27,6 +27,7 @@ import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -157,11 +158,11 @@ public class MainActivity extends BaseActivity {
     }
 
     private static Fragment createThreadListFragment(Context context, Intent intent) {
-        Group group = (Group) intent.getSerializableExtra(EXTRA_GROUP);
+        Group group = (Group) intent.getParcelableExtra(EXTRA_GROUP);
         if (group != null) {
             return ThreadListFragment.newInstance(group);
         } else {
-            Category category = (Category) intent.getSerializableExtra(EXTRA_CATEGORY);
+            Category category = (Category) intent.getParcelableExtra(EXTRA_CATEGORY);
             if (category != null) {
                 return ThreadListFragment.newInstance(category);
             } else {
@@ -176,7 +177,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private static Fragment createMessageListFragment(Context context, Intent intent) {
-        Thread thread = (Thread) intent.getSerializableExtra(EXTRA_THREAD);
+        Thread thread = (Thread) intent.getParcelableExtra(EXTRA_THREAD);
         if (thread != null) {
             return MessageListFragment.newInstance(thread);
         } else {
@@ -381,7 +382,7 @@ public class MainActivity extends BaseActivity {
         intent.setAction(Intent.ACTION_VIEW);
         //intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.setType(EDMContract.Group.CONTENT_ITEM_TYPE);
-        intent.putExtra(EXTRA_GROUP, group);
+        intent.putExtra(EXTRA_GROUP, (Parcelable) group);
         return intent;
     }
 
@@ -391,7 +392,7 @@ public class MainActivity extends BaseActivity {
         intent.setAction(Intent.ACTION_VIEW);
         //intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.setType(EDMContract.Category.CONTENT_ITEM_TYPE);
-        intent.putExtra(EXTRA_CATEGORY, category);
+        intent.putExtra(EXTRA_CATEGORY, (Parcelable) category);
         return intent;
     }
 
@@ -401,7 +402,7 @@ public class MainActivity extends BaseActivity {
         intent.setAction(Intent.ACTION_VIEW);
         //intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.setType(EDMContract.Thread.CONTENT_ITEM_TYPE);
-        intent.putExtra(EXTRA_THREAD, thread);
+        intent.putExtra(EXTRA_THREAD, (Parcelable) thread);
         return intent;
     }
 
@@ -412,7 +413,7 @@ public class MainActivity extends BaseActivity {
         intent.setAction(Intent.ACTION_VIEW);
         //intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.setType(EDMContract.Message.CONTENT_ITEM_TYPE);
-        intent.putExtra(EXTRA_MESSAGE, (Message) message);
+        intent.putExtra(EXTRA_MESSAGE, (Parcelable) message);
         return intent;
     }
 

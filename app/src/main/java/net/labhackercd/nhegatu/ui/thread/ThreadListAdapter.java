@@ -35,8 +35,8 @@ import com.ocpsoft.pretty.time.PrettyTime;
 import net.labhackercd.nhegatu.R;
 import net.labhackercd.nhegatu.data.ImageLoader;
 import net.labhackercd.nhegatu.data.api.model.Category;
-import net.labhackercd.nhegatu.data.api.model.Message;
 import net.labhackercd.nhegatu.data.api.model.Thread;
+import net.labhackercd.nhegatu.data.api.model.Message;
 import net.labhackercd.nhegatu.ui.MainActivity;
 
 import java.util.Collections;

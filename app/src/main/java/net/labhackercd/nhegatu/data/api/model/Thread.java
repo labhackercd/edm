@@ -17,6 +17,9 @@
 
 package net.labhackercd.nhegatu.data.api.model;
 
+import android.os.Parcelable;
+import android.support.annotation.Nullable;
+import auto.parcel.AutoParcel;
 import net.labhackercd.nhegatu.data.api.model.util.JSON;
 import net.labhackercd.nhegatu.data.api.model.util.JSONReader;
 
@@ -26,112 +29,50 @@ import org.json.JSONObject;
 import java.io.Serializable;
 import java.util.Date;
 
-public class Thread implements Serializable {
+@AutoParcel
+public abstract class Thread implements Parcelable, Serializable {
 
-    private int status;
-    private int viewCount;
-    private int messageCount;
-    private Date lastPostDate;
-    private long companyId;
-    private long statusByUserId;
-    private long rootMessageUserId;
-    private long rootMessageId;
-    private boolean question;
-    private long lastPostByUserId;
-    private int priority;
-    private long threadId;
-    private long groupId;
-    private String statusByUserName;
-    private Date statusDate;
-    private long categoryId;
-
-    public int getStatus() {
-        return status;
-    }
-
-    public int getViewCount() {
-        return viewCount;
-    }
-
-    public int getMessageCount() {
-        return messageCount;
-    }
-
-    public Date getLastPostDate() {
-        return lastPostDate;
-    }
-
-    public long getCompanyId() {
-        return companyId;
-    }
-
-    public long getStatusByUserId() {
-        return statusByUserId;
-    }
-
-    public long getRootMessageUserId() {
-        return rootMessageUserId;
-    }
-
-    public long getRootMessageId() {
-        return rootMessageId;
-    }
-
-    public boolean isQuestion() {
-        return question;
-    }
-
-    public long getLastPostByUserId() {
-        return lastPostByUserId;
-    }
-
-    public int getPriority() {
-        return priority;
-    }
-
-    public long getThreadId() {
-        return threadId;
-    }
-
-    public long getGroupId() {
-        return groupId;
-    }
-
-    public String getStatusByUserName() {
-        return statusByUserName;
-    }
-
-    public Date getStatusDate() {
-        return statusDate;
-    }
-
-    public long getCategoryId() {
-        return categoryId;
-    }
+    public abstract int getStatus();
+    public abstract int getViewCount();
+    public abstract int getMessageCount();
+    @Nullable public abstract Date getLastPostDate();
+    public abstract long getCompanyId();
+    public abstract long getStatusByUserId();
+    public abstract long getRootMessageUserId();
+    public abstract long getRootMessageId();
+    public abstract boolean isQuestion();
+    public abstract long getLastPostByUserId();
+    public abstract int getPriority();
+    public abstract long getThreadId();
+    public abstract long getGroupId();
+    @Nullable public abstract String getStatusByUserName();
+    public abstract Date getStatusDate();
+    public abstract long getCategoryId();
 
     public static final JSONReader<Thread> JSON_READER = new JSONReader<Thread>() {
         @Override
         public Thread fromJSON(JSONObject json) throws JSONException {
-            Thread instance = new Thread();
-
-            instance.status = json.getInt("status");
-            instance.viewCount = json.getInt("viewCount");
-            instance.messageCount = json.getInt("messageCount");
-            instance.lastPostDate = JSON.getJSONLongAsDate(json, "lastPostDate");
-            instance.companyId = json.getLong("companyId");
-            instance.statusByUserId = json.getLong("statusByUserId");
-            instance.rootMessageUserId = json.getLong("rootMessageUserId");
-            instance.rootMessageId = json.getLong("rootMessageId");
-            instance.question = json.getBoolean("question");
-            instance.lastPostByUserId = json.getLong("lastPostByUserId");
-            instance.priority = json.getInt("priority");
-            instance.threadId = json.getLong("threadId");
-            instance.groupId = json.getLong("groupId");
-            instance.statusByUserName = json.getString("statusByUserName");
-            instance.statusDate = JSON.getJSONLongAsDate(json, "statusDate");
-            instance.categoryId = json.getLong("categoryId");
-
-            return instance;
+            int status = json.getInt("status");
+            int viewCount = json.getInt("viewCount");
+            int messageCount = json.getInt("messageCount");
+            Date lastPostDate = JSON.getJSONLongAsDate(json, "lastPostDate");
+            long companyId = json.getLong("companyId");
+            long statusByUserId = json.getLong("statusByUserId");
+            long rootMessageUserId = json.getLong("rootMessageUserId");
+            long rootMessageId = json.getLong("rootMessageId");
+            boolean question = json.getBoolean("question");
+            long lastPostByUserId = json.getLong("lastPostByUserId");
+            int priority = json.getInt("priority");
+            long threadId = json.getLong("threadId");
+            long groupId = json.getLong("groupId");
+            String statusByUserName = json.getString("statusByUserName");
+            Date statusDate = JSON.getJSONLongAsDate(json, "statusDate");
+            long categoryId = json.getLong("categoryId");
+            return new AutoParcel_Thread(
+                    status, viewCount, messageCount, lastPostDate, companyId,
+                    statusByUserId, rootMessageUserId, rootMessageId, question,
+                    lastPostByUserId, priority, threadId, groupId, statusByUserName,
+                    statusDate, categoryId);
         }
     };
 }

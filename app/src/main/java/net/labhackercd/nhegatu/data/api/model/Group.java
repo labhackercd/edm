@@ -17,6 +17,9 @@
 
 package net.labhackercd.nhegatu.data.api.model;
 
+import android.os.Parcelable;
+import android.support.annotation.Nullable;
+import auto.parcel.AutoParcel;
 import net.labhackercd.nhegatu.data.api.model.util.JSONReader;
 
 import org.json.JSONException;
@@ -24,106 +27,48 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 
-public class Group implements Serializable {
+@AutoParcel
+public abstract class Group implements Parcelable, Serializable {
 
-    private String friendlyURL;
-    private long classPK;
-    private String description;
-    private long creatorUserId;
-    private long classNameId;
-    private long companyId;
-    private boolean site;
-    private String typeSettings;
-    private long parentGroupId;
-    private boolean active;
-    private long liveGroupId;
-    private int type;
-    private long groupId;
-    private String name;
-    private boolean closed;
-
-    public String getFriendlyURL() {
-        return friendlyURL;
-    }
-
-    public long getClassPK() {
-        return classPK;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public long getCreatorUserId() {
-        return creatorUserId;
-    }
-
-    public long getClassNameId() {
-        return classNameId;
-    }
-
-    public long getCompanyId() {
-        return companyId;
-    }
-
-    public boolean isSite() {
-        return site;
-    }
-
-    public String getTypeSettings() {
-        return typeSettings;
-    }
-
-    public long getParentGroupId() {
-        return parentGroupId;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public long getLiveGroupId() {
-        return liveGroupId;
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    public long getGroupId() {
-        return groupId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean isClosed() {
-        return closed;
-    }
+    @Nullable public abstract String getFriendlyURL();
+    public abstract long getClassPK();
+    @Nullable public abstract String getDescription();
+    public abstract long getCreatorUserId();
+    public abstract long getClassNameId();
+    public abstract long getCompanyId();
+    public abstract boolean isSite();
+    @Nullable public abstract String getTypeSettings();
+    public abstract long getParentGroupId();
+    public abstract boolean isActive();
+    public abstract long getLiveGroupId();
+    public abstract int getType();
+    public abstract long getGroupId();
+    @Nullable public abstract String getName();
+    public abstract boolean isClosed();
 
     public static final JSONReader<Group> JSON_READER = new JSONReader<Group>() {
         @Override
         public Group fromJSON(JSONObject json) throws JSONException {
-            Group instance = new Group();
+            String friendlyURL = json.getString("friendlyURL");
+            long classPK = json.getLong("classPK");
+            String description = json.getString("description");
+            long creatorUserId = json.getLong("creatorUserId");
+            long classNameId = json.getLong("classNameId");
+            long companyId = json.getLong("companyId");
+            boolean site = json.getBoolean("site");
+            String typeSettings = json.getString("typeSettings");
+            long parentGroupId = json.getLong("parentGroupId");
+            boolean active = json.getBoolean("active");
+            long liveGroupId = json.getLong("liveGroupId");
+            int type = json.getInt("type");
+            long groupId = json.getLong("groupId");
+            String name = json.getString("name");
+            boolean closed = json.getBoolean("closed");
 
-            instance.friendlyURL = json.getString("friendlyURL");
-            instance.classPK = json.getLong("classPK");
-            instance.description = json.getString("description");
-            instance.creatorUserId = json.getLong("creatorUserId");
-            instance.classNameId = json.getLong("classNameId");
-            instance.companyId = json.getLong("companyId");
-            instance.site = json.getBoolean("site");
-            instance.typeSettings = json.getString("typeSettings");
-            instance.parentGroupId = json.getLong("parentGroupId");
-            instance.active = json.getBoolean("active");
-            instance.liveGroupId = json.getLong("liveGroupId");
-            instance.type = json.getInt("type");
-            instance.groupId = json.getLong("groupId");
-            instance.name = json.getString("name");
-            instance.closed = json.getBoolean("closed");
-
-            return instance;
+            return new AutoParcel_Group(
+                    friendlyURL, classPK, description, creatorUserId, classNameId,
+                    companyId, site, typeSettings, parentGroupId, active, liveGroupId,
+                    type, groupId, name, closed);
         }
     };
 }

@@ -94,7 +94,7 @@ public class ComposeActivity extends BaseActivity {
 
         Intent intent = getIntent();
 
-        parentMessage = (Message) intent.getSerializableExtra(PARAM_PARENT_MESSAGE);
+        parentMessage = (Message) intent.getParcelableExtra(PARAM_PARENT_MESSAGE);
         if (parentMessage == null)
             throw new IllegalArgumentException("No parent message given.");
 

@@ -17,6 +17,9 @@
 
 package net.labhackercd.nhegatu.data.api.model;
 
+import android.os.Parcelable;
+import android.support.annotation.Nullable;
+import auto.parcel.AutoParcel;
 import net.labhackercd.nhegatu.data.api.model.util.JSON;
 import net.labhackercd.nhegatu.data.api.model.util.JSONReader;
 
@@ -25,107 +28,49 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.UUID;
 
-public class Category implements Serializable {
+@AutoParcel
+public abstract class Category implements Parcelable, Serializable {
 
-    private String userName;
-    private String description;
-    private Date lastPostDate;
-    private long companyId;
-    private Date createDate;
-    private long parentCategoryId;
-    private long userId;
-    private String uuid;
-    private int threadCount;
-    private long categoryId;
-    private Date modifiedDate;
-    private long groupId;
-    private int messageCount;
-    private String displayStyle;
-    private String name;
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public Date getLastPostDate() {
-        return lastPostDate;
-    }
-
-    public long getCompanyId() {
-        return companyId;
-    }
-
-    public Date getCreateDate() {
-        return createDate;
-    }
-
-    public long getParentCategoryId() {
-        return parentCategoryId;
-    }
-
-    public long getUserId() {
-        return userId;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public int getThreadCount() {
-        return threadCount;
-    }
-
-    public long getCategoryId() {
-        return categoryId;
-    }
-
-    public Date getModifiedDate() {
-        return modifiedDate;
-    }
-
-    public long getGroupId() {
-        return groupId;
-    }
-
-    public int getMessageCount() {
-        return messageCount;
-    }
-
-    public String getDisplayStyle() {
-        return displayStyle;
-    }
-
-    public String getName() {
-        return name;
-    }
+    @Nullable public abstract String getUserName();
+    @Nullable public abstract String getDescription();
+    @Nullable public abstract Date getLastPostDate();
+    public abstract long getCompanyId();
+    @Nullable public abstract Date getCreateDate();
+    public abstract long getParentCategoryId();
+    public abstract long getUserId();
+    @Nullable public abstract UUID getUuid();
+    public abstract int getThreadCount();
+    public abstract long getCategoryId();
+    @Nullable public abstract Date getModifiedDate();
+    public abstract long getGroupId();
+    public abstract int getMessageCount();
+    @Nullable public abstract String getDisplayStyle();
+    @Nullable public abstract String getName();
 
     public static final JSONReader<Category> JSON_READER = new JSONReader<Category>() {
         @Override
         public Category fromJSON(JSONObject json) throws JSONException {
-            Category instance = new Category();
-
-            instance.userName = json.getString("userName");
-            instance.description = json.getString("description");
-            instance.lastPostDate = JSON.getJSONLongAsDate(json, "lastPostDate");
-            instance.companyId = json.getLong("companyId");
-            instance.createDate = JSON.getJSONLongAsDate(json, "createDate");
-            instance.parentCategoryId = json.getLong("parentCategoryId");
-            instance.userId = json.getLong("userId");
-            instance.uuid = json.getString("uuid");
-            instance.threadCount = json.getInt("threadCount");
-            instance.categoryId = json.getLong("categoryId");
-            instance.modifiedDate = JSON.getJSONLongAsDate(json, "modifiedDate");
-            instance.groupId = json.getLong("groupId");
-            instance.messageCount = json.getInt("messageCount");
-            instance.displayStyle = json.getString("displayStyle");
-            instance.name = json.getString("name");
-
-            return instance;
+            String userName = json.getString("userName");
+            String description = json.getString("description");
+            Date lastPostDate = JSON.getJSONLongAsDate(json, "lastPostDate");
+            long companyId = json.getLong("companyId");
+            Date createDate = JSON.getJSONLongAsDate(json, "createDate");
+            long parentCategoryId = json.getLong("parentCategoryId");
+            long userId = json.getLong("userId");
+            String uuid = json.getString("uuid");
+            int threadCount = json.getInt("threadCount");
+            long categoryId = json.getLong("categoryId");
+            Date modifiedDate = JSON.getJSONLongAsDate(json, "modifiedDate");
+            long groupId = json.getLong("groupId");
+            int messageCount = json.getInt("messageCount");
+            String displayStyle = json.getString("displayStyle");
+            String name = json.getString("name");
+            return new AutoParcel_Category(
+                    userName, description, lastPostDate, companyId, createDate,
+                    parentCategoryId, userId, UUID.fromString(uuid), threadCount,
+                    categoryId, modifiedDate, groupId, messageCount, displayStyle, name);
         }
     };
 }
