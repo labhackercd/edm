@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import net.labhackercd.nhegatu.data.cache.UserCache;
 import rx.Observable;
 import rx.Observer;
 import rx.schedulers.Schedulers;
@@ -147,13 +148,12 @@ public class AccountUtils {
         return observable -> getOrRequestAccount(activity).flatMap(account -> observable);
     }
 
-    public static Observable<User> getCurrentUser(MainRepository repository, Activity activity) {
+    public static Observable<User> getCurrentUser(MainRepository repository, Activity activity, UserCache cache) {
         // TODO FIXME XXX cacheSkipIf with some expiration time or more granular control! PLZ!
         return getOrRequestAccount(activity)
                 .flatMap(account -> repository.getUser()
                         .transform(r -> r.asObservable()
-                                .compose(UserDataCache.with(activity, account).cacheSkipIf(r.key(), false)))
-                        .asObservable()
-                        .subscribeOn(Schedulers.io()));
+                                .compose(cache.getOrRefresh(account)))
+                        .asObservable());
     }
 }

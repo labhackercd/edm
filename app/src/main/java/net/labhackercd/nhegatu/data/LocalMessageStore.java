@@ -45,7 +45,7 @@ public class LocalMessageStore {
         this.context = context;
 
         // XXX Oh yes, oh yeah, OH YES, OH YEAH!
-        this.subscription = brite.createQuery(LocalMessage.TABLE,
+        subscription = brite.createQuery(LocalMessage.TABLE,
                 "SELECT COUNT(" + LocalMessage.ID + ") " +
                         "FROM " + LocalMessage.TABLE + " " +
                         "WHERE " + LocalMessage.STATUS + " = ?",

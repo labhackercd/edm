@@ -30,7 +30,7 @@ import android.view.ViewGroup;
 
 import net.labhackercd.nhegatu.R;
 import net.labhackercd.nhegatu.account.AccountUtils;
-import net.labhackercd.nhegatu.data.Cache;
+import net.labhackercd.nhegatu.data.cache.Cache;
 import net.labhackercd.nhegatu.data.ImageLoader;
 import net.labhackercd.nhegatu.data.MainRepository;
 import net.labhackercd.nhegatu.data.Request;
@@ -38,7 +38,9 @@ import net.labhackercd.nhegatu.data.api.model.Category;
 import net.labhackercd.nhegatu.data.api.model.Group;
 import net.labhackercd.nhegatu.data.api.model.Thread;
 import net.labhackercd.nhegatu.data.api.model.Message;
+import net.labhackercd.nhegatu.data.cache.LHMCache;
 import net.labhackercd.nhegatu.ui.BaseFragment;
+import net.labhackercd.nhegatu.ui.Util;
 import net.labhackercd.nhegatu.ui.listview.ItemListView;
 
 import java.util.List;
@@ -51,11 +53,6 @@ import rx.schedulers.Schedulers;
 
 public abstract class ThreadListFragment extends BaseFragment {
 
-    public static final String EXTRA_GROUP =
-            ThreadListFragment.class.getCanonicalName().concat(".extra.group");
-    public static final String EXTRA_CATEGORY =
-            ThreadListFragment.class.getCanonicalName().concat(".extra.category");
-
     private static final String ARG_DATA =
             ThreadListFragment.class.getCanonicalName().concat(".arg.data");
     protected static final String ARG_GROUP =
@@ -63,7 +60,7 @@ public abstract class ThreadListFragment extends BaseFragment {
     protected static final String ARG_CATEGORY =
             ThreadListFragment.class.getCanonicalName().concat(".arg.category");
 
-    @Inject Cache cache;
+    @Inject LHMCache cache;
     @Inject ImageLoader imageLoader;
     @Inject MainRepository repository;
 
@@ -127,6 +124,7 @@ public abstract class ThreadListFragment extends BaseFragment {
                 .startWith(false)
                 .doOnNext(fresh -> listView.setRefreshing(true))
                 .flatMap(this::getListData)
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .map(pair -> adapter.replaceWith(pair.first, pair.second))
                 .subscribe(listView.dataHandler());
@@ -138,7 +136,7 @@ public abstract class ThreadListFragment extends BaseFragment {
         Observable<List<ThreadListAdapter.ThreadItem>> t = getListThreadsRequest()
                 .transform(r -> r.asObservable()
                         .compose(AccountUtils.requireAccount(activity))
-                        .compose(cache.cacheSkipIf(r.key(), fresh))
+                        .compose(Util.applyCache(cache, r.key(), fresh))
                         .subscribeOn(Schedulers.io()))
                 .asObservable()
                 .map(list -> Observable.from(list)
@@ -148,7 +146,7 @@ public abstract class ThreadListFragment extends BaseFragment {
         Observable<List<Category>> c = getListCategoriesRequest()
                 .transform(r -> r.asObservable()
                         .compose(AccountUtils.requireAccount(activity))
-                        .compose(cache.cacheSkipIf(r.key(), fresh))
+                        .compose(Util.applyCache(cache, r.key(), fresh))
                         .subscribeOn(Schedulers.io()))
                 .asObservable();
 
@@ -157,16 +155,17 @@ public abstract class ThreadListFragment extends BaseFragment {
 
     private ThreadListAdapter.ThreadItem create(final Activity activity, final Thread thread, final boolean fresh) {
         return new ThreadListAdapter.ThreadItem() {
-            @Override public Thread getThread() {
+            @Override
+            public Thread getThread() {
                 return thread;
             }
 
-            @Override public Observable<Message> getRootMessage() {
+            @Override
+            public Observable<Message> getRootMessage() {
                 return repository.getMessage(thread.getRootMessageId())
                         .transform(r -> r.asObservable()
                                 .compose(AccountUtils.requireAccount(activity))
-                                .compose(cache.getCached(r.key()))
-                                .subscribeOn(Schedulers.io()))
+                                .compose(Util.applyCache(cache, r.key())))
                         .asObservable();
             }
         };

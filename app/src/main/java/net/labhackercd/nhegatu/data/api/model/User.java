@@ -20,12 +20,17 @@ package net.labhackercd.nhegatu.data.api.model;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import auto.parcel.AutoParcel;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import net.labhackercd.nhegatu.data.api.model.util.JSONReader;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.UUID;
 
@@ -116,4 +121,12 @@ public abstract class User implements Parcelable, Serializable {
                     status, timeZoneId, userId, UUID.fromString(uuid));
         }
     };
+
+    public static class GsonDeserializer implements JsonDeserializer<User> {
+        @Override
+        public User deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
+            return context.deserialize(json, AutoParcel_User.class);
+        }
+    }
 }

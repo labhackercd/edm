@@ -15,27 +15,20 @@
  * along with Nhegatu.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.labhackercd.nhegatu.data;
+package net.labhackercd.nhegatu.data.cache;
 
 import java.util.LinkedHashMap;
 
-/**
- * Poor man's in-memory cache.
- */
-public class LHMCache extends Cache {
+public class LHMCache extends Cache<Object, Object> {
     private LinkedHashMap<Object, Object> cache = new LinkedHashMap<>();
 
-    @SuppressWarnings("unchecked")
-    protected <T> T get(Object key) {
-        try {
-            return (T) cache.get(key);
-        } catch (ClassCastException e) {
-            return null;
-        }
+    @Override
+    public Object get(Object key) {
+        return cache.get(key);
     }
 
     @Override
-    protected <T> void put(Object key, T value) {
+    public void put(Object key, Object value) {
         cache.put(key, value);
     }
 }

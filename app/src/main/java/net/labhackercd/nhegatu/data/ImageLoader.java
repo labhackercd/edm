@@ -24,19 +24,21 @@ import com.squareup.picasso.RequestCreator;
 
 import net.labhackercd.nhegatu.data.api.Portal;
 
+import net.labhackercd.nhegatu.data.api.model.User;
+import net.labhackercd.nhegatu.data.cache.Cache;
 import rx.Observable;
 
 public class ImageLoader {
-    private final Cache cache;
     private final Portal portal;
     private final Picasso picasso;
     private final MainRepository repository;
+    private final Cache<Object, User> cache;
 
-    public ImageLoader(Portal portal, Picasso picasso, MainRepository repository, Cache cache) {
+    public ImageLoader(Portal portal, Picasso picasso, MainRepository repository, Cache<Object, User> cache) {
+        this.cache = cache;
         this.portal = portal;
         this.picasso = picasso;
         this.repository = repository;
-        this.cache = cache;
     }
 
     public RequestCreator group(long groupId) {
@@ -56,7 +58,7 @@ public class ImageLoader {
     public Observable<RequestCreator> userPortrait2(long userId) {
         return repository.getUser(userId)
                 .transform(r -> r.asObservable()
-                        .compose(cache.getCached(r.key())))
+                        .compose(cache.getOrRefresh(r.key())))
                 .asObservable()
                 .map(user -> {
                     long portraitId = user.getPortraitId();

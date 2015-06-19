@@ -48,6 +48,7 @@ import net.labhackercd.nhegatu.R;
 import net.labhackercd.nhegatu.account.AccountUtils;
 import net.labhackercd.nhegatu.data.LocalMessageStore;
 import net.labhackercd.nhegatu.data.MainRepository;
+import net.labhackercd.nhegatu.data.cache.UserCache;
 import net.labhackercd.nhegatu.data.model.Message;
 import net.labhackercd.nhegatu.ui.BaseActivity;
 import net.labhackercd.nhegatu.ui.preference.PreferenceActivity;
@@ -60,6 +61,8 @@ import javax.inject.Inject;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class ComposeActivity extends BaseActivity {
 
@@ -74,6 +77,7 @@ public class ComposeActivity extends BaseActivity {
     private Uri attachedVideoUri;
     private Message parentMessage;
 
+    @Inject UserCache userCache;
     @Inject MainRepository repository;
     @Inject LocalMessageStore messageRepository;
 
@@ -318,11 +322,13 @@ public class ComposeActivity extends BaseActivity {
         dialog.setIndeterminate(true);
         dialog.setTitle(R.string.sending_message);
 
-        AccountUtils.getCurrentUser(repository, this)
+        AccountUtils.getCurrentUser(repository, this, userCache)
                 .doOnSubscribe(dialog::show)
                 .map(user -> messageRepository.insert(
                         parentMessage, user.getUserId(), subject, body, attachedVideoUri))
                 // TODO Left it loading for enough time for the user realize that something is going on.
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(inserted -> {
                     Intent result = new Intent();
                     result.putExtra(PARAM_INSERTED_MESSAGE, inserted.second);

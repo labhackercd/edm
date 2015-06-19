@@ -26,11 +26,14 @@ import android.view.ViewGroup;
 
 import net.labhackercd.nhegatu.R;
 import net.labhackercd.nhegatu.account.AccountUtils;
-import net.labhackercd.nhegatu.data.Cache;
+import net.labhackercd.nhegatu.data.cache.Cache;
 import net.labhackercd.nhegatu.data.ImageLoader;
 import net.labhackercd.nhegatu.data.MainRepository;
 import net.labhackercd.nhegatu.data.api.model.Group;
+import net.labhackercd.nhegatu.data.cache.LHMCache;
+import net.labhackercd.nhegatu.data.cache.UserCache;
 import net.labhackercd.nhegatu.ui.BaseFragment;
+import net.labhackercd.nhegatu.ui.Util;
 import net.labhackercd.nhegatu.ui.listview.ItemListView;
 
 import java.util.Collections;
@@ -44,7 +47,8 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class GroupListFragment extends BaseFragment {
-    @Inject Cache cache;
+    @Inject LHMCache cache;
+    @Inject UserCache userCache;
     @Inject ImageLoader imageLoader;
     @Inject MainRepository repository;
 
@@ -67,6 +71,7 @@ public class GroupListFragment extends BaseFragment {
                 .startWith(false)
                 .doOnNext(fresh -> listView.setRefreshing(true))
                 .flatMap(this::getListData)
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .map(adapter::replaceWith)
                 .subscribe(listView.dataHandler());
@@ -74,15 +79,14 @@ public class GroupListFragment extends BaseFragment {
 
     public Observable<List<Group>> getListData(boolean fresh) {
         Activity activity = getActivity();
-        return AccountUtils.getCurrentUser(repository, activity)
-                .flatMap(user -> repository
-                        .getGroups(user.getCompanyId())
+        return AccountUtils.getCurrentUser(repository, activity, userCache)
+                .flatMap(user -> repository.getGroups(user.getCompanyId())
                         .transform(r -> r.asObservable()
                                 .map(this::sortListData)
                                 .compose(AccountUtils.requireAccount(activity))
-                                .compose(cache.cacheSkipIf(r.key(), fresh)))
-                        .asObservable())
-                .subscribeOn(Schedulers.io());
+                                .compose(Util.applyCache(cache, r.key(), fresh)))
+                        .asObservable()
+                        .subscribeOn(Schedulers.io()));
     }
 
     private List<Group> sortListData(List<Group> groups) {

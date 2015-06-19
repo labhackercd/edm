@@ -28,6 +28,9 @@ import com.squareup.sqlbrite.SqlBrite;
 import net.labhackercd.nhegatu.data.api.ApiModule;
 import net.labhackercd.nhegatu.data.api.Portal;
 import net.labhackercd.nhegatu.data.api.client.EDMService;
+import net.labhackercd.nhegatu.data.cache.Cache;
+import net.labhackercd.nhegatu.data.cache.LHMCache;
+import net.labhackercd.nhegatu.data.cache.UserCache;
 import net.labhackercd.nhegatu.data.db.DbModule;
 
 import java.io.File;
@@ -52,8 +55,18 @@ public class DataModule {
     }
 
     @Provides @Singleton
-    Cache provideRequestCache() {
+    LHMCache provideRequestCache() {
         return new LHMCache();
+    }
+
+    @Provides @Singleton
+    Cache provideCache(LHMCache cache) {
+        return cache;
+    }
+
+    @Provides @Singleton
+    UserCache provideUserCache(Application application) {
+        return new UserCache(application.getApplicationContext());
     }
 
     @Provides @Singleton
