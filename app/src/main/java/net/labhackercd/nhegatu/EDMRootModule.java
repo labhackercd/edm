@@ -19,6 +19,7 @@ package net.labhackercd.nhegatu;
 
 import android.app.Application;
 
+import net.labhackercd.nhegatu.account.Authenticator;
 import net.labhackercd.nhegatu.data.DataModule;
 import net.labhackercd.nhegatu.service.ServiceModule;
 import net.labhackercd.nhegatu.ui.UiModule;
@@ -47,5 +48,11 @@ public class EDMRootModule {
     @Provides @Singleton
     Application provideApplication() {
         return application;
+    }
+
+
+    @Provides @Singleton
+    Authenticator provideAuthenticator(Application application) {
+        return new Authenticator(application);
     }
 }

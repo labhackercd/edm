@@ -17,8 +17,11 @@
 
 package net.labhackercd.nhegatu.data;
 
+import android.accounts.Account;
 import android.support.v4.util.Pair;
 
+import com.liferay.mobile.android.auth.basic.BasicAuthentication;
+import net.labhackercd.nhegatu.account.Authenticator;
 import net.labhackercd.nhegatu.data.api.client.EDMService;
 import net.labhackercd.nhegatu.data.api.model.Category;
 import net.labhackercd.nhegatu.data.api.model.Group;
@@ -42,7 +45,7 @@ import rx.functions.Func3;
 
 public class MainRepository {
 
-    private EDMService service;
+    private final EDMService service;
 
     public MainRepository(EDMService service) {
         this.service = service;

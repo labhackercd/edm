@@ -26,7 +26,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -38,7 +37,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.liferay.mobile.android.auth.basic.BasicAuthentication;
-import net.labhackercd.nhegatu.EDMApplication;
 import net.labhackercd.nhegatu.R;
 import net.labhackercd.nhegatu.data.api.client.ClientError;
 import net.labhackercd.nhegatu.data.api.client.EDMService;
@@ -65,7 +63,7 @@ import static android.accounts.AccountManager.KEY_ACCOUNT_TYPE;
 import static android.accounts.AccountManager.KEY_AUTHTOKEN;
 import static net.labhackercd.nhegatu.account.Authenticator.ACCOUNT_TYPE;
 
-public class SignInActivity extends AppCompatActivity {
+public class SignInActivity extends BaseActivity {
     public static final String PARAM_EMAIL = "email";
     public static final String PARAM_AUTHTOKEN_TYPE = "authTokenType";
 
@@ -85,8 +83,6 @@ public class SignInActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 0);
 
         super.onCreate(savedInstanceState);
-
-        EDMApplication.get(this).getObjectGraph().inject(this);
 
         setContentView(R.layout.activity_sign_in);
 

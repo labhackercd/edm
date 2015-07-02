@@ -17,17 +17,19 @@
 
 package net.labhackercd.nhegatu.account;
 
-import android.accounts.AbstractAccountAuthenticator;
-import android.accounts.Account;
-import android.accounts.AccountAuthenticatorResponse;
-import android.accounts.AccountManager;
-import android.accounts.NetworkErrorException;
+import android.accounts.*;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import net.labhackercd.nhegatu.ui.SignInActivity;
+import rx.Observable;
+import rx.schedulers.Schedulers;
+import timber.log.Timber;
+
+import java.io.IOException;
 
 import static android.accounts.AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE;
 import static android.accounts.AccountManager.KEY_BOOLEAN_RESULT;
@@ -41,10 +43,12 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public static final String ACCOUNT_TYPE = "net.labhackercd.edemocracia.Account";
 
     private final Context context;
+    private final AccountManager manager;
 
     public Authenticator(Context context) {
         super(context);
         this.context = context;
+        this.manager = AccountManager.get(context);
     }
 
     @Override
@@ -78,8 +82,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
         if (!ACCOUNT_TYPE.equals(authTokenType))
             return bundle;
 
-        AccountManager am = AccountManager.get(context);
-        String password = am.getPassword(account);
+        String password = manager.getPassword(account);
         if (TextUtils.isEmpty(password)) {
             bundle.putParcelable(KEY_INTENT, createLoginIntent(response));
         }
@@ -119,5 +122,44 @@ public class Authenticator extends AbstractAccountAuthenticator {
         final Bundle bundle = new Bundle();
         bundle.putParcelable(KEY_INTENT, intent);
         return bundle;
+    }
+
+    public Account getAccount() {
+        Account[] accounts = manager.getAccountsByType(ACCOUNT_TYPE);
+        return accounts.length > 0 ? accounts[0] : null;
+    }
+
+    public String getPassword(Account account) {
+        return manager.getPassword(account);
+    }
+
+    /**
+     * Return an Observable that will emit an account when possible. It defaults to operate on a newThread scheduler.
+     */
+    public Observable<Account> addAccount(Activity activity) {
+        // TODO FIXME This whole thing is flawed. There is no lock anywhere!!! IT'S MADNESS!!!!!!
+        AccountManagerFuture<Bundle> addAccount = AccountManager.get(activity)
+                .addAccount(Authenticator.ACCOUNT_TYPE, null, null, null, activity, null, null);
+        return Observable.<Account>create(f -> {
+            Bundle result = null;
+            boolean error = false;
+            try {
+                result = addAccount.getResult();
+            } catch (OperationCanceledException | IOException | AuthenticatorException e) {
+                if (!f.isUnsubscribed())
+                    f.onError(e);
+                error = true;
+            } finally {
+                if (!f.isUnsubscribed()) {
+                    if (result != null)
+                        f.onNext(getAccount());
+                    if (!error)
+                        f.onCompleted();
+                }
+            }
+        }).doOnUnsubscribe(() -> {
+            // XXX Is it alright to *interrupt* the task if it's already running?
+            addAccount.cancel(true);
+        }).subscribeOn(Schedulers.newThread());
     }
 }

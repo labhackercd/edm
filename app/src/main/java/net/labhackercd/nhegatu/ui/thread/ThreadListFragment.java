@@ -29,8 +29,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import net.labhackercd.nhegatu.R;
-import net.labhackercd.nhegatu.account.AccountUtils;
-import net.labhackercd.nhegatu.data.cache.Cache;
 import net.labhackercd.nhegatu.data.ImageLoader;
 import net.labhackercd.nhegatu.data.MainRepository;
 import net.labhackercd.nhegatu.data.Request;
@@ -39,7 +37,6 @@ import net.labhackercd.nhegatu.data.api.model.Group;
 import net.labhackercd.nhegatu.data.api.model.Thread;
 import net.labhackercd.nhegatu.data.api.model.Message;
 import net.labhackercd.nhegatu.data.cache.LHMCache;
-import net.labhackercd.nhegatu.ui.BaseFragment;
 import net.labhackercd.nhegatu.ui.Util;
 import net.labhackercd.nhegatu.ui.listview.ItemListView;
 
@@ -51,7 +48,7 @@ import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public abstract class ThreadListFragment extends BaseFragment {
+public abstract class ThreadListFragment extends Fragment {
 
     private static final String ARG_DATA =
             ThreadListFragment.class.getCanonicalName().concat(".arg.data");
@@ -135,7 +132,6 @@ public abstract class ThreadListFragment extends BaseFragment {
 
         Observable<List<ThreadListAdapter.ThreadItem>> t = getListThreadsRequest()
                 .transform(r -> r.asObservable()
-                        .compose(AccountUtils.requireAccount(activity))
                         .compose(Util.applyCache(cache, r.key(), fresh))
                         .subscribeOn(Schedulers.io()))
                 .asObservable()
@@ -145,7 +141,6 @@ public abstract class ThreadListFragment extends BaseFragment {
 
         Observable<List<Category>> c = getListCategoriesRequest()
                 .transform(r -> r.asObservable()
-                        .compose(AccountUtils.requireAccount(activity))
                         .compose(Util.applyCache(cache, r.key(), fresh))
                         .subscribeOn(Schedulers.io()))
                 .asObservable();
@@ -164,7 +159,6 @@ public abstract class ThreadListFragment extends BaseFragment {
             public Observable<Message> getRootMessage() {
                 return repository.getMessage(thread.getRootMessageId())
                         .transform(r -> r.asObservable()
-                                .compose(AccountUtils.requireAccount(activity))
                                 .compose(Util.applyCache(cache, r.key())))
                         .asObservable();
             }

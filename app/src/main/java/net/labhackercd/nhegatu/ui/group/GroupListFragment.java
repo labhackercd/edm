@@ -17,22 +17,21 @@
 
 package net.labhackercd.nhegatu.ui.group;
 
+import android.accounts.Account;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import net.labhackercd.nhegatu.R;
-import net.labhackercd.nhegatu.account.AccountUtils;
-import net.labhackercd.nhegatu.data.cache.Cache;
 import net.labhackercd.nhegatu.data.ImageLoader;
 import net.labhackercd.nhegatu.data.MainRepository;
 import net.labhackercd.nhegatu.data.api.model.Group;
 import net.labhackercd.nhegatu.data.cache.LHMCache;
 import net.labhackercd.nhegatu.data.cache.UserCache;
-import net.labhackercd.nhegatu.ui.BaseFragment;
 import net.labhackercd.nhegatu.ui.Util;
 import net.labhackercd.nhegatu.ui.listview.ItemListView;
 
@@ -46,8 +45,9 @@ import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public class GroupListFragment extends BaseFragment {
+public class GroupListFragment extends Fragment {
     @Inject LHMCache cache;
+    @Inject Account account;
     @Inject UserCache userCache;
     @Inject ImageLoader imageLoader;
     @Inject MainRepository repository;
@@ -65,7 +65,7 @@ public class GroupListFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
 
-        final GroupListAdapter adapter = new GroupListAdapter(imageLoader);
+        GroupListAdapter adapter = new GroupListAdapter(imageLoader);
 
         listView.refreshEvents()
                 .startWith(false)
@@ -78,13 +78,14 @@ public class GroupListFragment extends BaseFragment {
     }
 
     public Observable<List<Group>> getListData(boolean fresh) {
-        Activity activity = getActivity();
-        return AccountUtils.getCurrentUser(repository, activity, userCache)
+        return repository.getUser()
+                .transform(r -> r.asObservable()
+                        .compose(userCache.getOrRefresh(account))
+                        .subscribeOn(Schedulers.io()))
+                .asObservable()
                 .flatMap(user -> repository.getGroups(user.getCompanyId())
-                        .transform(r -> r.asObservable()
-                                .map(this::sortListData)
-                                .compose(AccountUtils.requireAccount(activity))
-                                .compose(Util.applyCache(cache, r.key(), fresh)))
+                        .transform(r -> r.asObservable().map(this::sortListData))
+                        .transform(r -> r.asObservable().compose(Util.applyCache(cache, r.key(), fresh)))
                         .asObservable()
                         .subscribeOn(Schedulers.io()));
     }

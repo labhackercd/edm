@@ -45,7 +45,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 import net.labhackercd.nhegatu.R;
-import net.labhackercd.nhegatu.account.AccountUtils;
 import net.labhackercd.nhegatu.data.LocalMessageStore;
 import net.labhackercd.nhegatu.data.MainRepository;
 import net.labhackercd.nhegatu.data.cache.UserCache;
@@ -98,7 +97,7 @@ public class ComposeActivity extends BaseActivity {
 
         Intent intent = getIntent();
 
-        parentMessage = (Message) intent.getParcelableExtra(PARAM_PARENT_MESSAGE);
+        parentMessage = intent.getParcelableExtra(PARAM_PARENT_MESSAGE);
         if (parentMessage == null)
             throw new IllegalArgumentException("No parent message given.");
 
@@ -322,6 +321,9 @@ public class ComposeActivity extends BaseActivity {
         dialog.setIndeterminate(true);
         dialog.setTitle(R.string.sending_message);
 
+        /*
+        TODO
+
         AccountUtils.getCurrentUser(repository, this, userCache)
                 .doOnSubscribe(dialog::show)
                 .map(user -> messageRepository.insert(
@@ -336,6 +338,7 @@ public class ComposeActivity extends BaseActivity {
                     dialog.dismiss();
                     finish();
                 });
+                */
 
         return true;
     }

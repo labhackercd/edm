@@ -17,6 +17,7 @@
 
 package net.labhackercd.nhegatu.ui;
 
+import android.accounts.Account;
 import android.app.NotificationManager;
 
 import android.app.PendingIntent;
@@ -49,8 +50,11 @@ import android.widget.Toast;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.common.base.Joiner;
 
+import dagger.ObjectGraph;
+import net.labhackercd.nhegatu.EDMApplication;
 import net.labhackercd.nhegatu.R;
-import net.labhackercd.nhegatu.account.AccountUtils;
+import net.labhackercd.nhegatu.account.Authenticator;
+import net.labhackercd.nhegatu.data.api.client.EDMService;
 import net.labhackercd.nhegatu.data.cache.UserCache;
 import net.labhackercd.nhegatu.data.ImageLoader;
 import net.labhackercd.nhegatu.data.MainRepository;
@@ -71,22 +75,27 @@ import javax.inject.Inject;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import rx.subjects.BehaviorSubject;
 import timber.log.Timber;
 
 import java.util.List;
 
-// TODO Use Home button to navigate up, just like GMail does.
+/**
+ * MainActivity works mostly like a router for intents. It receives broadcasts from other parts
+ * of the UI and reacts to them.
+ */
 public class MainActivity extends BaseActivity {
 
     // TODO Change to android.R.id.content
     private static final int CONTENT_RESOURCE_ID = R.id.container;
 
+    @Inject EDMService service;
     @Inject UserCache userCache;
-    @Inject ImageLoader imageLoader;
-    @Inject MainRepository repository;
+    @Inject Authenticator authenticator;
     private ActionBarDrawerToggle drawerToggle;
     private LocalBroadcastReceiver broadcastReceiver;
 
@@ -96,7 +105,11 @@ public class MainActivity extends BaseActivity {
     @InjectView(R.id.profile_email_text) TextView userEmailView;
     @InjectView(R.id.profile_image) ImageView userImageView;
     private Subscription fillDrawerSubscription;
+    private Subscription accountSetUpSubscription;
+    private BehaviorSubject<Account> accountSelectedNotificator;
+    private ObjectGraph authenticatedObjectGraph;
 
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -106,9 +119,14 @@ public class MainActivity extends BaseActivity {
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeButtonEnabled(true);
+            actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+        // Set up user account.
+        accountSetUpSubscription = setUpUserAccount()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::onAccountSelected, this::onAccountSelectionError);
 
         // Setup the drawer list.
         drawerList.setLayoutManager(new LinearLayoutManager(
@@ -124,37 +142,109 @@ public class MainActivity extends BaseActivity {
                 intent = createIntent(this);
             }
 
-            if (!(Intent.ACTION_VIEW.equals(intent.getAction()) && handleViewIntent(intent, false))) {
-                throw new UnsupportedOperationException(String.format("Unable to handle intent: %s", intent));
+            handleIntent(intent);
+        }
+    }
+
+
+    private boolean handleIntent(Intent intent) {
+        return handleIntent(intent, true);
+    }
+
+    private boolean handleIntent(Intent intent, boolean addToBackStack) {
+        Fragment fragment = route(intent);
+
+        if (fragment != null) {
+            replaceContent(fragment, addToBackStack);
+            return true;
+        }
+
+        return true;
+    }
+
+    private Observable<Account> setUpUserAccount() {
+        // We'll use this subject to broadcast account changes.
+        Account account = authenticator.getAccount();
+
+        Observable<Account> result = account != null ? Observable.just(account) : authenticator.addAccount(this)
+                .doOnNext(this::onSignIn)
+                // TODO .onErrorResumeNext to deal with some exceptions (like OperationCancelledException)?
+                .doOnError(this::onSignInError);
+
+        accountSelectedNotificator = BehaviorSubject.create();
+
+        return result.doOnNext(accountSelectedNotificator::onNext);
+    }
+
+    /** Called when a user signs in. */
+    private void onSignIn(Account account) {
+        // TODO Greet the user?
+    }
+
+    /**
+     * Called when a sign in attempt fails because it was either cancelled
+     * or something went wrong while trying to sign the user in (network error).
+     * Actually this will mostly likely only receive the errors from
+     * {@link android.accounts.AccountManagerFuture::getResult}.
+     * */
+    private void onSignInError(Throwable throwable) {
+        throw new UnsupportedOperationException("TODO");
+    }
+
+
+    /** Called when an account was correctly set up or changed. */
+    private void onAccountSelected(Account account) {
+        authenticatedObjectGraph = EDMApplication.get(this).getObjectGraph()
+                .plus(new AuthenticatedModule(account));
+
+        // TODO We could trigger a configuration change so all views are redrawn!
+
+        // TODO Redraw the whole drawer list on account change?
+
+        if (fillDrawerSubscription != null && !fillDrawerSubscription.isUnsubscribed())
+            fillDrawerSubscription.unsubscribe();
+
+        /* TODO
+        fillDrawerSubscription = authenticatedObjectGraph.get(MainRepository.class)
+                .getUser()
+                .transform(r -> r.asObservable().compose(userCache.getOrRefresh(account)))
+                .asObservable()
+                .map(UserInfo::create)
+                .startWith(new UserInfo(account.name))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::fillDrawerUserInfo, (error) -> {
+                    // TODO Proper error handling!
+                    Toast.makeText(MainActivity.this, error.toString(), Toast.LENGTH_SHORT).show();
+                });
+                */
+    }
+
+    /** Called when an account could not be set up for this activity. */
+    private void onAccountSelectionError(Throwable throwable) {
+        throw new RuntimeException(throwable);
+    }
+
+    private Fragment route(Intent intent) {
+        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+            String type = intent.getType();
+
+            if (type != null) {
+                switch (type) {
+                    case EDMContract.Group.CONTENT_TYPE:
+                        return new GroupListFragment();
+                    case EDMContract.Group.CONTENT_ITEM_TYPE:
+                    case EDMContract.Category.CONTENT_ITEM_TYPE:
+                        return createThreadListFragment(this, intent);
+                    case EDMContract.Thread.CONTENT_ITEM_TYPE:
+                    case EDMContract.Message.CONTENT_ITEM_TYPE:
+                        return createMessageListFragment(this, intent);
+                    default:
+                        // pass
+                }
             }
         }
-    }
-
-    private boolean handleViewIntent(Intent intent) {
-        return handleViewIntent(intent, true);
-    }
-
-    private boolean handleViewIntent(Intent intent, boolean addToBackStack) {
-        String type = intent.getType();
-
-        if (type == null)
-            return false;
-
-        switch (type) {
-            case EDMContract.Group.CONTENT_TYPE:
-                replaceContent(new GroupListFragment(), addToBackStack);
-                return true;
-            case EDMContract.Group.CONTENT_ITEM_TYPE:
-            case EDMContract.Category.CONTENT_ITEM_TYPE:
-                replaceContent(createThreadListFragment(this, intent), addToBackStack);
-                return true;
-            case EDMContract.Thread.CONTENT_ITEM_TYPE:
-            case EDMContract.Message.CONTENT_ITEM_TYPE:
-                replaceContent(createMessageListFragment(this, intent), addToBackStack);
-                return true;
-            default:
-                return false;
-        }
+        return null;
     }
 
     private static Fragment createThreadListFragment(Context context, Intent intent) {
@@ -251,30 +341,18 @@ public class MainActivity extends BaseActivity {
         if (broadcastReceiver == null)
             broadcastReceiver = new LocalBroadcastReceiver();
         broadcastReceiver.register(LocalBroadcastManager.getInstance(this));
-
-        if (fillDrawerSubscription == null || fillDrawerSubscription.isUnsubscribed()) {
-            fillDrawerSubscription = AccountUtils.getOrRequestAccount(this)
-                    .flatMap(account -> repository.getUser()
-                            .transform(r -> r.asObservable()
-                                    .compose(userCache.getOrRefresh(account)))
-                            .asObservable()
-                            .map(UserInfo::create)
-                            .startWith(new UserInfo(account.name)))
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(this::fillDrawerUserInfo, (error) -> {
-                        // TODO Proper error handling!
-                        Toast.makeText(MainActivity.this, error.toString(), Toast.LENGTH_SHORT).show();
-                    });
-        }
     }
 
     private void fillDrawerUserInfo(UserInfo info) {
         userNameView.setText(info.name);
         userEmailView.setText(info.email);
+
+        /*
+        TODO
         imageLoader.userPortrait(info.portraitId)
                 .fit().centerCrop()
                 .into(userImageView);
+                */
     }
 
     private static class UserInfo {
@@ -419,7 +497,7 @@ public class MainActivity extends BaseActivity {
     private class LocalBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (Intent.ACTION_VIEW.equals(intent.getAction()) && handleViewIntent(intent))
+            if (Intent.ACTION_VIEW.equals(intent.getAction()) && handleIntent(intent))
                 Timber.d("Intent handled: %s", intent);
             else
                 Timber.w("Unhandled intent: %s", intent);

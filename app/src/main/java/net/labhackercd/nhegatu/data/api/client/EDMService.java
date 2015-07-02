@@ -54,4 +54,8 @@ public interface EDMService {
                           long threadId, long parentMessageId, String subject, String body);
 
     JSONObject getMessage(long messageId);
+
+    class DefaultBuilder extends EDMServiceImpl.Builder {
+        // Just aliasing.
+    }
 }

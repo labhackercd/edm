@@ -34,7 +34,7 @@ import rx.Observable;
 import java.util.List;
 import java.util.UUID;
 
-public final class EDMServiceImpl implements EDMService {
+class EDMServiceImpl implements EDMService {
 
     public static class Builder implements EDMService.Builder {
         private Endpoint endpoint;

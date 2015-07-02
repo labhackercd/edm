@@ -15,18 +15,8 @@
  * along with Nhegatu.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.labhackercd.nhegatu.ui;
+package net.labhackercd.nhegatu.data;
 
-import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-
-import net.labhackercd.nhegatu.EDMApplication;
-
-public class BaseFragment extends Fragment {
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        EDMApplication.get(getActivity()).getObjectGraph().inject(this);
-    }
+public interface Portal {
+    String url();
 }

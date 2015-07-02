@@ -22,8 +22,6 @@ import android.net.Uri;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
-import net.labhackercd.nhegatu.data.api.Portal;
-
 import net.labhackercd.nhegatu.data.api.model.User;
 import net.labhackercd.nhegatu.data.cache.Cache;
 import rx.Observable;

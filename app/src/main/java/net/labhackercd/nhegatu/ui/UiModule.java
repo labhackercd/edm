@@ -43,14 +43,6 @@ import dagger.Provides;
         injects = {
                 MainActivity.class,
                 SignInActivity.class,
-                ComposeActivity.class,
-                GroupListFragment.class,
-                PreferenceFragment.class,
-                PreferenceActivity.class,
-                ThreadListFragment.class,
-                MessageListFragment.class,
-                GroupThreadListFragment.class,
-                CategoryThreadListFragment.class
         },
         library = true,
         complete = false

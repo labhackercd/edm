@@ -17,6 +17,7 @@
 
 package net.labhackercd.nhegatu.ui.message;
 
+import android.accounts.Account;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
@@ -38,7 +39,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.squareup.picasso.Picasso;
 import net.labhackercd.nhegatu.R;
-import net.labhackercd.nhegatu.account.AccountUtils;
 import net.labhackercd.nhegatu.data.ImageLoader;
 import net.labhackercd.nhegatu.data.LocalMessageStore;
 import net.labhackercd.nhegatu.data.MainRepository;
@@ -49,7 +49,6 @@ import net.labhackercd.nhegatu.data.cache.UserCache;
 import net.labhackercd.nhegatu.data.db.LocalMessage;
 import net.labhackercd.nhegatu.data.model.Message;
 import net.labhackercd.nhegatu.service.VideoAttachmentUploader;
-import net.labhackercd.nhegatu.ui.BaseFragment;
 import net.labhackercd.nhegatu.ui.MainActivity;
 import net.labhackercd.nhegatu.ui.Util;
 import net.labhackercd.nhegatu.ui.listview.ItemListView;
@@ -67,7 +66,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
-public class MessageListFragment extends BaseFragment {
+public class MessageListFragment extends Fragment {
 
     private static final String ARG_THREAD_DATA = "threadData";
     private static final String ARG_SCROLL_TO_ITEM = "scrollToItemById";
@@ -75,6 +74,7 @@ public class MessageListFragment extends BaseFragment {
     private static final int REQUEST_INSERT_MESSAGE = 1;
 
     @Inject LHMCache cache;
+    @Inject Account account;
     @Inject Picasso picasso;
     @Inject UserCache userCache;
     @Inject ImageLoader imageLoader;
@@ -168,9 +168,7 @@ public class MessageListFragment extends BaseFragment {
     private Observable<List<? extends Item>> refreshList(boolean fresh) {
         Observable<List<ItemImpl>> remoteMessages = repository
                 .getThreadMessages(data.getGroupId(), data.getCategoryId(), data.getThreadId())
-                .transform(r -> r.asObservable()
-                        .compose(AccountUtils.requireAccount(getActivity()))
-                        .compose(Util.applyCache(cache, r.key(), fresh)))
+                .transform(r -> r.asObservable().compose(Util.applyCache(cache, r.key(), fresh)))
                 .asObservable()
                 .subscribeOn(Schedulers.io())
                 .doOnNext(this::setRootMessage)
@@ -179,7 +177,10 @@ public class MessageListFragment extends BaseFragment {
                         .map(ItemImpl::create)
                         .toList().toBlocking().single());
 
-        Observable<List<ItemImpl>> localMessages = AccountUtils.getCurrentUser(repository, getActivity(), userCache)
+        Observable<List<ItemImpl>> localMessages = repository
+                .getUser()
+                .transform(r -> r.asObservable().compose(userCache.getOrRefresh(account)))
+                .asObservable()
                 .flatMap(user -> messageRepository
                         .getUnsentMessages(user.getUserId(), data.getRootMessageId())
                         .map(messages -> Observable.from(messages)
