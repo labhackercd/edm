@@ -216,11 +216,30 @@ public final class EDMServiceImpl implements EDMService {
             batch.invoke(new JSONObject("{" +
                     "  \"$" + alias + " = /group/get-group\": {" +
                     "    \"groupId\": " + groupId + "," +
+
                     "    \"$closed = /expandovalue/get-data.5\": {" +
                     "      \"companyId\": " + companyId + "," +
                     "      \"className\": \"com.liferay.portal.model.Group\"," +
                     "      \"tableName\": \"CUSTOM_FIELDS\"," +
                     "      \"columnName\": \"Encerrada\"," +
+                    "      \"@classPk\": \"$" + alias + "." + field  + "\"" +
+                    "    }," +
+
+                        // webOnly = !notWebOnly
+                    "    \"$notWebOnly = /expandovalue/get-data.5\": {" +
+                    "      \"companyId\": " + companyId + "," +
+                    "      \"className\": \"com.liferay.portal.model.Group\"," +
+                    "      \"tableName\": \"CUSTOM_FIELDS\"," +
+                    "      \"columnName\": \"Mostrarnoapp\"," +
+                    "      \"@classPk\": \"$" + alias + "." + field  + "\"" +
+                    "    }," +
+
+                        // Ordering priority
+                    "    \"$priority = /expandovalue/get-data.5\": {" +
+                    "      \"companyId\": " + companyId + "," +
+                    "      \"className\": \"com.liferay.portal.model.Group\"," +
+                    "      \"tableName\": \"CUSTOM_FIELDS\"," +
+                    "      \"columnName\": \"Prioridade\"," +
                     "      \"@classPk\": \"$" + alias + "." + field  + "\"" +
                     "    }" +
                     "  }" +

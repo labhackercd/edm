@@ -45,6 +45,8 @@ public abstract class Group implements Parcelable, Serializable {
     public abstract long getGroupId();
     @Nullable public abstract String getName();
     public abstract boolean isClosed();
+    public abstract boolean isWebOnly();
+    public abstract int getPriority();
 
     public static final JSONReader<Group> JSON_READER = new JSONReader<Group>() {
         @Override
@@ -63,12 +65,16 @@ public abstract class Group implements Parcelable, Serializable {
             int type = json.getInt("type");
             long groupId = json.getLong("groupId");
             String name = json.getString("name");
+
+            // Extra fields.
             boolean closed = json.getBoolean("closed");
+            boolean webOnly = !json.getBoolean("notWebOnly");
+            int priority = json.getInt("priority");
 
             return new AutoParcel_Group(
                     friendlyURL, classPK, description, creatorUserId, classNameId,
                     companyId, site, typeSettings, parentGroupId, active, liveGroupId,
-                    type, groupId, name, closed);
+                    type, groupId, name, closed, webOnly, priority);
         }
     };
 }

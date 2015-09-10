@@ -63,12 +63,13 @@ public class MainRepository {
                 .transform(new JsonArrayReader<>(Group.JSON_READER))
                 .transform(r -> r.asObservable()
                         .flatMap(Observable::from)
-                        .filter(group -> group != null)
-                        .filter(group -> group.isActive())
-                        .filter(group -> !group.isClosed())
-                        // TODO Define a proper policy for *unlisted groups*?
-                        .filter(group -> group.getType() != 2)
+                        .filter(g -> g != null)
+                        .filter(this::isDisplayable)
                         .toList());
+    }
+
+    private boolean isDisplayable(Group group) {
+        return !group.isClosed() && !group.isWebOnly() && group.isActive() && group.getType() != 2;
     }
 
     public Request<List<Thread>> getThreads(long groupId) {

@@ -33,6 +33,8 @@ import net.labhackercd.nhegatu.data.api.model.Group;
 import net.labhackercd.nhegatu.ui.BaseFragment;
 import net.labhackercd.nhegatu.ui.listview.ItemListView;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -76,9 +78,20 @@ public class GroupListFragment extends BaseFragment {
                 .flatMap(user -> repository
                         .getGroups(user.getCompanyId())
                         .transform(r -> r.asObservable()
+                                .map(this::sortListData)
                                 .compose(AccountUtils.requireAccount(activity))
                                 .compose(cache.cacheSkipIf(r.key(), fresh)))
                         .asObservable())
                 .subscribeOn(Schedulers.io());
+    }
+
+    private List<Group> sortListData(List<Group> groups) {
+        Collections.sort(groups, new Comparator<Group>() {
+            @Override
+            public int compare(Group a, Group b) {
+                return b.getPriority() - a.getPriority();
+            }
+        });
+        return groups;
     }
 }
