@@ -41,7 +41,7 @@ android {
         applicationId "net.labhackercd.nhegatu"
         minSdkVersion 15
         targetSdkVersion 22
-        versionCode 9
+        versionCode 10
         versionName "1.0.0-SNAPSHOT"
         manifestPlaceholders = [ fabricApiKey: localProperties.getProperty('fabric.api.key') ]
     }
