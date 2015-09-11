@@ -67,6 +67,12 @@
                 <data android:scheme="https"
                     android:host="edemocracia.camara.gov.br"
                     android:pathPrefix="/comunidades" />
+                <data android:scheme="http"
+                      android:host="edemocracia.camara.gov.br"
+                      android:pathPattern="/web/.*/forum/-/message_boards/message/.*" />
+                <data android:scheme="https"
+                      android:host="edemocracia.camara.gov.br"
+                      android:pathPrefix="/web/.*/forum/-/message_boards/message/.*" />
             </intent-filter>
 
             <!-- Specific Groups -->

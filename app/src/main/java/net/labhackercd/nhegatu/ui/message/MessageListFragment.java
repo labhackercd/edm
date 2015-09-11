@@ -67,8 +67,14 @@ import timber.log.Timber;
 
 public class MessageListFragment extends BaseFragment {
 
-    private static final String ARG_THREAD_DATA = "threadData";
-    private static final String ARG_SCROLL_TO_ITEM = "scrollToItemById";
+
+    private static String argName(String key) {
+        return MessageListFragment.class.getName().concat(".").concat(key);
+    }
+
+    private static final String ARG_MESSAGE_ID = argName("messageId");
+    private static final String ARG_THREAD_DATA = argName("threadData");
+    private static final String ARG_SCROLL_TO_ITEM = argName("scrollToItemById");
 
     private static final int REQUEST_INSERT_MESSAGE = 1;
 
@@ -80,18 +86,27 @@ public class MessageListFragment extends BaseFragment {
     @Inject VideoAttachmentUploader uploader;
     @Inject LocalMessageStore messageRepository;
 
+    private Long messageId;
     private ThreadData data;
     private UUID scrollToItem;
     private Message rootMessage;
     private ItemListView listView;
     private MessageListAdapter adapter;
 
-    public static MessageListFragment newInstance(Thread thread) {
+    public static Fragment newInstance(Thread thread) {
         return newInstance(ThreadData.create(thread));
     }
 
     public static Fragment newInstance(LocalMessage message) {
         return newInstance(ThreadData.create(message), message.getUuid());
+    }
+
+    public static Fragment newInstance(long messageId) {
+        MessageListFragment fragment = new MessageListFragment();
+        Bundle args = new Bundle();
+        args.putLong(ARG_MESSAGE_ID, messageId);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     private static MessageListFragment newInstance(ThreadData data) {
@@ -113,6 +128,7 @@ public class MessageListFragment extends BaseFragment {
 
         Bundle args = getArguments();
         data = args.getParcelable(ARG_THREAD_DATA);
+        messageId = args.getLong(ARG_MESSAGE_ID);
         scrollToItem = (UUID) args.getSerializable(ARG_SCROLL_TO_ITEM);
 
         setHasOptionsMenu(true);
@@ -162,25 +178,44 @@ public class MessageListFragment extends BaseFragment {
     }
 
     private Observable<List<? extends Item>> refreshList(boolean fresh) {
-        Observable<List<ItemImpl>> remoteMessages = repository
-                .getThreadMessages(data.getGroupId(), data.getCategoryId(), data.getThreadId())
-                .transform(r -> r.asObservable()
-                        .compose(AccountUtils.requireAccount(getActivity()))
-                        .compose(cache.cacheSkipIf(r.key(), fresh)))
-                .asObservable()
-                .subscribeOn(Schedulers.io())
+        Observable<ThreadData> threadData = Observable.defer(() -> {
+            if (data == null) {
+                Timber.d("Fetching message %d", messageId);
+                return repository.getMessage(messageId)
+                        .transform(r -> r.asObservable()
+                                .compose(AccountUtils.requireAccount(getActivity()))
+                                .compose(cache.cacheSkipIf(r.key(), fresh)))
+                        .asObservable()
+                        .subscribeOn(Schedulers.io())
+                        .doOnNext(message -> scrollToItem = message.getUuid())
+                        .map(ThreadData::create)
+                        .doOnNext(data -> this.data = data);
+            } else {
+                return Observable.just(data);
+            }
+        }).share();
+
+        Observable<List<ItemImpl>> remoteMessages = threadData
+                .flatMap(data -> repository
+                        .getThreadMessages(data.getGroupId(), data.getCategoryId(), data.getThreadId())
+                        .transform(r -> r.asObservable()
+                                .compose(AccountUtils.requireAccount(getActivity()))
+                                .compose(cache.cacheSkipIf(r.key(), fresh)))
+                        .asObservable()
+                        .subscribeOn(Schedulers.io()))
                 .doOnNext(this::setRootMessage)
                 .single()
                 .map(messages -> Observable.from(messages)
                         .map(ItemImpl::create)
                         .toList().toBlocking().single());
 
-        Observable<List<ItemImpl>> localMessages = AccountUtils.getCurrentUser(repository, getActivity())
-                .flatMap(user -> messageRepository
-                        .getUnsentMessages(user.getUserId(), data.getRootMessageId())
-                        .map(messages -> Observable.from(messages)
-                                .map(message -> ItemImpl.create(message, user))
-                                .toList().toBlocking().single()));
+        Observable<List<ItemImpl>> localMessages = threadData
+                .flatMap(data -> AccountUtils.getCurrentUser(repository, getActivity())
+                        .flatMap(user -> messageRepository
+                                .getUnsentMessages(user.getUserId(), data.getRootMessageId())
+                                .map(messages -> Observable.<LocalMessage>from(messages)
+                                        .map(message -> ItemImpl.create(message, user))
+                                        .toList().toBlocking().single())));
 
         return Observable.combineLatest(remoteMessages, localMessages, MessageListFragment::combineMessageLists);
     }
@@ -272,12 +307,20 @@ public class MessageListFragment extends BaseFragment {
         }
 
         static ThreadData create(LocalMessage localMessage) {
-            return create(localMessage.getGroupId(), localMessage.getCategoryId(),
+            return create(
+                    localMessage.getGroupId(), localMessage.getCategoryId(),
                     localMessage.getThreadId(), localMessage.getRootMessageId());
         }
 
         private static ThreadData create(long groupId, long categoryId, long threadId, long rootMessageId) {
-            return new AutoParcel_MessageListFragment_ThreadData(groupId, categoryId, threadId, rootMessageId);
+            return new AutoParcel_MessageListFragment_ThreadData(
+                    groupId, categoryId, threadId, rootMessageId);
+        }
+
+        public static ThreadData create(Message message) {
+            return new AutoParcel_MessageListFragment_ThreadData(
+                    message.getGroupId(), message.getCategoryId(),
+                    message.getThreadId(), message.getRootMessageId());
         }
     }
 

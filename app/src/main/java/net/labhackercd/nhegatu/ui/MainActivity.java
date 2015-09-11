@@ -135,26 +135,41 @@ public class MainActivity extends BaseActivity {
     }
 
     private boolean handleViewIntent(Intent intent, boolean addToBackStack) {
+        Uri data = intent.getData();
+        if (data != null && data.getScheme() != null && data.getScheme().startsWith("http")) {
+            List<String> segments = data.getPathSegments();
+            if (segments.contains("message")) {
+                long messageId;
+                try {
+                    messageId = Long.valueOf(segments.get(segments.indexOf("message") + 1));
+                } catch (Exception e) {
+                    Timber.e(e, "Failed to extract message id from url");
+                    return false;
+                }
+                replaceContent(MessageListFragment.newInstance(messageId), addToBackStack);
+                return true;
+            }
+        }
+
         String type = intent.getType();
 
-        if (type == null)
-            return false;
-
-        switch (type) {
-            case EDMContract.Group.CONTENT_TYPE:
-                replaceContent(new GroupListFragment(), addToBackStack);
-                return true;
-            case EDMContract.Group.CONTENT_ITEM_TYPE:
-            case EDMContract.Category.CONTENT_ITEM_TYPE:
-                replaceContent(createThreadListFragment(this, intent), addToBackStack);
-                return true;
-            case EDMContract.Thread.CONTENT_ITEM_TYPE:
-            case EDMContract.Message.CONTENT_ITEM_TYPE:
-                replaceContent(createMessageListFragment(this, intent), addToBackStack);
-                return true;
-            default:
-                return false;
+        if (type != null) {
+            switch (type) {
+                case EDMContract.Group.CONTENT_TYPE:
+                    replaceContent(new GroupListFragment(), addToBackStack);
+                    return true;
+                case EDMContract.Group.CONTENT_ITEM_TYPE:
+                case EDMContract.Category.CONTENT_ITEM_TYPE:
+                    replaceContent(createThreadListFragment(this, intent), addToBackStack);
+                    return true;
+                case EDMContract.Thread.CONTENT_ITEM_TYPE:
+                case EDMContract.Message.CONTENT_ITEM_TYPE:
+                    replaceContent(createMessageListFragment(this, intent), addToBackStack);
+                    return true;
+            }
         }
+
+        return false;
     }
 
     private static Fragment createThreadListFragment(Context context, Intent intent) {
