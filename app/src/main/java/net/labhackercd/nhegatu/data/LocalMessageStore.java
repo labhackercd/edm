@@ -24,7 +24,7 @@ import android.net.Uri;
 import android.support.v4.util.Pair;
 import com.squareup.sqlbrite.SqlBrite;
 
-import net.labhackercd.nhegatu.data.model.Message;
+import net.labhackercd.nhegatu.data.api.model.Message;
 import net.labhackercd.nhegatu.data.db.LocalMessage;
 import net.labhackercd.nhegatu.service.AddMessageService;
 

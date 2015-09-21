@@ -17,7 +17,7 @@
 
 package net.labhackercd.nhegatu.ui.group;
 
-import android.app.Activity;
+import android.accounts.Account;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -25,16 +25,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import net.labhackercd.nhegatu.R;
-import net.labhackercd.nhegatu.account.AccountUtils;
-import net.labhackercd.nhegatu.data.Cache;
+import net.labhackercd.nhegatu.account.AccountManager;
 import net.labhackercd.nhegatu.data.ImageLoader;
-import net.labhackercd.nhegatu.data.MainRepository;
+import net.labhackercd.nhegatu.data.api.TypedService;
 import net.labhackercd.nhegatu.data.api.model.Group;
 import net.labhackercd.nhegatu.ui.BaseFragment;
 import net.labhackercd.nhegatu.ui.listview.ItemListView;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -44,11 +42,13 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class GroupListFragment extends BaseFragment {
-    @Inject Cache cache;
+    @Inject Account account;
+    @Inject TypedService service;
     @Inject ImageLoader imageLoader;
-    @Inject MainRepository repository;
+    @Inject AccountManager accountManager;
 
     private ItemListView listView;
+    private GroupListAdapter adapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -58,14 +58,22 @@ public class GroupListFragment extends BaseFragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        adapter = new GroupListAdapter(imageLoader);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
 
-        final GroupListAdapter adapter = new GroupListAdapter(imageLoader);
-
         listView.refreshEvents()
+                .doOnNext(fresh -> {
+                    if (!listView.isEnabled()) {
+                        listView.setRefreshing(true);
+                    }
+                })
                 .startWith(false)
-                .doOnNext(fresh -> listView.setRefreshing(true))
                 .flatMap(this::getListData)
                 .observeOn(AndroidSchedulers.mainThread())
                 .map(adapter::replaceWith)
@@ -73,25 +81,13 @@ public class GroupListFragment extends BaseFragment {
     }
 
     public Observable<List<Group>> getListData(boolean fresh) {
-        Activity activity = getActivity();
-        return AccountUtils.getCurrentUser(repository, activity)
-                .flatMap(user -> repository
-                        .getGroups(user.getCompanyId())
-                        .transform(r -> r.asObservable()
-                                .map(this::sortListData)
-                                .compose(AccountUtils.requireAccount(activity))
-                                .compose(cache.cacheSkipIf(r.key(), fresh)))
-                        .asObservable())
+        return service.getUser()
+                .flatMap(user -> service.getGroups(user.getCompanyId()))
+                .map(groups -> {
+                    // Sort groups by priority.
+                    Collections.sort(groups, (a, b) -> b.getPriority() - a.getPriority());
+                    return groups;
+                })
                 .subscribeOn(Schedulers.io());
-    }
-
-    private List<Group> sortListData(List<Group> groups) {
-        Collections.sort(groups, new Comparator<Group>() {
-            @Override
-            public int compare(Group a, Group b) {
-                return b.getPriority() - a.getPriority();
-            }
-        });
-        return groups;
     }
 }

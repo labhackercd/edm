@@ -33,8 +33,10 @@ import com.google.api.services.youtube.model.Video;
 
 import net.labhackercd.nhegatu.R;
 import net.labhackercd.nhegatu.data.LocalMessageStore;
+import net.labhackercd.nhegatu.data.api.TypedService;
 import net.labhackercd.nhegatu.data.api.client.EDMService;
 import net.labhackercd.nhegatu.data.db.LocalMessage;
+import net.labhackercd.nhegatu.data.api.model.Message;
 import net.labhackercd.nhegatu.ui.MainActivity;
 import net.labhackercd.nhegatu.upload.YouTubeUploader;
 
@@ -49,9 +51,9 @@ import java.io.IOException;
 // TODO Handle errors using RxJava
 public class AddMessageTask {
 
-    @Inject EDMService service;
-    @Inject YouTubeUploader uploader;
+    @Inject TypedService service;
     @Inject Application application;
+    @Inject YouTubeUploader uploader;
     @Inject LocalMessageStore messages;
     @Inject VideoAttachmentUploader uploadManager;
 
@@ -100,7 +102,7 @@ public class AddMessageTask {
                 message.getThreadId(), message.getParentMessageId(), message.getSubject(), body);
 
         messages.setSuccess(message.getId(),
-                net.labhackercd.nhegatu.data.api.model.Message.JSON_READER.fromJSON(insertedJson));
+                Message.JSON_READER.fromJSON(insertedJson));
     }
 
     private void notifyProgress(YouTubeUploader.UploadProgress uploadProgress) {

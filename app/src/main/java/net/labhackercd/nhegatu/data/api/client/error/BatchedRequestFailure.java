@@ -15,26 +15,10 @@
  * along with Nhegatu.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.labhackercd.nhegatu.data.api.client;
+package net.labhackercd.nhegatu.data.api.client.error;
 
-/** An API endpoint. */
-public interface Endpoint {
-
-    /**
-     * The base URL.
-     * <p>
-     * Consumers will call this method every time they need to create a request, allowing values to change over time.
-     */
-    String getUrl();
-
-    /** Create an endpoint with the provided {@code url}. */
-    static Endpoint createFixed(final String url) {
-        if (url == null)
-            throw new IllegalStateException("url == null");
-        return new Endpoint() {
-            @Override public String getUrl() {
-                return url;
-            }
-        };
+public class BatchedRequestFailure extends ServiceError {
+    public BatchedRequestFailure(Exception e) {
+        super(e);
     }
 }

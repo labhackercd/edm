@@ -46,7 +46,7 @@ import net.labhackercd.nhegatu.data.ImageLoader;
 import net.labhackercd.nhegatu.data.LocalMessageStore;
 import net.labhackercd.nhegatu.data.db.LocalMessage;
 
-import net.labhackercd.nhegatu.data.model.Message;
+import net.labhackercd.nhegatu.data.api.model.Message;
 import net.labhackercd.nhegatu.service.VideoAttachmentUploader;
 import net.labhackercd.nhegatu.ui.preference.PreferenceFragment;
 import net.labhackercd.nhegatu.upload.YouTubeUploader;

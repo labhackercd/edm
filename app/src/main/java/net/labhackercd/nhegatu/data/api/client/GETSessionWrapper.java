@@ -58,7 +58,7 @@ class GETSessionWrapper implements Session {
             "/mbmessage/add-message"
     );
 
-    public GETSessionWrapper(Session session) {
+    GETSessionWrapper(Session session) {
         this.session = session;
     }
 

@@ -15,9 +15,10 @@
  * along with Nhegatu.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * A client to the remote web service.
- *
- * All web service calls are implemented in {@link EDMServiceImpl}.
- */
-package net.labhackercd.nhegatu.data.api.client;
+package net.labhackercd.nhegatu.data.api.client.error;
+
+public class AuthorizationException extends ServiceError {
+    public AuthorizationException(Exception error) {
+        super(error);
+    }
+}

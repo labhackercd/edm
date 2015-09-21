@@ -26,14 +26,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import net.labhackercd.nhegatu.ui.SignInActivity;
 
 import static android.accounts.AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE;
 import static android.accounts.AccountManager.KEY_BOOLEAN_RESULT;
 import static android.accounts.AccountManager.KEY_INTENT;
+import static android.accounts.AccountManager.KEY_ACCOUNT_NAME;
+import static android.accounts.AccountManager.KEY_ACCOUNT_TYPE;
+import static android.accounts.AccountManager.KEY_AUTHTOKEN;
 import static net.labhackercd.nhegatu.ui.SignInActivity.PARAM_AUTHTOKEN_TYPE;
 import static net.labhackercd.nhegatu.ui.SignInActivity.PARAM_EMAIL;
+
 
 public class Authenticator extends AbstractAccountAuthenticator {
 
@@ -78,8 +83,8 @@ public class Authenticator extends AbstractAccountAuthenticator {
         if (!ACCOUNT_TYPE.equals(authTokenType))
             return bundle;
 
-        AccountManager am = AccountManager.get(context);
-        String password = am.getPassword(account);
+        String password = AccountManager.get(context).getPassword(account);
+
         if (TextUtils.isEmpty(password)) {
             bundle.putParcelable(KEY_INTENT, createLoginIntent(response));
         }
@@ -119,5 +124,14 @@ public class Authenticator extends AbstractAccountAuthenticator {
         final Bundle bundle = new Bundle();
         bundle.putParcelable(KEY_INTENT, intent);
         return bundle;
+    }
+
+    public static Intent createLoginOkIntent(Account account, @Nullable String authToken) {
+        Intent intent = new Intent();
+        intent.putExtra(KEY_ACCOUNT_NAME, account.name);
+        intent.putExtra(KEY_ACCOUNT_TYPE, account.type);
+        if (authToken != null)
+            intent.putExtra(KEY_AUTHTOKEN, authToken);
+        return intent;
     }
 }

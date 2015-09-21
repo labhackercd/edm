@@ -32,8 +32,6 @@ import net.labhackercd.nhegatu.R;
 import net.labhackercd.nhegatu.account.AccountUtils;
 import net.labhackercd.nhegatu.data.Cache;
 import net.labhackercd.nhegatu.data.ImageLoader;
-import net.labhackercd.nhegatu.data.MainRepository;
-import net.labhackercd.nhegatu.data.Request;
 import net.labhackercd.nhegatu.data.api.model.Category;
 import net.labhackercd.nhegatu.data.api.model.Group;
 import net.labhackercd.nhegatu.data.api.model.Thread;

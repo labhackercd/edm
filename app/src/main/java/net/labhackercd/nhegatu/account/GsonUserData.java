@@ -17,68 +17,26 @@
 
 package net.labhackercd.nhegatu.account;
 
-import android.accounts.Account;
-
-import android.accounts.AccountManager;
-import android.content.Context;
-
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
-import net.labhackercd.nhegatu.data.Cache;
 import net.labhackercd.nhegatu.data.api.model.User;
-import timber.log.Timber;
 
 import java.lang.reflect.Type;
 
-/** Caches stuff into an {@link Account}'s *user data* section. */
-public class UserDataCache extends Cache {
-    private final Account account;
-    private final AccountManager manager;
-
-    public UserDataCache(Context context, Account account) {
-        this.manager = AccountManager.get(context);
-        this.account = account;
-    }
-
-    @Override
-    protected <T> T get(Object key) {
-        String json = manager.getUserData(account, genKey(key));
-        return json == null ? null : this.<T>loadValue(json);
-    }
-
-    @Override
-    protected <T> void put(Object key, T value) {
-        manager.setUserData(account, genKey(key), genValue(value));
-    }
-
-    public static UserDataCache with(Context context, Account account) {
-        return new UserDataCache(context.getApplicationContext(), account);
-    }
-
-    /** XXX WARNING FIXME: This sucks. I have no idea what I'm doing here. Seriously, don't read this. */
-
-    private static String genKey(Object key) {
-        return UserDataCache.class.getCanonicalName().concat("{").concat(gson.toJson(key)).concat("}");
-    }
-
-    private <T> String genValue(T value) {
+/** Little utility to write typed objects into user data. */
+class GsonUserData {
+    static <T> String toUserData(T value) {
         return gson.toJson(Entry.create(value));
     }
 
-    private <T> T loadValue(String json) {
-        try {
-            JsonObject entry = gson.fromJson(json, JsonObject.class);
+    static <T> T fromUserData(String data) throws JsonParseException {
+        JsonObject json = gson.fromJson(data, JsonObject.class);
+        Entry<T> entry = Entry.<T>fromJson(gson, json);
+        return entry.value;
+    }
 
-            Class<T> clazz = gson.fromJson(entry.get("classOfValue"), new TypeToken<Class<T>>() {}.getType());
-
-            if (clazz == null)
-                return null;
-
-            return gson.fromJson(entry.get("value"), clazz);
-        } catch (Throwable t) {
-            Timber.e(t, "Failed to load cached value.");
-            return null;
-        }
+    static String createKey(Object key) {
+        return GsonUserData.class.getCanonicalName().concat("{").concat(gson.toJson(key)).concat("}");
     }
 
     private static class Entry<T> {
@@ -92,6 +50,13 @@ public class UserDataCache extends Cache {
 
         public static <T> Entry<T> create(T value) {
             return new Entry<>(value, value.getClass());
+        }
+
+        public static <T> Entry<T> fromJson(Gson gson, JsonObject entry) throws JsonParseException {
+            Type type = new TypeToken<Class<T>>() {}.getType();
+            Class<T> classOfValue = gson.fromJson(entry.get("classOfValue"), type);
+            T value = gson.fromJson(entry.get("value"), classOfValue);
+            return Entry.create(value);
         }
     }
 
@@ -113,10 +78,13 @@ public class UserDataCache extends Cache {
         @Override
         public Class deserialize(JsonElement json, Type type, JsonDeserializationContext context)
                 throws JsonParseException {
+            String className = json.getAsString();
             try {
-                return classLoader.loadClass(json.getAsString());
+                return classLoader.loadClass(className);
             } catch (ClassNotFoundException e) {
-                throw new JsonParseException("Failed to load class.", e);
+                String message = String.format(
+                        "Serialized class `%s' could not be found at runtime.", className);
+                throw new JsonParseException(message, e);
             }
         }
     }

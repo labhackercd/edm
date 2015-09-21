@@ -19,6 +19,7 @@ package net.labhackercd.nhegatu;
 
 import android.app.Application;
 
+import net.labhackercd.nhegatu.account.AccountManager;
 import net.labhackercd.nhegatu.data.DataModule;
 import net.labhackercd.nhegatu.service.ServiceModule;
 import net.labhackercd.nhegatu.ui.UiModule;
@@ -47,5 +48,10 @@ public class EDMRootModule {
     @Provides @Singleton
     Application provideApplication() {
         return application;
+    }
+
+    @Provides @Singleton
+    AccountManager provideAccountManager(Application application) {
+        return AccountManager.get(application.getApplicationContext());
     }
 }

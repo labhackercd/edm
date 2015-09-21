@@ -98,7 +98,6 @@ public class AddMessageService extends Service {
             } catch (Throwable t) {
                 task.onError(t);
             }
-
             running = false;
             executeNext();
         });

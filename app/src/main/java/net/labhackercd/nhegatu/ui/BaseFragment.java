@@ -21,12 +21,21 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
+import dagger.ObjectGraph;
 import net.labhackercd.nhegatu.EDMApplication;
 
 public class BaseFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        EDMApplication.get(getActivity()).getObjectGraph().inject(this);
+        getObjectGraph().inject(this);
+    }
+
+    protected ObjectGraph getParentObjectGraph() {
+        return ((BaseActivity) getActivity()).getObjectGraph();
+    }
+
+    protected ObjectGraph getObjectGraph() {
+        return getParentObjectGraph();
     }
 }

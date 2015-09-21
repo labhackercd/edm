@@ -20,14 +20,13 @@ package net.labhackercd.nhegatu.data;
 import android.app.Application;
 
 import android.content.Context;
+import com.squareup.okhttp.Cache;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 import com.squareup.sqlbrite.SqlBrite;
 
-import net.labhackercd.nhegatu.data.api.ApiModule;
-import net.labhackercd.nhegatu.data.api.Portal;
-import net.labhackercd.nhegatu.data.api.client.EDMService;
+import net.labhackercd.nhegatu.data.api.TypedService;
 import net.labhackercd.nhegatu.data.db.DbModule;
 
 import java.io.File;
@@ -37,28 +36,29 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 
-@Module(
-        library = true,
-        complete = false,
-        includes = {DbModule.class, ApiModule.class}
-)
+@Module(includes = {DbModule.class}, complete = false)
 @SuppressWarnings("UnusedDeclaration")
 public class DataModule {
+    private static final String PRODUCTION_PORTAL_URL = "https://edemocracia.camara.gov.br";
+    private static final String PRODUCTION_API_URL = "/api/secure/jsonws";
     private static final long DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50 MB
+
+    @Provides @Singleton
+    Portal providePortal() {
+        // TODO We're using upper level Portal here, so we should probably move this up.
+        return Portal.Builder.buildStatic(PRODUCTION_PORTAL_URL);
+    }
+
+    @Provides @Singleton
+    TypedService provideService(Application application, Portal portal) {
+        return new TypedService.Builder()
+                .setBaseUrl(portal.getUrl().concat(PRODUCTION_API_URL))
+                .build();
+    }
 
     @Provides @Singleton
     OkHttpClient provideOkHttpClient(Application application) {
         return createOkHttpClient(application);
-    }
-
-    @Provides @Singleton
-    Cache provideRequestCache() {
-        return new LHMCache();
-    }
-
-    @Provides @Singleton
-    MainRepository provideMainRepository(EDMService service) {
-        return new MainRepository(service);
     }
 
     @Provides @Singleton
@@ -74,8 +74,8 @@ public class DataModule {
     }
 
     @Provides @Singleton
-    ImageLoader provideImageLoader(Portal portal, Picasso picasso, MainRepository repository, Cache cache) {
-        return new ImageLoader(portal, picasso, repository, cache);
+    ImageLoader provideImageLoader(Portal portal, Picasso picasso) {
+        return null;
     }
 
     @Provides @Singleton
@@ -87,8 +87,7 @@ public class DataModule {
         OkHttpClient client = new OkHttpClient();
 
         File cacheDir = new File(application.getCacheDir(), "http");
-        com.squareup.okhttp.Cache cache =
-                new com.squareup.okhttp.Cache(cacheDir, DISK_CACHE_SIZE);
+        Cache cache = new Cache(cacheDir, DISK_CACHE_SIZE);
         client.setCache(cache);
 
         return client;

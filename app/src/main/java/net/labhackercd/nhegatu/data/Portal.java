@@ -15,8 +15,18 @@
  * along with Nhegatu.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.labhackercd.nhegatu.data.api;
+package net.labhackercd.nhegatu.data;
 
+/**
+ * An interface that only exists because we have to
+ * inject the portal URL  deep into our object graph.
+ */
 public interface Portal {
-    public String url();
+    String getUrl();
+
+    class Builder {
+        public static Portal buildStatic(String url) {
+            return () -> url;
+        }
+    }
 }

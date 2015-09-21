@@ -15,10 +15,10 @@
  * along with Nhegatu.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.labhackercd.nhegatu.data.api.error;
+package net.labhackercd.nhegatu.data.api.client.error;
 
-public class AuthorizationException extends Exception {
-    public AuthorizationException(Exception error) {
+public class ServiceError extends RuntimeException {
+    public ServiceError(Exception error) {
         super(error);
     }
 }

@@ -51,15 +51,13 @@ import com.google.common.base.Joiner;
 
 import net.labhackercd.nhegatu.R;
 import net.labhackercd.nhegatu.account.AccountUtils;
-import net.labhackercd.nhegatu.account.UserDataCache;
 import net.labhackercd.nhegatu.data.ImageLoader;
-import net.labhackercd.nhegatu.data.MainRepository;
+import net.labhackercd.nhegatu.data.api.TypedService;
 import net.labhackercd.nhegatu.data.api.model.Category;
 import net.labhackercd.nhegatu.data.api.model.Group;
 import net.labhackercd.nhegatu.data.api.model.Thread;
 import net.labhackercd.nhegatu.data.api.model.User;
 import net.labhackercd.nhegatu.data.db.LocalMessage;
-import net.labhackercd.nhegatu.data.model.Message;
 import net.labhackercd.nhegatu.data.provider.EDMContract;
 import net.labhackercd.nhegatu.ui.group.GroupListFragment;
 import net.labhackercd.nhegatu.ui.message.MessageListFragment;
@@ -85,8 +83,8 @@ public class MainActivity extends BaseActivity {
     // TODO Change to android.R.id.content
     private static final int CONTENT_RESOURCE_ID = R.id.container;
 
+    @Inject TypedService service;
     @Inject ImageLoader imageLoader;
-    @Inject MainRepository repository;
     private ActionBarDrawerToggle drawerToggle;
     private LocalBroadcastReceiver broadcastReceiver;
 
@@ -173,11 +171,11 @@ public class MainActivity extends BaseActivity {
     }
 
     private static Fragment createThreadListFragment(Context context, Intent intent) {
-        Group group = (Group) intent.getParcelableExtra(EXTRA_GROUP);
+        Group group = intent.getParcelableExtra(EXTRA_GROUP);
         if (group != null) {
             return ThreadListFragment.newInstance(group);
         } else {
-            Category category = (Category) intent.getParcelableExtra(EXTRA_CATEGORY);
+            Category category = intent.getParcelableExtra(EXTRA_CATEGORY);
             if (category != null) {
                 return ThreadListFragment.newInstance(category);
             } else {
@@ -192,7 +190,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private static Fragment createMessageListFragment(Context context, Intent intent) {
-        Thread thread = (Thread) intent.getParcelableExtra(EXTRA_THREAD);
+        Thread thread = intent.getParcelableExtra(EXTRA_THREAD);
         if (thread != null) {
             return MessageListFragment.newInstance(thread);
         } else {
@@ -270,10 +268,12 @@ public class MainActivity extends BaseActivity {
 
         if (fillDrawerSubscription == null || fillDrawerSubscription.isUnsubscribed()) {
             fillDrawerSubscription = AccountUtils.getOrRequestAccount(this)
-                    .flatMap(account -> repository.getUser()
+                    .flatMap(account -> service.getUser()
+                            /* TODO cache
                             .transform(r -> r.asObservable()
                                     .compose(UserDataCache.with(this, account).getCached("currentUser")))
                             .asObservable()
+                                    */
                             .map(UserInfo::create)
                             .startWith(new UserInfo(account.name)))
                     .subscribeOn(Schedulers.io())

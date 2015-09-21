@@ -42,11 +42,10 @@ import net.labhackercd.nhegatu.account.AccountUtils;
 import net.labhackercd.nhegatu.data.Cache;
 import net.labhackercd.nhegatu.data.ImageLoader;
 import net.labhackercd.nhegatu.data.LocalMessageStore;
-import net.labhackercd.nhegatu.data.MainRepository;
 import net.labhackercd.nhegatu.data.api.model.Thread;
 import net.labhackercd.nhegatu.data.api.model.User;
 import net.labhackercd.nhegatu.data.db.LocalMessage;
-import net.labhackercd.nhegatu.data.model.Message;
+import net.labhackercd.nhegatu.data.api.model.Message;
 import net.labhackercd.nhegatu.service.VideoAttachmentUploader;
 import net.labhackercd.nhegatu.ui.BaseFragment;
 import net.labhackercd.nhegatu.ui.MainActivity;
@@ -332,7 +331,7 @@ public class MessageListFragment extends BaseFragment {
         @Nullable public abstract Uri getVideoAttachment();
         public abstract long getUploadId();
 
-        static ItemImpl create(net.labhackercd.nhegatu.data.api.model.Message message) {
+        static ItemImpl create(Message message) {
             return new AutoParcel_MessageListFragment_ItemImpl(
                     message, message.getUserName(), LocalMessage.Status.SUCCESS, null, 0);
         }

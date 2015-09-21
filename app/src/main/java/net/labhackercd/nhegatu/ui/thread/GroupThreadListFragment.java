@@ -20,8 +20,6 @@ package net.labhackercd.nhegatu.ui.thread;
 import android.os.Bundle;
 
 import android.support.annotation.Nullable;
-import net.labhackercd.nhegatu.data.MainRepository;
-import net.labhackercd.nhegatu.data.Request;
 import net.labhackercd.nhegatu.data.api.model.Category;
 import net.labhackercd.nhegatu.data.api.model.Group;
 import net.labhackercd.nhegatu.data.api.model.Thread;

@@ -27,7 +27,7 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 
-@Module(library = true, complete = false)
+@Module(complete = false)
 @SuppressWarnings("UnusedDeclaration")
 public class DbModule {
     @Provides @Singleton

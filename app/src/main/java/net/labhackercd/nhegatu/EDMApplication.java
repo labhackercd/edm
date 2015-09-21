@@ -28,10 +28,6 @@ import timber.log.Timber;
 public class EDMApplication extends Application {
     private ObjectGraph objectGraph;
 
-    public static EDMApplication get(Context context) {
-        return (EDMApplication) context.getApplicationContext();
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -44,6 +40,10 @@ public class EDMApplication extends Application {
             Fabric.with(this, new Crashlytics());
             // TODO {@link Timber.plant} something?
         }
+    }
+
+    public static EDMApplication get(Context context) {
+        return (EDMApplication) context.getApplicationContext();
     }
 
     public ObjectGraph getObjectGraph() {

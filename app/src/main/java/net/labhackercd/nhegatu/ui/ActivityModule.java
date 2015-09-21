@@ -15,27 +15,16 @@
  * along with Nhegatu.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.labhackercd.nhegatu.data;
+package net.labhackercd.nhegatu.ui;
 
-import java.util.LinkedHashMap;
+import android.app.Activity;
+import dagger.Module;
 
-/**
- * Poor man's in-memory cache.
- */
-public class LHMCache extends Cache {
-    private LinkedHashMap<Object, Object> cache = new LinkedHashMap<>();
+@Module
+class ActivityModule {
+    private final Activity activity;
 
-    @SuppressWarnings("unchecked")
-    protected <T> T get(Object key) {
-        try {
-            return (T) cache.get(key);
-        } catch (ClassCastException e) {
-            return null;
-        }
-    }
-
-    @Override
-    protected <T> void put(Object key, T value) {
-        cache.put(key, value);
+    ActivityModule(Activity activity) {
+        this.activity = activity;
     }
 }

@@ -18,13 +18,10 @@
 package net.labhackercd.nhegatu.ui;
 
 import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -40,9 +37,11 @@ import android.widget.TextView;
 import com.liferay.mobile.android.auth.basic.BasicAuthentication;
 import net.labhackercd.nhegatu.EDMApplication;
 import net.labhackercd.nhegatu.R;
-import net.labhackercd.nhegatu.data.api.client.ClientError;
+import net.labhackercd.nhegatu.account.AccountManager;
+import net.labhackercd.nhegatu.account.Authenticator;
 import net.labhackercd.nhegatu.data.api.client.EDMService;
-import net.labhackercd.nhegatu.data.api.error.AuthorizationException;
+import net.labhackercd.nhegatu.data.api.client.error.AuthorizationException;
+import net.labhackercd.nhegatu.data.api.client.error.ProbablyNetworkError;
 import net.labhackercd.nhegatu.data.api.model.User;
 
 import javax.inject.Inject;
@@ -58,12 +57,6 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
-import java.io.IOException;
-
-import static android.accounts.AccountManager.KEY_ACCOUNT_NAME;
-import static android.accounts.AccountManager.KEY_ACCOUNT_TYPE;
-import static android.accounts.AccountManager.KEY_AUTHTOKEN;
-import static net.labhackercd.nhegatu.account.Authenticator.ACCOUNT_TYPE;
 
 public class SignInActivity extends AppCompatActivity {
     public static final String PARAM_EMAIL = "email";
@@ -171,9 +164,21 @@ public class SignInActivity extends AppCompatActivity {
             checkCredentials(email, password)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .map(user -> new Pair<>(user, password))
                     .doOnSubscribe(() -> showProgress(true))
-                    .subscribe(this::handleSuccess, this::handleError);
+                    .map(user -> {
+                        AccountManager manager = AccountManager.get(this);
+
+                        Account account;
+                        if (requestNewAccount) {
+                            account = manager.addAccountExplicitly(user, password);
+                        } else {
+                            account = AccountManager.createAccount(user);
+                            manager.setPassword(account, password);
+                        }
+
+                        return account;
+                    })
+                    .subscribe(account -> finishLogin(account, password), this::handleError);
         }
     }
 
@@ -191,74 +196,33 @@ public class SignInActivity extends AppCompatActivity {
         });
     }
 
-    private void handleSuccess(Pair<User, String> pair) {
-        User user = pair.first;
-        String email = user.getEmailAddress();
-        String password = pair.second;
-
-        AccountManager manager = AccountManager.get(this);
-
-        Account account = new Account(user.getEmailAddress(), ACCOUNT_TYPE);
-        if (requestNewAccount) {
-            manager.addAccountExplicitly(account, password, null);
-            configureSyncFor(account);
-        } else {
-            manager.setPassword(account, password);
-        }
-
-        // TODO Cache the user?
-
-        finishLogin(email, password);
+    private void finishLogin(Account account, String password) {
+        String authToken = account.type.equals(authTokenType) ? password : null;
+        Intent intent = Authenticator.createLoginOkIntent(account, authToken);
+        setResult(RESULT_OK, intent);
+        finish();
     }
 
     private void handleError(Throwable error) {
         showProgress(false);
 
-        String message = getFriendlyErrorMessage(error);
-
-        if (message == null) {
+        String message;
+        if (error instanceof AuthorizationException) {
+            message = getString(R.string.invalid_credentials_message);
+        } else if (error instanceof ProbablyNetworkError) {
+            message = getString(R.string.network_error_message);
+        } else {
+            Timber.e(error, "Error while checking user credentials.");
             message = error.getMessage();
-
-            // Log unknown errors for debugging.
-            Timber.e(error, "Failed to check user credentials.");
         }
 
         new AlertDialog.Builder(this)
                 .setMessage(message)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    dialog.dismiss();
                 })
                 .create()
                 .show();
-    }
-
-    private String getFriendlyErrorMessage(Throwable error) {
-        if (error instanceof ClientError) {
-            Throwable cause = error.getCause();
-            if (cause instanceof IOException) {
-                return getString(R.string.network_error_message);
-            } else if (cause instanceof AuthorizationException) {
-                return getString(R.string.invalid_credentials_message);
-            }
-        }
-        return null;
-    }
-
-    private void configureSyncFor(Account account) {
-        // TODO
-    }
-
-    private void finishLogin(String email, String password) {
-        Intent intent = new Intent();
-        intent.putExtra(KEY_ACCOUNT_NAME, email);
-        intent.putExtra(KEY_ACCOUNT_TYPE, ACCOUNT_TYPE);
-        if (ACCOUNT_TYPE.equals(authTokenType))
-            intent.putExtra(KEY_AUTHTOKEN, password);
-        setResult(RESULT_OK, intent);
-        finish();
     }
 
     protected void showProgress(final boolean show) {

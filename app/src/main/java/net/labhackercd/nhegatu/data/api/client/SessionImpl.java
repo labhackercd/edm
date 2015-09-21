@@ -27,16 +27,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 class SessionImpl implements Session {
-    private final Endpoint endpoint;
-    private Authentication authentication;
+    private final String baseUrl;
+    private final Authentication authentication;
 
-    SessionImpl(Endpoint endpoint, Authentication authentication) {
-        this.endpoint = endpoint;
+    SessionImpl(String baseUrl, Authentication authentication) {
+        this.baseUrl = baseUrl;
         this.authentication = authentication;
-    }
-
-    public Endpoint getEndpoint() {
-        return endpoint;
     }
 
     @Override
@@ -56,7 +52,7 @@ class SessionImpl implements Session {
 
     @Override
     public String getServer() {
-        return getEndpoint().getUrl();
+        return baseUrl;
     }
 
     @Override
@@ -66,7 +62,7 @@ class SessionImpl implements Session {
 
     @Override
     public void setAuthentication(Authentication authentication) {
-        this.authentication = authentication;
+        throw new UnsupportedOperationException("authentication is final.");
     }
 
     @Override

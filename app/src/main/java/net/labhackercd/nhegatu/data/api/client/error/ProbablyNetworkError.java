@@ -15,10 +15,10 @@
  * along with Nhegatu.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.labhackercd.nhegatu.data.api.error;
+package net.labhackercd.nhegatu.data.api.client.error;
 
-public class NotFoundException extends Exception {
-    public NotFoundException(Exception error) {
+public class ProbablyNetworkError extends ServiceError {
+    public ProbablyNetworkError(Exception error) {
         super(error);
     }
 }

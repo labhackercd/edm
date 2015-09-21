@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.UUID;
 
 import auto.parcel.AutoParcel;
-import net.labhackercd.nhegatu.data.model.Message;
+import net.labhackercd.nhegatu.data.api.model.Message;
 import rx.Observable;
 import rx.functions.Func1;
 

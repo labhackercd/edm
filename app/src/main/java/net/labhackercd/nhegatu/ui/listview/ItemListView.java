@@ -32,7 +32,7 @@ import java.io.IOException;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import net.labhackercd.nhegatu.data.api.error.AuthorizationException;
+import net.labhackercd.nhegatu.data.api.client.error.AuthorizationException;
 import rx.Observable;
 import rx.Observer;
 import rx.subjects.PublishSubject;

@@ -15,19 +15,10 @@
  * along with Nhegatu.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.labhackercd.nhegatu.data.api.client;
+package net.labhackercd.nhegatu.data.api.client.error;
 
-/** Unchecked wrapper for checked exceptions thrown by the inner client code. */
-public class ClientError extends RuntimeException {
-    private Throwable cause;
-
-    ClientError(Throwable cause) {
-        this.cause = cause;
-    }
-
-    /** Return the wrapped exception. */
-    @Override
-    public Throwable getCause() {
-        return cause;
+public class NotFoundException extends ServiceError {
+    public NotFoundException(Exception error) {
+        super(error);
     }
 }
